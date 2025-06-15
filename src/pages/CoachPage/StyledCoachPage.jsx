@@ -33,6 +33,13 @@ export const StyledCoachHeader = styled.header`
   flex-direction: column;
   gap: 15px;
   align-items: center;
+
+  /* ¡AQUÍ ESTÁ EL CAMBIO! Consumimos la prop $loading para aplicar estilos condicionales */
+  ${props => props.$loading && `
+    opacity: 0.6; /* Por ejemplo, para indicar que está cargando */
+    pointer-events: none; /* Deshabilita interacciones mientras carga */
+    cursor: progress; /* Cambia el cursor para indicar carga */
+  `}
 `;
 
 export const StyledCoachTitle = styled.h1`

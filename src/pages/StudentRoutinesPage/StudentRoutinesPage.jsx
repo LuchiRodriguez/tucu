@@ -19,7 +19,7 @@ import {
   StyledTextArea,
   StyledButtonContainer,
   StyledFormButton,
-} from './StyledStudentRoutinePage';
+} from './StyledStudentRoutinesPage';
 
 function StudentRoutinesPage() {
   const { studentId } = useParams(); // Obtiene el ID del alumno de la URL

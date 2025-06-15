@@ -5,102 +5,79 @@ export const StyledHomePageContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
-  background-color: #f8f9fa; /* Fondo claro */
   min-height: 100vh;
+  padding: 0; /* Ya no hay padding aquí, el Navbar lo maneja */
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif; /* ¡Tipografía a Roboto! */
+  color: #1a1a1a; /* Color de texto general */
 `;
 
 export const StyledMainContent = styled.div`
   width: 100%;
   max-width: 600px;
-  margin-top: 20px;
-  padding: 20px;
+  margin-top: 20px; /* Margen para separar del header/navbar */
+  padding: 15px; /* Padding ajustado para móviles */
   background-color: #ffffff;
   border-radius: 12px;
-  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.08);
-`;
-
-export const StyledAppHeader = styled.header`
-  background-color: #f0f0f0;
-  padding: 20px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.08); /* Sombra ajustada */
+  box-sizing: border-box;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-  border-bottom: 1px solid #e0e0e0;
-  width: 100%;
-  max-width: 600px; /* Asegura que el header también tenga un ancho máximo */
-  border-radius: 12px; /* Añadido para que se vea como un bloque */
-  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.08);
-  margin-bottom: 20px;
+  justify-content: space-between;
+  align-items: center; /* Centra horizontalmente */
+  text-align: center; /* Para centrar el texto dentro de la card */
 
-  ${props => props.$loading && `
-    opacity: 0.6;
-    pointer-events: none;
-    cursor: progress;
-  `}
-`;
-
-export const StyledRoutineCounter = styled.div`
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: #555;
-  text-align: center;
-  span {
-    font-weight: 700;
-    color: #007bff;
-  }
-`;
-
-export const StyledRoutineSearch = styled.input`
-  width: 90%;
-  max-width: 400px;
-  padding: 12px 15px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 1rem;
-  &:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
-  }
-`;
-
-export const StyledCreateRoutineButton = styled.button`
-  background-color: #007bff; /* Un color azul para la acción principal del alumno, ej. Sincronizar */
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  font-size: 2.5rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
-  transition: all 0.2s ease-in-out;
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  z-index: 1000;
-
-  &:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 123, 255, 0.4);
-  }
-
-  &:active {
-    background-color: #004085;
-    transform: translateY(0);
-    box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
+  @media (min-width: 768px) {
+    padding: 20px; /* Vuelve al padding original en tablets+ */
   }
 `;
 
 export const StyledAppMessage = styled.p`
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #555;
   text-align: center;
-  margin-top: 20px;
+  margin: 0px;
+  padding: 10px;
+
+  @media (min-width: 768px) {
+    font-size: 1.1rem;
+    margin-top: 20px;
+  }
+`;
+
+// Nuevo estilo para el botón de WhatsApp (ahora basado en imagen)
+export const StyledWhatsappImageButton = styled.a`
+  display: flex; /* Para centrar la imagen */
+  justify-content: center;
+  align-items: center;
+  width: 45px; /* Tamaño del botón para móviles */
+  height: 45px; /* Asegura que sea un cuadrado */
+  padding: 8px;
+  background-color: #28a745;
+  border-radius: 50%; /* Lo hacemos redondo para simular un botón de acción flotante/icono */
+  overflow: hidden; /* Recorta la imagen si sobresale del círculo */
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+
+  img {
+    width: 100%; /* La imagen ocupa todo el espacio del botón */
+    height: 100%;
+  }
+
+  &:hover {
+    transform: translateY(-3px); /* Efecto de "levantar" */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Sombra más pronunciada al hover */
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Media query para tablets y pantallas más grandes */
+  @media (min-width: 768px) {
+    width: 70px; /* Un poco más grande en tablets */
+    height: 70px;
+    margin-top: 25px;
+  }
 `;

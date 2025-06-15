@@ -2,23 +2,27 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStudents } from '../../hooks/useStudents/useStudents';
 import { Modal } from '../../components/common/Modal/Modal';
-// import LogoutButton from '../../components/common/LogoutButton/LogoutButton'; // Ya no se importa aquí!
+import LogoutButton from '../../components/common/LogoutButton/LogoutButton';
 
 // Importamos el nuevo componente StudentList
 import StudentList from '../../components/specific/StudentList/StudentList';
-import Navbar from '../../components/common/NavBar/NavBar'; // Importamos el Navbar!
 
-// Importamos los componentes estilizados desde StyledCoachPage (solo los que quedan)
 import {
-  StyledCoachPageContainer,
-  StyledStudentListContainer,
-  StyledCreateButton,
   StyledForm,
   StyledLabel,
   StyledInput,
-  StyledButtonContainer,
+} from './StyledRegisterPage';
+
+import {
+  StyledButtonContainer, 
+  StyledCoachHeader, 
+  StyledCoachPageContainer,
+  StyledCoachSearch,
+  StyledCoachTitle,
+  StyledCreateButton,
   StyledFormButton,
-} from './StyledCoachPage';
+  StyledStudentListContainer
+} from '../CoachPage/StyledCoachPage'
 
 function CoachPage() {
   const navigate = useNavigate();
@@ -61,15 +65,18 @@ function CoachPage() {
 
   return (
     <StyledCoachPageContainer>
-      {/* Usamos el Navbar genérico para la página del Coach */}
-      <Navbar
-        type="coach"
-        loading={loading}
-        searchValue={searchValue}
-        setSearchValue={setSearchValue}
-      />
+      <StyledCoachHeader $loading={loading}>
+        <StyledCoachTitle>Panel del Coach de <span>Prof Angel San Roman</span></StyledCoachTitle>
+        <StyledCoachSearch
+          placeholder="Buscar alumnos..."
+          value={searchValue}
+          onChange={(event) => setSearchValue(event.target.value)}
+        />
+        <LogoutButton /> {/* Botón de cerrar sesión en el header */}
+      </StyledCoachHeader>
 
       <StyledStudentListContainer>
+        {/* Renderizamos el nuevo componente StudentList aquí */}
         <StudentList
           students={searchedStudents}
           loading={loading}
