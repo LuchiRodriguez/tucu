@@ -10,7 +10,7 @@ export const StyledLoginContainer = styled.div`
   background-color: #f8f9fa; /* Fondo claro general */
   padding: 15px; /* Padding más pequeño para móviles */
   box-sizing: border-box;
-  font-family: 'Roboto', sans-serif; /* ¡CAMBIO CLAVE AQUÍ: Tipografía a Roboto! */
+  font-family: 'Roboto', sans-serif; /* Tipografía a Roboto */
 
   /* Media query para tablets y pantallas más grandes */
   @media (min-width: 768px) {
@@ -39,22 +39,26 @@ export const StyledLoginFormWrapper = styled.div`
   }
 `;
 
-// Estilo para el logo
 export const StyledLogo = styled.img`
-  max-width: 300px;
-  height: auto;
   margin: 0 auto;
-  display: block;
+  width: 240px; /* ¡CAMBIO CLAVE AQUÍ! Ancho deseado de 240px */
+  max-width: 100%; /* Asegura que el logo se achique en pantallas pequeñas si es necesario */
+  height: auto;
+  display: block; /* Asegura que el margin auto funcione */
 
-  /* Media query para tablets y pantallas más grandes */
-  @media (min-width: 768px) {
-    max-width: 350px;
-  }
+  /* Las media queries para max-width anteriores se vuelven menos relevantes con 'width: 240px' y 'max-width: 100%'
+     porque el logo intentará mantener 240px, pero nunca superará el ancho de su contenedor.
+  */
 `;
 
 export const StyledLoginTitle = styled.h1`
   font-size: 2rem; /* Tamaño de título para móviles */
-  margin: 0;
+  color: #2c3e50; /* Un color oscuro para el título */
+  margin-bottom: 8px; /* Margen ajustado */
+  span {
+    color: #007bff; /* Un color de acento diferente para el login, quizás azul */
+    font-weight: 700;
+  }
 
   /* Media query para tablets y pantallas más grandes */
   @media (min-width: 768px) {
@@ -64,13 +68,14 @@ export const StyledLoginTitle = styled.h1`
 `;
 
 export const StyledLoginSubtitle = styled.p`
-  font-size: 1rem;
+  font-size: 1rem; /* Tamaño de subtítulo para móviles */
   color: #7f8c8d;
-  margin: 10px 0 15px 0;
+  margin-bottom: 15px; /* Margen ajustado */
 
   /* Media query para tablets y pantallas más grandes */
   @media (min-width: 768px) {
-    font-size: 1.1rem;
+    font-size: 1.1rem; /* Vuelve al tamaño original */
+    margin-bottom: 20px;
   }
 `;
 
@@ -89,7 +94,7 @@ export const StyledLabel = styled.label`
   font-size: 0.9rem; /* Tamaño de label para móviles */
   color: #333;
   font-weight: 600;
-  text-align: left;
+  text-align: left; /* Alineado a la izquierda */
   margin-bottom: 2px; /* Margen ajustado */
 
   /* Media query para tablets y pantallas más grandes */
@@ -116,7 +121,7 @@ export const StyledInput = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: #007bff; /* Borde de enfoque azul */
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
   }
 
@@ -128,7 +133,7 @@ export const StyledInput = styled.input`
 `;
 
 export const StyledButton = styled.button`
-  background-color: #007bff;
+  background-color: #007bff; /* Azul para el botón principal de login */
   color: white;
   border: none;
   border-radius: 8px;
@@ -166,7 +171,7 @@ export const StyledButton = styled.button`
 `;
 
 export const StyledErrorMessage = styled.p`
-  color: #e74c3c;
+  color: #e74c3c; /* ¡Rojo para mensajes de error, ya estaba así y es consistente! */
   font-size: 0.85rem; /* Tamaño de error para móviles */
   margin-top: -8px; /* Margen ajustado */
   text-align: left;
@@ -183,7 +188,7 @@ export const StyledLink = styled.p`
   color: #7f8c8d;
   margin-top: 10px; /* Margen ajustado */
   a {
-    color: #e74c3c;
+    color: #e74c3c; /* Color de acento para enlaces como 'Registrate' */
     text-decoration: none;
     font-weight: 600;
     &:hover {

@@ -1,9 +1,9 @@
 // src/pages/LoginPage/LoginPage.jsx
 import React from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // ¡Reintroducimos useNavigate!
-import { signInWithEmailAndPassword } from 'firebase/auth'; // Importamos la función de Firebase Auth
-import { doc, getDoc } from 'firebase/firestore'; // Importamos funciones de Firestore para obtener datos de usuario
-import { auth, db } from '../../config/firebase'; // Importamos las instancias de Firebase que configuramos
+import { useNavigate, Link } from 'react-router-dom';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../../config/firebase';
 
 // Importamos los componentes estilizados
 import {
@@ -17,18 +17,18 @@ import {
   StyledButton,
   StyledErrorMessage,
   StyledLink,
-  StyledLogo,
+  StyledLogo, // ¡IMPORTAMOS EL COMPONENTE ESTILIZADO DEL LOGO!
 } from './StyledLoginPage';
 
-import logoImage from '../../assets/png/logo.jpg';
+import logoImage from '../../assets/png/logo.jpg'; // ¡CAMBIO CLAVE AQUÍ: IMPORTAMOS LA IMAGEN!
 
 function LoginPage() {
-  const navigate = useNavigate(); // ¡Volvemos a usar useNavigate!
+  const navigate = useNavigate(); // Inicializamos useNavigate
 
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [error, setError] = React.useState('');
-  const [loading, setLoading] = React.useState(false); // Para deshabilitar el botón mientras carga
+  const [loading, setLoading] = React.useState(false);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -39,31 +39,27 @@ function LoginPage() {
       return;
     }
 
-    setLoading(true); // Activar loading
+    setLoading(true);
 
     try {
-      // 1. Intentar iniciar sesión con Email y Contraseña en Firebase Authentication
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2. Obtener el rol del usuario desde Firestore para la redirección
       const userDocRef = doc(db, "users", user.uid);
       const userDocSnap = await getDoc(userDocRef);
 
-      let userRole = 'student'; // Rol por defecto si no se encuentra en Firestore
+      let userRole = 'student';
       if (userDocSnap.exists()) {
-        userRole = userDocSnap.data().role || 'student'; // Obtener el rol guardado
+        userRole = userDocSnap.data().role || 'student';
       }
 
-      // Redirigir según el rol
       if (userRole === 'coach') {
-        navigate('/coach'); // Redirige al panel del coach
-      } else { // Por defecto, o si es 'student'
-        navigate('/'); // Redirige a la HomePage del alumno
+        navigate('/coach');
+      } else {
+        navigate('/home'); // Redirige a /home para alumnos
       }
 
     } catch (firebaseError) {
-      // Manejo de errores de Firebase
       let errorMessage = 'Error al iniciar sesión. Verificá tus credenciales.';
       switch (firebaseError.code) {
         case 'auth/invalid-email':
@@ -85,18 +81,20 @@ function LoginPage() {
       }
       setError(errorMessage);
     } finally {
-      setLoading(false); // Desactivar loading
+      setLoading(false);
     }
   };
 
   return (
     <StyledLoginContainer>
       <StyledLoginFormWrapper>
-        <StyledLogo 
-          src={logoImage}
+        {/* ¡USAMOS LA IMAGEN IMPORTADA AQUÍ! */}
+        <StyledLogo
+          src={logoImage} // <-- Usamos la variable importada
           alt="Logo Prof Angel San Roman"
           onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/150x150/CCCCCC/000000?text=Error" }}
         />
+
         <div>
           <StyledLoginTitle>Iniciar Sesión</StyledLoginTitle>
           <StyledLoginSubtitle>Ingresá con tu email y contraseña.</StyledLoginSubtitle>
@@ -131,7 +129,7 @@ function LoginPage() {
         </StyledForm>
 
         <StyledLink>
-          ¿No tienes cuenta? <Link to="/register">Regístrate aquí</Link>
+          ¿No tenés cuenta? <Link to="/register">Registrate aquí</Link>
         </StyledLink>
       </StyledLoginFormWrapper>
     </StyledLoginContainer>

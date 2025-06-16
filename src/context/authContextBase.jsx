@@ -1,3 +1,4 @@
+// src/context/authContextBase.jsx
 import { createContext, useContext } from 'react';
 
 // 1. Crear el Contexto de Autenticación

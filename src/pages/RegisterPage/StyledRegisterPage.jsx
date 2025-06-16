@@ -10,7 +10,7 @@ export const StyledRegisterContainer = styled.div`
   background-color: #f8f9fa; /* Fondo claro general */
   padding: 15px; /* Padding más pequeño para móviles */
   box-sizing: border-box;
-  font-family: 'Roboto', sans-serif; /* ¡Tipografía a Roboto! */
+  font-family: 'Roboto', sans-serif; /* Tipografía a Roboto */
 
   /* Media query para tablets y pantallas más grandes */
   @media (min-width: 768px) {
@@ -39,37 +39,35 @@ export const StyledRegisterFormWrapper = styled.div`
   }
 `;
 
-// ¡NUEVO ESTILO PARA EL LOGO!
 export const StyledLogo = styled.img`
-  max-width: 300px;
+  margin: 0 auto; /* Centra el logo horizontalmente */
+  width: 240px; /* Ancho deseado de 240px */
+  max-width: 100%; /* Asegura que el logo se achique en pantallas pequeñas si es necesario */
   height: auto;
-  margin: 0 auto;
-  display: block;
-
-  /* Media query para tablets y pantallas más grandes */
-  @media (min-width: 768px) {
-    max-width: 350px;
-  }
+  display: block; /* Asegura que el margin auto funcione */
 `;
 
 export const StyledRegisterTitle = styled.h1`
   font-size: 2rem; /* Tamaño de título para móviles */
-  margin: 0;
+  color: #2c3e50; /* Color oscuro (casi negro) para el título */
+  margin: 0; /* ¡CAMBIO CLAVE AQUÍ! Margin 0 para el h1 */
 
   /* Media query para tablets y pantallas más grandes */
   @media (min-width: 768px) {
     font-size: 2.5rem; /* Vuelve al tamaño original */
+    margin: 0; /* Aseguramos margin 0 también en desktop */
   }
 `;
 
 export const StyledRegisterSubtitle = styled.p`
   font-size: 1rem; /* Tamaño de subtítulo para móviles */
   color: #7f8c8d;
-  margin: 10px 0 15px 0;
+  margin: 10px; /* ¡CAMBIO CLAVE AQUÍ! Margin 10px para el p */
 
   /* Media query para tablets y pantallas más grandes */
   @media (min-width: 768px) {
     font-size: 1.1rem; /* Vuelve al tamaño original */
+    margin: 10px; /* Aseguramos margin 10px también en desktop */
   }
 `;
 
@@ -127,7 +125,7 @@ export const StyledInput = styled.input`
 `;
 
 export const StyledButton = styled.button`
-  background-color: #007bff;
+  background-color: #2ecc71;
   color: white;
   border: none;
   border-radius: 8px;
@@ -136,17 +134,17 @@ export const StyledButton = styled.button`
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
-  box-shadow: 0 3px 10px rgba(0, 123, 255, 0.3); /* Sombra más suave */
+  box-shadow: 0 3px 10px rgba(46, 204, 113, 0.3); /* Sombra más suave */
   margin-top: 10px; /* Margen ajustado */
 
   &:hover {
-    background-color: #0056b3;
+    background-color: #27ae60;
     transform: translateY(-2px);
   }
 
   &:active {
     transform: translateY(0);
-    box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
+    box-shadow: 0 2px 5px rgba(46, 204, 113, 0.3);
   }
 
   &:disabled {
@@ -159,13 +157,13 @@ export const StyledButton = styled.button`
   @media (min-width: 768px) {
     padding: 14px 20px; /* Vuelve al padding original */
     font-size: 1.1rem; /* Vuelve al tamaño original */
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3); /* Vuelve a la sombra original */
+    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3); /* Vuelve a la sombra original */
     margin-top: 15px; /* Vuelve al margen original */
   }
 `;
 
 export const StyledErrorMessage = styled.p`
-  color: #e74c3c; /* Rojo para mensajes de error */
+  color: #e74c3c; /* ¡Rojo para mensajes de error, ya estaba así y es consistente! */
   font-size: 0.85rem; /* Tamaño de error para móviles */
   margin-top: -8px; /* Margen ajustado */
   text-align: left;
@@ -177,15 +175,14 @@ export const StyledErrorMessage = styled.p`
   }
 `;
 
-export const StyledSuccessMessage = styled.p`
+export const StyledSuccessMessage = styled.p` /* ¡Exportado! */
   color: #28a745; /* Verde para mensajes de éxito */
-  font-size: 0.85rem; /* Tamaño de éxito para móviles */
-  margin-top: -8px; /* Margen ajustado */
+  font-size: 0.85rem;
+  margin-top: -8px;
   text-align: center;
 
-  /* Media query para tablets y pantallas más grandes */
   @media (min-width: 768px) {
-    font-size: 0.9rem; /* Vuelve al tamaño original */
+    font-size: 0.9rem;
     margin-top: -10px;
   }
 `;
@@ -195,7 +192,7 @@ export const StyledLink = styled.p`
   color: #7f8c8d;
   margin-top: 10px; /* Margen ajustado */
   a {
-    color: #e74c3c;
+    color: #3498db; /* Azul para enlaces */
     text-decoration: none;
     font-weight: 600;
     &:hover {

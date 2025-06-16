@@ -1,60 +1,68 @@
-// src/components/common/Navbar/Navbar.jsx
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+// Eliminado: import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/authContextBase'; // Importamos useAuth
-import LogoutButton from '../LogoutButton/LogoutButton'; // Importamos el LogoutButton
+// Eliminado: import LogoutButton from '../LogoutButton/LogoutButton';
 import logoImage from '../../../assets/png/logo.jpg'; // Importamos la imagen del logo
+
+import userIconImage from '../../../assets/png/user.png'; // La imagen de usuario
+
 
 import {
   StyledNavbarContainer,
   StyledNavbarLogo,
   StyledProfileButton,
-  StyledProfileDropdown,
-  StyledDropdownItem,
+  // Eliminado: StyledProfileDropdown,
+  // Eliminado: StyledDropdownItem,
   StyledNavbarContent,
   StyledHeaderGreeting,
   StyledRoutineCounter,
-  StyledNavbarTitle, // Importamos el estilo para el título del coach
-  StyledNavbarSearch, // Importamos el estilo para el buscador del coach
-} from './StyledNavBar'; // Asegúrate de la ruta correcta para StyledNavbar
+  StyledNavbarTitle,
+  StyledNavbarSearch,
+} from './StyledNavbar'; // Asegúrate de la ruta correcta para StyledNavbar
 
-// Se mantiene StyledAppMessage para mensajes genéricos si se usa en otros lados,
-// pero su uso en Navbar es más específico ahora.
-import { StyledAppMessage } from '../../../pages/HomePage/StyledHomePage'; // Se importa StyledAppMessage desde HomePage
+// Se importa StyledAppMessage desde HomePage/StyledHomePage para mensajes genéricos
+import { StyledAppMessage } from '../../../pages/HomePage/StyledHomePage';
 
+// Usamos parámetros por defecto directamente en la firma de la función,
+// eliminando la necesidad de Navbar.defaultProps.
 function Navbar({
-  type = 'student', // Default a 'student' si no se pasa
-  loading,
-  userName, // Para el saludo del estudiante
-  totalActivedRoutines, // Para el contador del estudiante
-  completedActivedRoutines, // Para el contador del estudiante
-  searchValue, // Para el buscador del coach
-  setSearchValue, // Para el buscador del coach
+  type = 'student', // Por defecto 'student' si no se especifica
+  loading, // Esta prop es requerida y debe ser provista por el componente padre
+  totalActivedRoutines = 0, // Valor por defecto para el contador de rutinas
+  completedActivedRoutines = 0, // Valor por defecto para rutinas completadas
+  searchValue = '', // Valor por defecto para el campo de búsqueda (usado por coach)
+  setSearchValue = () => {}, // Función vacía por defecto para el actualizador de búsqueda
 }) {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const { user, role } = useAuth(); // Obtenemos el usuario y el rol del contexto de autenticación
+  // Eliminado: const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { user, role, userName: authUserName } = useAuth();
   const navigate = useNavigate();
 
-  // Función para redirigir al perfil. Por ahora, solo un placeholder.
+  // Función para redirigir al perfil directamente
   const handleGoToProfile = () => {
-    setIsDropdownOpen(false); // Cierra el dropdown al hacer clic
-    // Aquí podrías redirigir a una página de perfil del alumno/coach
-    // navigate('/profile');
-    alert('Funcionalidad de "Ir a Perfil" pendiente.');
+    navigate('/profile'); // Redirigimos directamente a la ProfilePage
   };
 
-  // Obtiene el nombre de usuario para mostrar en el perfil, usando el prop o el email
-  const currentUserName = userName || (user && user.email ? user.email.split('@')[0] : 'Usuario');
-  // Determina el texto del rol para mostrar en el perfil
-  const userRoleText = role === 'student' ? 'Alumno' : role === 'coach' ? 'Coach' : 'Invitado';
+  // Redirige al hacer click en el logo según el rol
+  const handleClickLogo = () => {
+    if (role === 'coach') {
+      navigate('/coach'); // Si es coach, va al panel del coach
+    } else {
+      navigate('/home'); // Si es estudiante o rol desconocido, va a la home
+    }
+  };
 
-  // Lógica para el contenido central del Navbar, que cambia según el 'type'
+  // Determina el nombre de usuario a mostrar. Prioriza el nombre de Firestore; si no, usa la parte del email.
+  const currentUserName = authUserName || (user && user.email ? user.email.split('@')[0] : 'Usuario');
+  // Eliminado: const userRoleText = role === 'student' ? 'Alumno' : role === 'coach' ? 'Coach' : 'Invitado';
+
+  // Lógica para renderizar el contenido central del Navbar, que cambia según el 'type' de la página
   let navbarCenterContent;
   if (type === 'coach') {
+    // Contenido para la vista del coach: título y buscador
     navbarCenterContent = (
       <>
-        <StyledNavbarTitle>Panel del Coach</StyledNavbarTitle>
+        <StyledNavbarTitle>Panel del Coach de <span>Prof Angel San Roman</span></StyledNavbarTitle>
         <StyledNavbarSearch
           placeholder="Buscar alumnos..."
           value={searchValue}
@@ -63,14 +71,14 @@ function Navbar({
       </>
     );
   } else { // type === 'student'
-    // Determina si se debe mostrar el mensaje de "no rutinas" en el header para el estudiante
+    // Contenido para la vista del estudiante: saludo y contador de rutinas o mensaje de no rutinas
     const showNoRoutinesMessageInHeader = totalActivedRoutines === 0;
     navbarCenterContent = (
       <>
         <StyledHeaderGreeting>
           ¡Hola, <span>{currentUserName}</span>!
         </StyledHeaderGreeting>
-        {/* Muestra el mensaje de no rutinas o el contador */}
+        {/* Muestra el mensaje de no rutinas si no hay, o el contador si las hay */}
         {showNoRoutinesMessageInHeader ? (
           <StyledAppMessage style={{ marginTop: '0', fontSize: '0.9rem', color: '#bdc3c7' }}>
             Aún no tienes rutinas creadas.
@@ -87,48 +95,32 @@ function Navbar({
 
   return (
     <StyledNavbarContainer $loading={loading}>
+      {/* Logo de la aplicación */}
       <StyledNavbarLogo
         src={logoImage}
         alt="Logo Prof Angel San Roman"
+        onClick={handleClickLogo}
+        style={{ cursor: 'pointer' }}
+        // Fallback de imagen si la original no carga
         onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/90x90/CCCCCC/000000?text=Logo" }}
       />
 
-      {/* Contenido central del Navbar que es dinámico */}
+      {/* Contenido central del Navbar que es dinámico según el rol */}
       <StyledNavbarContent>
         {navbarCenterContent}
       </StyledNavbarContent>
 
-      {/* Botón para abrir/cerrar el dropdown del perfil */}
-      <StyledProfileButton onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
-        👤 {/* Icono de usuario simple */}
+      {/* Botón de perfil para abrir/cerrar el dropdown */}
+      <StyledProfileButton onClick={handleGoToProfile} style={{ cursor: 'pointer' }}>
+        {/* Usamos la imagen del usuario */}
+        <img
+          src={userIconImage}
+          alt="Ícono de Perfil"
+          onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/24x24/CCCCCC/000000?text=👤" }}
+        />
       </StyledProfileButton>
 
-      {/* Dropdown del perfil, visible si isDropdownOpen es true */}
-      {isDropdownOpen && (
-        <StyledProfileDropdown>
-          {user && ( // Si hay un usuario logueado, muestra la info del perfil y opciones
-            <>
-              <StyledDropdownItem style={{ cursor: 'default', fontWeight: 'bold' }}>
-                {currentUserName}
-              </StyledDropdownItem>
-              <StyledDropdownItem style={{ cursor: 'default', fontSize: '0.8rem', color: '#bdc3c7' }}>
-                ({userRoleText})
-              </StyledDropdownItem>
-              <StyledDropdownItem onClick={handleGoToProfile}>
-                Ir a Perfil
-              </StyledDropdownItem>
-              <StyledDropdownItem>
-                <LogoutButton /> {/* Botón de cerrar sesión */}
-              </StyledDropdownItem>
-            </>
-          )}
-          {!user && ( // Si no hay usuario, muestra la opción de Iniciar Sesión
-            <StyledDropdownItem onClick={() => { setIsDropdownOpen(false); navigate('/login'); }}>
-              Iniciar Sesión
-            </StyledDropdownItem>
-          )}
-        </StyledProfileDropdown>
-      )}
+      {/* El Dropdown del perfil ha sido eliminado ya que el botón navega directamente. */}
     </StyledNavbarContainer>
   );
 }
@@ -136,22 +128,11 @@ function Navbar({
 // Definición de PropTypes para validar las props recibidas por el componente Navbar
 Navbar.propTypes = {
   type: PropTypes.oneOf(['student', 'coach']), // Puede ser 'student' o 'coach'
-  loading: PropTypes.bool.isRequired, // Indica si la página está cargando
-  userName: PropTypes.string, // Nombre del usuario para el saludo (opcional para coach)
+  loading: PropTypes.bool.isRequired, // Indica si la página está cargando (obligatoria)
   totalActivedRoutines: PropTypes.number, // Total de rutinas activas (para estudiante)
   completedActivedRoutines: PropTypes.number, // Rutinas completadas (para estudiante)
   searchValue: PropTypes.string, // Valor del campo de búsqueda (para coach)
   setSearchValue: PropTypes.func, // Función para actualizar el valor de búsqueda (para coach)
-};
-
-// Valores por defecto para las props
-Navbar.defaultProps = {
-  type: 'student',
-  userName: 'Usuario',
-  totalActivedRoutines: 0,
-  completedActivedRoutines: 0,
-  searchValue: '',
-  setSearchValue: () => {}, // Función vacía por defecto
 };
 
 export default Navbar;

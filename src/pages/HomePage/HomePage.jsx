@@ -2,51 +2,65 @@
 import { useRoutines } from '../../hooks/useRoutines/useRoutines';
 import RoutineList from '../../components/specific/RoutineList/RoutineList';
 import Navbar from '../../components/common/Navbar/Navbar';
-import whatsappLogo from '../../assets/png/whatsapp.png'; // Importamos el logo de WhatsApp
+import Card from '../../components/common/Card/Card'; // Importamos el componente Card
+import { useAuth } from '../../context/authContextBase'; // Importamos useAuth para el nombre del usuario
 
 import {
   StyledHomePageContainer,
-  StyledMainContent,
-  // StyledAppHeader,
-  // StyledRoutineCounter,
   StyledAppMessage,
-  // StyledHeaderGreeting,
-  StyledWhatsappImageButton // Importamos el nuevo botón de WhatsApp como imagen
-} from './StyledHomePage';
+  StyledWhatsappImageButton // Asegúrate de que este estilo exista en StyledHomePage.jsx
+} from './StyledHomePage'; // Ya no importamos StyledAppHeader, etc., de aquí.
 
+import whatsappLogo from '../../assets/png/whatsapp.webp'; // Importamos el logo de WhatsApp
 
 function HomePage() {
   const { states, statesUpdaters } = useRoutines();
+  const { loading: authLoading } = useAuth(); // Obtenemos el objeto de usuario autenticado y el loading de auth
 
   const {
-    loading,
+    loading: routinesLoading, // Renombramos para evitar conflicto con authLoading
     error,
-    // totalActivedRoutines,
-    // completedActivedRoutines,
-    searchedRoutines, // Usamos searchedRoutines para la lista de rutinas
+    totalActivedRoutines,
+    completedActivedRoutines,
+    searchedRoutines,
   } = states;
 
   const {
     toggleRoutineCompleted,
-    editExerciseInRoutine, // Para registrar kilos/reps.
-    deleteExerciseFromRoutine, // El alumno puede borrar sus ejercicios de su rutina.
+    editExerciseInRoutine,
+    deleteExerciseFromRoutine,
     toggleExerciseCompleted,
   } = statesUpdaters;
 
+  // El loading total de la página será el de auth o el de las rutinas
+  const isLoadingPage = authLoading || routinesLoading;
+
   // Lógica para determinar si el mensaje de "no rutinas" debe aparecer
-  const showNoRoutinesMessage = !loading && !error && searchedRoutines.length === 0;
+  const showNoRoutinesMessage = !isLoadingPage && !error && searchedRoutines.length === 0;
 
   return (
     <StyledHomePageContainer>
-      <Navbar/>
+      {/* El Navbar ahora maneja el saludo, el estado de carga y los contadores */}
+      <Navbar
+        loading={isLoadingPage}
+        totalActivedRoutines={totalActivedRoutines}
+        completedActivedRoutines={completedActivedRoutines}
+      />
+      
+      {/* Contenido principal de la HomePage dentro de una Card */}
+      {/* ¡CAMBIO CLAVE AQUÍ! Pasamos flexDirection="row" a la Card para que se comporte como fila */}
+      <Card style={{ marginTop: '20px'}} flexDirection="row"> 
+        {isLoadingPage && <StyledAppMessage>Cargando rutinas del alumno...</StyledAppMessage>}
+        {error && <StyledAppMessage>¡Uups! Hubo un error.</StyledAppMessage>}
+        
         {/* Si no hay rutinas, y no hay carga ni error, mostramos el mensaje y el botón en la card */}
         {showNoRoutinesMessage && (
-          <StyledMainContent>
+          <>
             <StyledAppMessage>
               Pídele al profe que te cree una rutina.
             </StyledAppMessage>
             <StyledWhatsappImageButton
-              href="https://wa.me/+34674539755?text=Hola%20Profe,%20me%20podrías%20crear%20una%20rutina%3F"
+              href="https://wa.me/XXXXXXXXXX?text=Hola%20Profe,%20me%20podrías%20crear%20una%20rutina%3F"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -56,11 +70,11 @@ function HomePage() {
                 onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/60x60/CCCCCC/000000?text=WA" }}
               />
             </StyledWhatsappImageButton>
-          </StyledMainContent>
+          </>
         )}
 
         {/* Solo renderizamos RoutineList si hay rutinas para mostrar */}
-        {!loading && !error && searchedRoutines.length > 0 && (
+        {!isLoadingPage && !error && searchedRoutines.length > 0 && (
           <RoutineList
             error={false}
             loading={false}
@@ -78,6 +92,7 @@ function HomePage() {
             onDeleteRoutine={() => {}}
           />
         )}
+      </Card>
     </StyledHomePageContainer>
   );
 }

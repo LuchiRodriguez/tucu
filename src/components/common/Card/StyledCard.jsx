@@ -1,14 +1,19 @@
+// src/components/common/Card/StyledCard.jsx
 import styled from 'styled-components';
 
 // 1. Componente div estilizado para el contenedor de la Card
-export const StyledCardContainer = styled.div`
+export const StyledCardContainer = styled.div.withConfig({
+  // Aseguramos que la prop 'flexDirection' no se pase al DOM subyacente
+  shouldForwardProp: (prop) => !['flexDirection'].includes(prop),
+})`
   background-color: #fff;
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 12px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
   display: flex;
-  align-items: center;
+  flex-direction: ${props => props.$flexDirection || 'column'}; 
+  align-items: center; /* Se mantiene para centrar horizontalmente si el item es más chico que el contenedor */
   gap: 12px;
   transition: all 0.2s ease-in-out;
 

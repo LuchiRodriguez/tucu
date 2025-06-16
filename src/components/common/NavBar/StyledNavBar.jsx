@@ -5,14 +5,13 @@ export const StyledNavbarContainer = styled.nav`
   width: 100%;
   padding: 10px 15px; /* Padding para móviles */
   display: flex;
-  flex-direction: column; /* Por defecto, apila ítems en móvil */
-  justify-content: center;
+  justify-content: space-between; /* Espacio entre ítems en la fila (mobile y desktop) */
   align-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
   position: sticky;
   top: 0;
   z-index: 1000;
   box-sizing: border-box;
-  position: relative; /* Necesario para posicionar el botón de perfil */
 
   /* Media Queries para tablets y escritorio */
   @media (min-width: 768px) {
@@ -32,7 +31,6 @@ export const StyledNavbarLogo = styled.img`
   max-width: 90px; /* Tamaño del logo para móviles en el navbar */
   height: auto;
   display: block;
-  margin-bottom: 10px; /* Margen debajo del logo en móvil */
 
   @media (min-width: 768px) {
     max-width: 120px; /* Aumenta el tamaño en pantallas grandes */
@@ -43,23 +41,20 @@ export const StyledNavbarLogo = styled.img`
 export const StyledProfileButton = styled.button`
   background-color: transparent;
   border: none;
-  color: white;
-  font-size: 1.5rem; /* Tamaño ajustado para que no sobresalga */
   cursor: pointer;
-  padding: 5px;
-  border-radius: 50%;
   transition: background-color 0.2s ease-in-out;
-  position: absolute; /* Posicionamiento absoluto para que esté en la esquina */
-  top: 5px; /* Ajuste más cerca del borde */
-  right: 5px; /* Ajuste más cerca del borde */
-
+  
+  height: 50px; /* MODIFICADO a 50px */
+  display: flex; /* Para centrar la imagen */
+  justify-content: center;
+  align-items: center;
+  
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
   }
 
   @media (min-width: 768px) {
-    font-size: 2rem; /* Tamaño un poco más grande en desktop */
-    position: static; /* En desktop, vuelve a ser parte del flujo normal */
+    height: 50px; /* Mantener la altura consistente en desktop */
   }
 `;
 
@@ -113,49 +108,78 @@ export const StyledDropdownItem = styled.div`
   }
 `;
 
-// Contenedor principal para el contenido del navbar (saludo/contador O título/buscador)
 export const StyledNavbarContent = styled.div`
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px; /* Espacio entre los elementos */
-  color: white;
   text-align: center;
-  flex-grow: 1; /* Permite que ocupe el espacio disponible */
-  margin: 0 10px; /* Margen a los lados para separar del logo/botón */
+  flex-grow: 1; /* Permite que ocupe el espacio disponible en el centro */
 
   @media (min-width: 768px) {
-    flex-direction: row;
-    gap: 20px;
-    justify-content: center; /* Centra el contenido en desktop */
+    justify-content: center;
   }
 `;
 
-// Estilos específicos para el título del coach en el navbar
-export const StyledNavbarTitle = styled.h1`
-  font-size: 1.5rem; /* Tamaño de título para móvil */
-  font-weight: 700;
-  color: white; /* Color blanco para el fondo oscuro */
+export const StyledHeaderGreeting = styled.h2`
+  color: #1a1a1a;
+  font-size: 1.3rem;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: calc(100% - 20px); /* Para evitar desbordamiento */
-
+  max-width: 100%;
+  
   span {
-    color: #e74c3c; /* Color de acento */
+    color: #007bff;
+    font-weight: 700;
   }
 
   @media (min-width: 768px) {
-    font-size: 2rem; /* Tamaño más grande para desktop */
+    font-size: 1.6rem;
     max-width: none;
   }
 `;
 
-// Estilos específicos para el buscador del coach en el navbar
+export const StyledRoutineCounter = styled.div`
+  font-size: 1rem;
+  font-weight: 500;
+  color: #bdc3c7; /* Se mantiene gris claro para el contador, para contraste si el fondo es blanco */
+  text-align: center;
+  white-space: nowrap;
+
+  span {
+    font-weight: 700;
+    color: #2ecc71;
+  }
+
+  @media (min-width: 768px) {
+    font-size: 1.1rem;
+  }
+`;
+
+export const StyledNavbarTitle = styled.h1`
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 20px);
+
+  span {
+    color: #e74c3c;
+  }
+
+  @media (min-width: 768px) {
+    font-size: 2rem;
+    max-width: none;
+  }
+`;
+
 export const StyledNavbarSearch = styled.input`
-  width: 90%; /* Ancho para móviles */
-  max-width: 300px; /* Ancho máximo en móvil */
+  width: 90%;
+  max-width: 300px;
   padding: 8px 12px;
   border: 1px solid #bdc3c7;
   border-radius: 8px;
@@ -176,46 +200,8 @@ export const StyledNavbarSearch = styled.input`
   }
 
   @media (min-width: 768px) {
-    width: auto; /* Ancho automático en desktop */
+    width: auto;
     max-width: 400px;
     font-size: 1rem;
-  }
-`;
-
-// Estilos existentes para saludo y contador de Home (se mantienen)
-export const StyledHeaderGreeting = styled.h2`
-  font-size: 1.3rem;
-  color: white;
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: calc(100vw - 120px);
-
-  span {
-    color: #007bff;
-    font-weight: 700;
-  }
-
-  @media (min-width: 768px) {
-    font-size: 1.6rem;
-    max-width: none;
-  }
-`;
-
-export const StyledRoutineCounter = styled.div`
-  font-size: 1rem;
-  font-weight: 500;
-  color: #bdc3c7;
-  text-align: center;
-  white-space: nowrap;
-
-  span {
-    font-weight: 700;
-    color: #2ecc71;
-  }
-
-  @media (min-width: 768px) {
-    font-size: 1.1rem;
   }
 `;

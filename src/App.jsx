@@ -1,38 +1,41 @@
 // src/App.jsx
-import React from 'react'; // Necesario para React.useEffect y otros hooks
-import { HashRouter, Routes, Route, useNavigate } from 'react-router-dom'; // Importamos useNavigate
+import { HashRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import HomePage from './pages/HomePage/HomePage';
 import CoachPage from './pages/CoachPage/CoachPage';
 import StudentRoutinesPage from './pages/StudentRoutinesPage/StudentRoutinesPage';
 import RegisterPage from './pages/RegisterPage/RegisterPage';
 import LoginPage from './pages/LoginPage/LoginPage';
-import { AuthProvider } from './context/AuthContext'; // AuthProvider sigue viniendo de AuthContext.jsx
-import { useAuth } from './context/authContextBase'; // ¡CAMBIO AQUÍ! useAuth ahora viene de authContextBase.jsx
+import ProfilePage from './pages/ProfilePage/ProfilePage'; // Importamos la ProfilePage
+import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './context/authContextBase';
 import ProtectedRoute from './components/common/ProtectedRoute/ProtectedRoute';
+
+import GlobalStyles from './styles/GlobalStyles'; // Importado para los estilos globales
+
+import { useEffect } from 'react'; // Importado para InitialRouteHandler
+
 
 // Componente para manejar la redirección inicial en la raíz
 function InitialRouteHandler() {
-  const { user, loading, role } = useAuth(); // Obtenemos el estado de autenticación
+  const { user, loading, role } = useAuth();
   const navigate = useNavigate();
 
-  React.useEffect(() => {
-    if (!loading) { // Solo actuamos una vez que la autenticación ha terminado de cargar
+  useEffect(() => {
+    if (!loading) {
       if (user) {
-        // Si hay un usuario logueado, redirigimos según su rol
+        // Si hay un user logueado, redirigimos según su rol
         if (role === 'coach') {
           navigate('/coach');
-        } else { // Asumimos 'student' o cualquier otro rol por defecto
-          navigate('/home'); // Redirigimos a /home, ya que / es el InitialRouteHandler
+        } else {
+          navigate('/home');
         }
       } else {
-        // Si no hay usuario logueado, lo enviamos al login
+        // Si no hay user logueado, lo enviamos al login
         navigate('/login');
       }
     }
-  }, [user, loading, role, navigate]); // Dependencias para que se ejecute cuando cambian
+  }, [user, loading, role, navigate]);
 
-  // Mientras carga, o si no hemos decidido a dónde ir, no mostramos nada
-  // o un spinner si quieres
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontSize: '1.5rem' }}>
@@ -40,9 +43,6 @@ function InitialRouteHandler() {
       </div>
     );
   }
-
-  // Si ya se decidió la ruta (user es null o definido), simplemente renderiza un placeholder,
-  // ya que la redirección ya ocurrió.
   return null;
 }
 
@@ -50,6 +50,7 @@ function InitialRouteHandler() {
 function App() {
   return (
     <AuthProvider>
+      <GlobalStyles /> {/* Renderizado de los estilos globales */}
       <HashRouter>
         <Routes>
           {/* Ruta raíz: maneja la redirección inicial */}
@@ -78,7 +79,14 @@ function App() {
             </ProtectedRoute>
           }/>
 
-          {/* Manejo de rutas no encontradas (opcional) */}
+          {/* ¡RUTA PARA PROFILEPAGE! */}
+          <Route path="/profile" element={
+            <ProtectedRoute allowedRoles={['student', 'coach']}>
+              <ProfilePage/>
+            </ProtectedRoute>
+          }/>
+
+          {/* Manejo de rutas no encontradas (fallback) */}
           <Route path="*" element={<div>404 - Página no encontrada o no tenés permisos.</div>}/>
         </Routes>
       </HashRouter>

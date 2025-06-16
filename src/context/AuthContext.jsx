@@ -1,24 +1,25 @@
+// src/context/AuthContext.jsx
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import PropTypes from 'prop-types'; // ¡Importamos PropTypes!
-import { auth, db } from '../config/firebase'; // Tus instancias de Firebase
+import PropTypes from 'prop-types';
+import { auth, db } from '../config/firebase';
 
-// ¡Importamos el Contexto de Autenticación desde el nuevo archivo!
 import { AuthContext } from './authContextBase';
 
-// Ya no exportamos useAuth desde aquí, solo AuthProvider
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userNameFromFirestore, setUserNameFromFirestore] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setLoading(true);
       setError(null);
+      setUserNameFromFirestore(null);
 
       if (currentUser) {
         try {
@@ -29,20 +30,31 @@ export const AuthProvider = ({ children }) => {
             const userData = userDocSnap.data();
             setUser(currentUser);
             setRole(userData.role || 'student');
+            
+            // ¡CAMBIO CLAVE AQUÍ! Almacenamos el nombre completo de Firestore
+            if (userData.name) {
+              setUserNameFromFirestore(userData.name); // Guardamos el nombre completo
+            } else {
+              setUserNameFromFirestore(currentUser.email ? currentUser.email.split('@')[0] : 'Usuario');
+            }
+
           } else {
             console.warn("Documento de usuario no encontrado en Firestore para UID:", currentUser.uid);
             setUser(currentUser);
             setRole('unknown');
+            setUserNameFromFirestore(currentUser.email ? currentUser.email.split('@')[0] : 'Usuario');
           }
         } catch (fetchError) {
-          console.error("Error al obtener el rol del usuario desde Firestore:", fetchError);
+          console.error("Error al obtener el rol o nombre del usuario desde Firestore:", fetchError);
           setError("Error al cargar la información del usuario.");
           setUser(currentUser);
           setRole(null);
+          setUserNameFromFirestore(null);
         }
       } else {
         setUser(null);
         setRole(null);
+        setUserNameFromFirestore(null);
       }
       setLoading(false);
     });
@@ -66,11 +78,11 @@ export const AuthProvider = ({ children }) => {
     loading,
     error,
     logout,
+    userName: userNameFromFirestore,
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {/* Solo renderiza los hijos cuando la carga inicial ha terminado */}
       {!loading && children}
       {loading && (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontSize: '1.5rem' }}>
@@ -81,7 +93,6 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// ¡SOLUCIÓN PARA EL ERROR DE PROPS VALIDATION!
 AuthProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };

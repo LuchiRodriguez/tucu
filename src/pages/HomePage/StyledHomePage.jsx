@@ -8,26 +8,41 @@ export const StyledHomePageContainer = styled.div`
   min-height: 100vh;
   padding: 0; /* Ya no hay padding aquí, el Navbar lo maneja */
   box-sizing: border-box;
-  font-family: 'Roboto', sans-serif; /* ¡Tipografía a Roboto! */
+  font-family: 'Roboto', sans-serif; /* Tipografía a Roboto! */
   color: #1a1a1a; /* Color de texto general */
 `;
 
-export const StyledMainContent = styled.div`
-  width: 100%;
-  max-width: 600px;
-  margin-top: 20px; /* Margen para separar del header/navbar */
-  padding: 15px; /* Padding ajustado para móviles */
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.08); /* Sombra ajustada */
+// StyledMainContent ha sido removido y reemplazado por el componente Card
+
+// Los estilos para StyledAppHeader, StyledHeaderGreeting, StyledRoutineCounter
+// se han movido a src/components/common/Navbar/StyledNavbar.jsx
+
+// Mantenemos StyledRoutineSearch por si se necesita más adelante
+export const StyledRoutineSearch = styled.input`
+  width: 90%;
+  max-width: 400px;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #333;
+  background-color: #ecf0f1;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
   box-sizing: border-box;
-  display: flex;
-  justify-content: space-between;
-  align-items: center; /* Centra horizontalmente */
-  text-align: center; /* Para centrar el texto dentro de la card */
+
+  &::placeholder {
+    color: #95a5a6;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+  }
 
   @media (min-width: 768px) {
-    padding: 20px; /* Vuelve al padding original en tablets+ */
+    padding: 12px 15px;
+    font-size: 1rem;
   }
 `;
 
@@ -44,40 +59,38 @@ export const StyledAppMessage = styled.p`
   }
 `;
 
-// Nuevo estilo para el botón de WhatsApp (ahora basado en imagen)
+// Estilo para el botón de WhatsApp como imagen
 export const StyledWhatsappImageButton = styled.a`
-  display: flex; /* Para centrar la imagen */
+  display: flex;
   justify-content: center;
   align-items: center;
-  width: 45px; /* Tamaño del botón para móviles */
-  height: 45px; /* Asegura que sea un cuadrado */
-  padding: 8px;
-  background-color: #28a745;
-  border-radius: 50%; /* Lo hacemos redondo para simular un botón de acción flotante/icono */
-  overflow: hidden; /* Recorta la imagen si sobresale del círculo */
+  width: 60px;
+  height: 60px;
+  background-color: transparent;
+  /* Eliminado: border-radius: 50%; */
+  overflow: hidden;
   cursor: pointer;
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+  /* Eliminado: box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
 
   img {
-    width: 100%; /* La imagen ocupa todo el espacio del botón */
+    width: 100%;
     height: 100%;
+    object-fit: contain;
   }
 
   &:hover {
-    transform: translateY(-3px); /* Efecto de "levantar" */
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Sombra más pronunciada al hover */
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Mantenemos el hover para una mejor UX */
   }
 
   &:active {
     transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Mantenemos el active para una mejor UX */
   }
 
-  /* Media query para tablets y pantallas más grandes */
   @media (min-width: 768px) {
-    width: 70px; /* Un poco más grande en tablets */
+    width: 70px;
     height: 70px;
-    margin-top: 25px;
   }
 `;
