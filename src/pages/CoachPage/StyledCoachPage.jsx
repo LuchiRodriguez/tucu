@@ -2,7 +2,6 @@
 import styled from 'styled-components';
 
 export const StyledCoachPageContainer = styled.div`
-  background-color: #f7f7f7; /* Un blanco roto o gris muy claro para el fondo general */
   color: #1a1a1a; /* Negro profundo para el texto principal */
   font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif; /* Fuente imprenta, compacta, tipo gym */
   min-height: 100vh; /* Ocupa al menos toda la altura de la ventana */
@@ -34,7 +33,7 @@ export const StyledCoachHeader = styled.header`
   gap: 15px;
   align-items: center;
 
-  /* ¡AQUÍ ESTÁ EL CAMBIO! Consumimos la prop $loading para aplicar estilos condicionales */
+  /* Consumimos la prop $loading para aplicar estilos condicionales */
   ${props => props.$loading && `
     opacity: 0.6; /* Por ejemplo, para indicar que está cargando */
     pointer-events: none; /* Deshabilita interacciones mientras carga */
@@ -82,7 +81,6 @@ export const StyledStudentListContainer = styled.section`
   margin-top: 20px;
   background-color: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
   padding: 15px;
 `;
 
@@ -96,8 +94,27 @@ export const StyledAppMessage = styled.p`
   font-size: 1.1rem;
   color: #555;
   text-align: center;
-  margin-top: 20px;
-  padding: 10px;
+  margin: auto; /* Margin auto para centrar horizontal y verticalmente el mensaje! */
+  display: flex; /* Display flex para que flex-direction column funcione! */
+  flex-direction: column; /* Para apilar contenido interno (como un botón) si lo hubiera! */
+  padding: 10px; /* Mantenemos el padding */
+
+  /* Estilo para un botón directamente dentro de StyledAppMessage (ej. botón de "Reintentar") */
+  > button { /* Selecciona un elemento <button> directo dentro de StyledAppMessage */
+    width: 100px; /* Ancho del botón */
+    margin: auto; /* Centra el botón horizontalmente */
+    margin-top: 15px; /* Un poco de margen superior para separarlo del texto */
+    padding: 8px 15px;
+    border-radius: 5px;
+    background-color: #007bff; /* Color azul para el botón */
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    &:hover {
+      background-color: #0056b3; /* Azul más oscuro al pasar el mouse */
+    }
+  }
 `;
 
 export const StyledCreateButton = styled.button`
@@ -140,7 +157,7 @@ export const StyledForm = styled.form`
   padding: 20px;
   background-color: #fff;
   border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  /* Eliminado: box-shadow: 0 4px 15px rgba(0,0,0,0.1); */ /* ¡CAMBIO CLAVE AQUÍ! */
 `;
 
 export const StyledLabel = styled.label`
@@ -167,7 +184,10 @@ export const StyledButtonContainer = styled.div`
   margin-top: 15px;
 `;
 
-export const StyledFormButton = styled.button`
+// ¡CAMBIO CLAVE AQUÍ! Usamos props transitorias $primary y $secondary
+export const StyledFormButton = styled.button.withConfig({
+  shouldForwardProp: (prop) => !['primary', 'secondary'].includes(prop),
+})`
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
@@ -176,7 +196,7 @@ export const StyledFormButton = styled.button`
   font-weight: 600;
   transition: background-color 0.2s ease-in-out;
 
-  ${props => props.primary && `
+  ${props => props.$primary && ` /* ¡USAMOS $primary! */
     background-color: #2ecc71;
     color: white;
     &:hover {
@@ -184,7 +204,7 @@ export const StyledFormButton = styled.button`
     }
   `}
 
-  ${props => props.secondary && `
+  ${props => props.$secondary && ` /* ¡USAMOS $secondary! */
     background-color: #e74c3c;
     color: white;
     &:hover {

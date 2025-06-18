@@ -3,7 +3,10 @@ import styled from 'styled-components';
 
 // Estilos para el contenedor principal del StudentItem
 // Reutilizamos mucho de los estilos de StyledCardContainer
-export const StyledStudentItemContainer = styled.li`
+export const StyledStudentItemContainer = styled.li.withConfig({
+  // ¡CAMBIO CLAVE AQUÍ! Filtramos la prop $isSelected para que no se pase al DOM
+  shouldForwardProp: (prop) => !['isSelected'].includes(prop),
+})`
   background-color: #fff; /* Fondo blanco */
   border-radius: 12px; /* Bordes redondeados */
   padding: 16px; /* Espaciado interno */
@@ -21,8 +24,8 @@ export const StyledStudentItemContainer = styled.li`
     box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15); /* Sombra más pronunciada */
   }
 
-  /* Si quieres un borde distintivo cuando está seleccionado (podrías pasar una prop 'isSelected') */
-  ${props => props.isSelected && `
+  /* Si quieres un borde distintivo cuando está seleccionado (pasas la prop $isSelected) */
+  ${props => props.$isSelected && ` /* ¡CAMBIO CLAVE AQUÍ! Usamos $isSelected */
     border: 2px solid #e74c3c; /* Borde rojo para el seleccionado */
   `}
 `;

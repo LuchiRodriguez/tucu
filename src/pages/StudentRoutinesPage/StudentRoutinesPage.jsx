@@ -1,237 +1,362 @@
-import React from 'react';
+// src/pages/StudentRoutinesPage/StudentRoutinesPage.jsx
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useStudents } from '../../hooks/useStudents/useStudents';
-import RoutineList from '../../components/specific/RoutineList/RoutineList';
-import ExerciseList from '../../components/specific/ExerciseList/ExerciseList'; // Para añadir ejercicios
+import { doc, getDoc, collection, addDoc } from 'firebase/firestore';
+import { db } from '../../config/firebase';
+import Card from '../../components/common/Card/Card';
 import { Modal } from '../../components/common/Modal/Modal';
-import { StyledAppMessage } from '../CoachPage/StyledCoachPage'; // Reutilizamos este mensaje genérico
+import Navbar from '../../components/common/Navbar/Navbar';
+
+// Importamos el CollapsibleCard
+import CollapsibleCard from '../../components/common/CollapsibleCard/CollapsibleCard';
+
+
+// Importamos los ejercicios desde el archivo JSON local
+import localExercisesData from '../../data/exercises.json';
 
 import {
-  StyledStudentRoutinesContainer,
-  StyledStudentRoutinesHeader,
-  StyledStudentNameTitle,
-  StyledHeaderMessage,
-  StyledRoutinesListWrapper,
-  StyledAddRoutineButton, // Este botón ahora será para "Crear y Asignar"
-  StyledForm, // ¡Estos estilos DEBEN ESTAR en StyledStudentRoutinesPage.jsx!
+  StyledCoachPageContainer,
+  StyledAppMessage,
+  StyledForm,
   StyledLabel,
   StyledInput,
-  StyledTextArea,
   StyledButtonContainer,
   StyledFormButton,
-} from './StyledStudentRoutinesPage';
+} from '../CoachPage/StyledCoachPage';
+import { StyledErrorMessage } from '../LoginPage/StyledLoginPage';
 
 function StudentRoutinesPage() {
-  const { studentId } = useParams(); // Obtiene el ID del alumno de la URL
+  const { studentId } = useParams();
   const navigate = useNavigate();
 
-  // Obtenemos los estados y actualizadores de alumnos
-  const { states: studentStates, statesUpdaters: studentUpdaters } = useStudents();
-  const { searchedStudents, loading: studentsLoading, error: studentsError } = studentStates;
-  const {
-    selectStudent,
-    addRoutineToStudent, // Para añadir una rutina al alumno
-    editRoutineForStudent, // Para editar la rutina del alumno
-    deleteRoutineFromStudent, // Para eliminar la rutina del alumno
-    addExerciseToRoutineForStudent, // Para añadir un ejercicio a la rutina del alumno
-    toggleExerciseCompletedForStudent, // Para marcar un ejercicio como completado en la rutina del alumno
-    editExerciseInRoutineForStudent, // Para editar sets/reps de un ejercicio en la rutina del alumno
-    deleteExerciseFromRoutineForStudent, // Para eliminar un ejercicio de la rutina del alumno
-    toggleRoutineCompletedForStudent,
-  } = studentUpdaters;
+  const [student, setStudent] = useState(null);
+  const [loadingStudent, setLoadingStudent] = useState(true);
+  const [studentError, setStudentError] = useState(null);
 
-  // No necesitamos el useRoutines para LISTAR rutinas maestras aquí,
-  // solo para usar la funcionalidad de ExerciseList que espera addExerciseToRoutine.
-  // Podríamos incluso refactorizar ExerciseList para no depender de useRoutines en este contexto.
-  // Por ahora, lo dejamos así, pero la idea es que las rutinas que ve el coach son SOLO las del alumno.
-  // El addExerciseToRoutine que se pasa a ExerciseList es el *del alumno*.
+  const [openCreateRoutineModal, setOpenCreateRoutineModal] = useState(false);
+  const [newRoutineName, setNewRoutineName] = useState('');
 
-  // Estados para el Modal de AÑADIR RUTINA AL ALUMNO
-  const [openAddRoutineToStudentModal, setOpenAddRoutineToStudentModal] = React.useState(false);
-  const [newRoutineName, setNewRoutineName] = React.useState('');
-  const [newRoutineDescription, setNewRoutineDescription] = React.useState('');
+  // Estados para la carga de ejercicios (ahora solo desde el JSON local)
+  const [exercises, setExercises] = useState([]);
+  const [loadingExercises, setLoadingExercises] = useState(false); // Mantener para UX
+  const [exerciseError, setExerciseError] = useState(null); // Mantener para UX
+  const [selectedExercises, setSelectedExercises] = useState([]);
 
-  // Estados para el Modal de AÑADIR EJERCICIO a una rutina del ALUMNO
-  const [openAddExerciseModal, setOpenAddExerciseModal] = React.useState(false);
-  const [selectedRoutineForExercise, setSelectedRoutineForExercise] = React.useState(null);
+  const [routineCreationError, setRoutineCreationError] = useState(null);
 
 
-  // Encuentra al alumno seleccionado
-  const selectedStudent = React.useMemo(() => {
-    if (searchedStudents && studentId) {
-      return searchedStudents.find(student => student.id === studentId);
+  // Efecto para cargar la información del alumno
+  useEffect(() => {
+    const fetchStudent = async () => {
+      if (!studentId) {
+        setStudentError("ID del alumno no proporcionado.");
+        setLoadingStudent(false);
+        return;
+      }
+
+      setLoadingStudent(true);
+      setStudentError(null);
+      setStudent(null);
+
+      try {
+        const studentDocRef = doc(db, "users", studentId);
+        const studentDocSnap = await getDoc(studentDocRef);
+
+        if (studentDocSnap.exists() && studentDocSnap.data().role === 'student') {
+          setStudent({ id: studentDocSnap.id, ...studentDocSnap.data() });
+        } else {
+          setStudentError("No se encontró al alumno o el ID no corresponde a un alumno.");
+        }
+      } catch (err) {
+        console.error("Error al cargar la información del alumno:", err);
+        setStudentError("Error al cargar la información del alumno.");
+      } finally {
+        setLoadingStudent(false);
+      }
+    };
+
+    fetchStudent();
+  }, [studentId, navigate]);
+
+  // Efecto para cargar los ejercicios desde el JSON local cuando se abre el modal
+  useEffect(() => {
+    if (openCreateRoutineModal && exercises.length === 0) {
+      setLoadingExercises(true);
+      setExerciseError(null);
+      try {
+        setExercises(localExercisesData);
+        console.log("Ejercicios cargados desde JSON local:", localExercisesData);
+      } catch (err) {
+        console.error("Error al cargar ejercicios desde JSON local:", err);
+        setExerciseError("Error al cargar los ejercicios locales.");
+      } finally {
+        setLoadingExercises(false);
+      }
     }
-    return null;
-  }, [searchedStudents, studentId]);
+  }, [openCreateRoutineModal, exercises.length]);
 
-  // Las rutinas que le pertenecen a este alumno
-  const studentRoutines = selectedStudent ? selectedStudent.routines : [];
+  // Manejador para seleccionar/deseleccionar ejercicios y asignar series y repeticiones
+  const handleExerciseSelection = (exercise) => {
+    setSelectedExercises(prevSelected => {
+      const isAlreadySelected = prevSelected.some(ex => ex.id === exercise.id);
+      if (isAlreadySelected) {
+        return prevSelected.filter(ex => ex.id !== exercise.id);
+      } else {
+        // ¡CAMBIO CLAVE AQUÍ! Añadimos 'reps' y 'sets' con valores iniciales de 0
+        return [...prevSelected, { id: exercise.id, name: exercise.name, sets: 0, reps: 0 }];
+      }
+    });
+  };
 
-  // Lógica para AÑADIR UNA NUEVA RUTINA y ASIGNARLA AL ALUMNO
-  const handleAddRoutineToStudentSubmit = (event) => {
+  // Manejador para cambiar las repeticiones de un ejercicio seleccionado
+  const handleRepsChange = (exerciseId, newReps) => {
+    setSelectedExercises(prevSelected =>
+      prevSelected.map(ex =>
+        ex.id === exerciseId ? { ...ex, reps: Number(newReps) || 0 } : ex // Aseguramos que sea un número
+      )
+    );
+  };
+
+  // ¡NUEVO MANEJADOR! Para cambiar las series de un ejercicio seleccionado
+  const handleSetsChange = (exerciseId, newSets) => {
+    setSelectedExercises(prevSelected =>
+      prevSelected.map(ex =>
+        ex.id === exerciseId ? { ...ex, sets: Number(newSets) || 0 } : ex // Aseguramos que sea un número
+      )
+    );
+  };
+
+  // Manejador para la creación de la rutina en Firestore
+  const handleCreateRoutineSubmit = async (event) => {
     event.preventDefault();
-    if (newRoutineName.trim() && selectedStudent) {
-      addRoutineToStudent(selectedStudent.id, {
-        id: `routine-${Date.now()}`,
+    setRoutineCreationError(null);
+
+    if (!newRoutineName.trim()) {
+      setRoutineCreationError("El nombre de la rutina no puede estar vacío.");
+      return;
+    }
+    if (selectedExercises.length === 0) {
+      setRoutineCreationError("Debes seleccionar al menos un ejercicio para la rutina.");
+      return;
+    }
+    // ¡NUEVA VALIDACIÓN! Aseguramos que todas las repeticiones y series sean mayores a 0
+    const hasInvalidEntries = selectedExercises.some(ex => ex.reps <= 0 || ex.sets <= 0);
+    if (hasInvalidEntries) {
+      setRoutineCreationError("Todos los ejercicios seleccionados deben tener al menos 1 serie y 1 repetición asignada.");
+      return;
+    }
+
+
+    try {
+      const routinesCollectionRef = collection(db, `users/${studentId}/routines`);
+      
+      await addDoc(routinesCollectionRef, {
         name: newRoutineName.trim(),
-        description: newRoutineDescription.trim(),
-        isCompleted: false, // La rutina recién creada no está completada
-        exercises: [],
+        exercises: selectedExercises, // Guardamos los ejercicios seleccionados con sus series y repeticiones
+        createdAt: new Date(),
       });
+
+      console.log("Rutina creada con éxito para el alumno:", studentId);
+      setOpenCreateRoutineModal(false);
       setNewRoutineName('');
-      setNewRoutineDescription('');
-      setOpenAddRoutineToStudentModal(false);
-    } else {
-      alert('Por favor, ingresa un nombre para la rutina.');
+      setSelectedExercises([]);
+      setRoutineCreationError(null);
+    } catch (err) {
+      console.error("Error al crear la rutina:", err);
+      setRoutineCreationError("Error al guardar la rutina. Por favor, intentá de nuevo.");
     }
   };
 
-  // Efecto para asegurar que el alumno esté seleccionado en el hook si se accede directamente por URL
-  React.useEffect(() => {
-    if (studentId) {
-      selectStudent(studentId);
-    }
-  }, [studentId, selectStudent]);
-
-  // Función para abrir el modal de añadir ejercicio para una rutina específica del alumno
-  const handleOpenAddExerciseModalForStudentRoutine = (routineId) => {
-    setSelectedRoutineForExercise(routineId);
-    setOpenAddExerciseModal(true);
+  const handleCloseModal = () => {
+    setOpenCreateRoutineModal(false);
+    setNewRoutineName('');
+    setSelectedExercises([]);
+    setRoutineCreationError(null);
+    setExerciseError(null);
   };
 
-  const handleAddExerciseToSelectedRoutineForStudent = (apiExerciseData) => {
-    if (selectedStudent && selectedRoutineForExercise) {
-      addExerciseToRoutineForStudent(
-        selectedStudent.id,
-        selectedRoutineForExercise,
-        apiExerciseData,
-        3, // sets por defecto
-        10 // reps por defecto
-      );
+  // Agrupar ejercicios por categoría
+  const groupedExercises = exercises.reduce((acc, exercise) => {
+    const category = exercise.category || 'Otros'; // Agrupar por la propiedad 'category'
+    if (!acc[category]) {
+      acc[category] = [];
     }
-  };
+    acc[category].push(exercise);
+    return acc;
+  }, {});
 
-  // --- Renderizado ---
-  if (studentsLoading) {
+
+  if (loadingStudent) {
     return (
-      <StyledStudentRoutinesContainer>
+      <StyledCoachPageContainer>
+        <Navbar loading={true} />
         <StyledAppMessage>Cargando información del alumno...</StyledAppMessage>
-      </StyledStudentRoutinesContainer>
+      </StyledCoachPageContainer>
     );
   }
 
-  if (studentsError) {
+  if (studentError) {
     return (
-      <StyledStudentRoutinesContainer>
-        <StyledAppMessage>¡Uups! Hubo un error al cargar los datos del alumno.</StyledAppMessage>
-      </StyledStudentRoutinesContainer>
-    );
-  }
-
-  if (!selectedStudent) {
-    return (
-      <StyledStudentRoutinesContainer>
-        <StyledAppMessage>No se encontró al alumno. Volvé al panel principal.</StyledAppMessage>
-        <StyledFormButton primary onClick={() => navigate('/coach')}>Volver al Panel</StyledFormButton>
-      </StyledStudentRoutinesContainer>
+      <StyledCoachPageContainer>
+        <Navbar loading={false} />
+        <StyledAppMessage>
+          {studentError} <br />
+          <button onClick={() => navigate('/coach')}>
+            Volver al panel principal
+          </button>
+        </StyledAppMessage>
+      </StyledCoachPageContainer>
     );
   }
 
   return (
-    <StyledStudentRoutinesContainer>
-      <StyledStudentRoutinesHeader>
-        <StyledStudentNameTitle>Rutinas de <span>{selectedStudent.name}</span></StyledStudentNameTitle>
-        <StyledHeaderMessage>
-          Aquí puedes gestionar las rutinas de {selectedStudent.name}.
-        </StyledHeaderMessage>
-      </StyledStudentRoutinesHeader>
+    <StyledCoachPageContainer>
+      <Navbar loading={false} />
+      <Card style={{ maxWidth: '600px', marginTop: '20px', padding: '20px' }}>
+        <h2 style={{ textAlign: 'center', color: '#2c3e50', marginBottom: '15px' }}>
+          Rutinas de {student?.name || student?.email?.split('@')[0] || 'Este Alumno'}
+        </h2>
+        <StyledAppMessage style={{ marginTop: '0', fontSize: '0.9rem', color: '#555' }}>
+          Este alumno aún no tiene rutinas creadas.
+        </StyledAppMessage>
 
-      <StyledRoutinesListWrapper>
-        {studentRoutines.length === 0 && (
-          <StyledAppMessage>
-            ¡{selectedStudent.name} no tiene rutinas todavía! Presioná + para agregar una.
-          </StyledAppMessage>
-        )}
-        {studentRoutines.length > 0 && (
-          <RoutineList
-            error={false}
-            loading={false}
-            searchedRoutines={studentRoutines} // Las rutinas del alumno
-            searchText={''}
-            onError={() => null}
-            onLoading={() => null}
-            onEmptyRoutines={() => <StyledAppMessage>Este alumno no tiene rutinas aún.</StyledAppMessage>}
-            onEmptySearchResults={() => null}
-            // ¡IMPORTANTE! Las funciones aquí llaman a las versiones `ForStudent` de useStudents
-            toggleRoutineCompleted={(routineId) => toggleRoutineCompletedForStudent(selectedStudent.id, routineId)}
-            addExerciseToRoutine={handleOpenAddExerciseModalForStudentRoutine}
-            toggleExerciseCompleted={(routineId, exerciseId) => toggleExerciseCompletedForStudent(selectedStudent.id, routineId, exerciseId)}
-            editExerciseInRoutine={(routineId, exerciseId, newSets, newReps) => editExerciseInRoutineForStudent(selectedStudent.id, routineId, exerciseId, newSets, newReps)}
-            deleteExerciseFromRoutine={(routineId, exerciseId) => deleteExerciseFromRoutineForStudent(selectedStudent.id, routineId, exerciseId)}
-            onEditRoutine={(routineId, newName, newDescription) => editRoutineForStudent(selectedStudent.id, routineId, newName, newDescription)}
-            onDeleteRoutine={(routineId) => deleteRoutineFromStudent(selectedStudent.id, routineId)}
-          />
-        )}
-      </StyledRoutinesListWrapper>
+        <button
+          onClick={() => setOpenCreateRoutineModal(true)}
+          style={{
+            backgroundColor: '#2ecc71',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '10px 20px',
+            fontSize: '1rem',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            marginTop: '20px',
+            width: 'fit-content',
+            alignSelf: 'center',
+            boxShadow: '0 4px 8px rgba(46, 204, 113, 0.2)',
+            transition: 'background-color 0.2s ease, transform 0.2s ease',
+          }}
+        >
+          Crear Nueva Rutina
+        </button>
+      </Card>
 
-      {/* Botón para abrir el modal de CREAR Y ASIGNAR Rutina AL ALUMNO */}
-      <StyledAddRoutineButton onClick={() => setOpenAddRoutineToStudentModal(true)}>
-        +
-      </StyledAddRoutineButton>
-
-      {/* Modal para CREAR Y ASIGNAR Rutina (para este alumno) */}
-      {!!openAddRoutineToStudentModal && (
+      {!!openCreateRoutineModal && (
         <Modal>
-          <StyledForm onSubmit={handleAddRoutineToStudentSubmit}>
-            <h2>Nueva Rutina para {selectedStudent.name}</h2>
+          <StyledForm onSubmit={handleCreateRoutineSubmit} style={{ maxWidth: '500px', margin: 'auto' }}>
+            <h2>Crear Nueva Rutina para {student?.name || 'este alumno'}</h2>
+            {routineCreationError && <StyledErrorMessage>{routineCreationError}</StyledErrorMessage>}
+
             <StyledLabel htmlFor="routineName">Nombre de la Rutina:</StyledLabel>
             <StyledInput
               id="routineName"
+              name="routineName"
               type="text"
-              placeholder="Ej. Rutina de Pecho y Tríceps"
+              placeholder="Ej. Rutina de Fuerza Lunes"
               value={newRoutineName}
               onChange={(e) => setNewRoutineName(e.target.value)}
               required
             />
-            <StyledLabel htmlFor="routineDescription">Descripción (Opcional):</StyledLabel>
-            <StyledTextArea
-              id="routineDescription"
-              placeholder="Ej. Enfocada en fuerza..."
-              value={newRoutineDescription}
-              onChange={(e) => setNewRoutineDescription(e.target.value)}
-            />
+
+            <h3>Seleccionar Ejercicios:</h3>
+            {loadingExercises && <StyledAppMessage style={{ fontSize: '0.9rem', margin: '5px 0' }}>Cargando ejercicios...</StyledAppMessage>}
+            {exerciseError && <StyledAppMessage style={{ fontSize: '0.9rem', margin: '5px 0', color: '#e74c3c' }}>{exerciseError}</StyledAppMessage>}
+
+            <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #eee', borderRadius: '8px', padding: '10px', backgroundColor: '#fdfdfd' }}>
+              {Object.keys(groupedExercises).length > 0 ? (
+                Object.keys(groupedExercises).map(categoryName => (
+                  <CollapsibleCard key={categoryName} title={categoryName} defaultOpen={false}>
+                    {groupedExercises[categoryName].map(exercise => {
+                      const isSelected = selectedExercises.some(ex => ex.id === exercise.id);
+                      // Obtener series y repeticiones actuales del ejercicio seleccionado
+                      const currentSelectedExercise = selectedExercises.find(ex => ex.id === exercise.id);
+                      const currentSets = currentSelectedExercise?.sets || 0;
+                      const currentReps = currentSelectedExercise?.reps || 0;
+                      
+                      return (
+                        <div
+                          key={exercise.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            marginBottom: '8px',
+                            padding: '5px 0',
+                            borderBottom: '1px dashed #f0f0f0',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+                            <input
+                              type="checkbox"
+                              id={`exercise-${exercise.id}`}
+                              checked={isSelected}
+                              onChange={() => handleExerciseSelection(exercise)}
+                              style={{ marginRight: '10px' }}
+                            />
+                            <StyledLabel htmlFor={`exercise-${exercise.id}`} style={{ margin: 0, fontWeight: 'normal', cursor: 'pointer' }}>
+                              {exercise.name}
+                            </StyledLabel>
+                          </div>
+                          {isSelected && ( // Solo mostramos los inputs si el ejercicio está seleccionado
+                            <div style={{ display: 'flex', gap: '8px', marginLeft: '10px' }}>
+                              <StyledInput
+                                type="number"
+                                min="1"
+                                placeholder="Series"
+                                value={currentSets === 0 ? '' : currentSets}
+                                onChange={(e) => handleSetsChange(exercise.id, e.target.value)}
+                                style={{ width: '50px', textAlign: 'center' }}
+                              />
+                              <StyledInput
+                                type="number"
+                                min="1"
+                                placeholder="Reps"
+                                value={currentReps === 0 ? '' : currentReps}
+                                onChange={(e) => handleRepsChange(exercise.id, e.target.value)}
+                                style={{ width: '50px', textAlign: 'center' }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </CollapsibleCard>
+                ))
+              ) : (
+                !loadingExercises && !exerciseError && (
+                  <StyledAppMessage style={{ fontSize: '0.9rem', margin: 'auto', color: '#777' }}>
+                    No se encontraron ejercicios en el archivo local.
+                  </StyledAppMessage>
+                )
+              )}
+            </div>
+
+            {selectedExercises.length > 0 && (
+              <div style={{ marginTop: '15px', padding: '10px', borderTop: '1px solid #eee' }}>
+                <h4>Ejercicios Seleccionados:</h4>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  {selectedExercises.map(ex => (
+                    <li key={ex.id} style={{ fontSize: '0.9rem', color: '#555', marginBottom: '5px' }}>
+                      - {ex.name} ({ex.sets || 0} Series, {ex.reps || 0} Reps) {/* ¡CAMBIO CLAVE! Mostrar series y repeticiones */}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <StyledButtonContainer>
-              <StyledFormButton type="submit" primary>
-                Crear y Asignar
+              <StyledFormButton type="submit" $primary>
+                Guardar Rutina
               </StyledFormButton>
-              <StyledFormButton type="button" secondary onClick={() => setOpenAddRoutineToStudentModal(false)}>
+              <StyledFormButton type="button" $secondary onClick={handleCloseModal}>
                 Cancelar
               </StyledFormButton>
             </StyledButtonContainer>
           </StyledForm>
         </Modal>
       )}
-
-      {/* Modal para Añadir Ejercicio a una rutina del alumno */}
-      {!!openAddExerciseModal && (
-        <Modal>
-          <ExerciseList
-            onAddExerciseToRoutine={handleAddExerciseToSelectedRoutineForStudent}
-          />
-          <StyledFormButton
-            data-modal-close-button
-            secondary // Estilo secundario para "Cerrar"
-            onClick={() => setOpenAddExerciseModal(false)}
-            style={{
-              marginTop: '20px',
-              // alignSelf: 'flex-end' // Esto depende de cómo estiles el modal por dentro
-            }}
-          >
-            Cerrar
-          </StyledFormButton>
-        </Modal>
-      )}
-    </StyledStudentRoutinesContainer>
+    </StyledCoachPageContainer>
   );
 }
 

@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1,
+    "name": "Sentadilla (Squat)",
+    "category": "Piernas",
+    "description": "Ejercicio fundamental para piernas y glúteos."
+  },
+  {
+    "id": 2,
+    "name": "Press de Banca (Bench Press)",
+    "category": "Pecho",
+    "description": "Ejercicio de fuerza para pecho, hombros y tríceps."
+  },
+  {
+    "id": 3,
+    "name": "Peso Muerto (Deadlift)",
+    "category": "Espalda",
+    "description": "Ejercicio compuesto para toda la cadena posterior."
+  },
+  {
+    "id": 4,
+    "name": "Dominadas (Pull-ups)",
+    "category": "Espalda",
+    "description": "Ejercicio de peso corporal para espalda y bíceps."
+  },
+  {
+    "id": 5,
+    "name": "Press Militar (Overhead Press)",
+    "category": "Hombros",
+    "description": "Ejercicio de fuerza para los hombros."
+  },
+  {
+    "id": 6,
+    "name": "Remo con Barra (Barbell Row)",
+    "category": "Espalda",
+    "description": "Ejercicio para la espalda media."
+  },
+  {
+    "id": 7,
+    "name": "Curl de Bíceps (Bicep Curl)",
+    "category": "Brazos",
+    "description": "Ejercicio de aislamiento para los bíceps."
+  },
+  {
+    "id": 8,
+    "name": "Extensiones de Tríceps (Triceps Extension)",
+    "category": "Brazos",
+    "description": "Ejercicio de aislamiento para los tríceps."
+  },
+  {
+    "id": 9,
+    "name": "Zancadas (Lunges)",
+    "category": "Piernas",
+    "description": "Ejercicio unilateral para piernas y glúteos."
+  },
+  {
+    "id": 10,
+    "name": "Fondos (Dips)",
+    "category": "Pecho",
+    "description": "Ejercicio de peso corporal para pecho y tríceps."
+  },
+  {
+    "id": 11,
+    "name": "Plancha (Plank)",
+    "category": "Core",
+    "description": "Ejercicio isométrico para fortalecer el core."
+  },
+  {
+    "id": 12,
+    "name": "Elevaciones Laterales (Lateral Raises)",
+    "category": "Hombros",
+    "description": "Ejercicio de aislamiento para la parte lateral del hombro."
+  },
+  {
+    "id": 13,
+    "name": "Prensa de Piernas (Leg Press)",
+    "category": "Piernas",
+    "description": "Ejercicio de máquina para piernas."
+  },
+  {
+    "id": 14,
+    "name": "Flexiones (Push-ups)",
+    "category": "Pecho",
+    "description": "Ejercicio de peso corporal para pecho y tríceps."
+  },
+  {
+    "id": 15,
+    "name": "Crunches",
+    "category": "Core",
+    "description": "Ejercicio para los abdominales superiores."
+  }
+]

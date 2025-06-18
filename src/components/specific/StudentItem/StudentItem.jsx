@@ -8,11 +8,12 @@ import {
   StyledViewButton,
 } from './StyledStudentItem'; // Asegurate de la ruta correcta
 
-function StudentItem({ student, onSelectStudent, isSelected }) {
+// ¡CAMBIO CLAVE AQUÍ! Usamos un parámetro por defecto para isSelected
+function StudentItem({ student, onSelectStudent, isSelected = false }) {
   const { id, name, email } = student;
 
   return (
-    <StyledStudentItemContainer onClick={() => onSelectStudent(id)} isSelected={isSelected}>
+    <StyledStudentItemContainer onClick={() => onSelectStudent(id)} $isSelected={isSelected}>
       <div> {/* Contenedor para nombre y email */}
         <StyledStudentName>{name}</StyledStudentName>
         {email && <StyledStudentEmail>{email}</StyledStudentEmail>} {/* Mostrar email si existe */}
@@ -32,10 +33,6 @@ StudentItem.propTypes = {
   }).isRequired,
   onSelectStudent: PropTypes.func.isRequired,
   isSelected: PropTypes.bool, // Opcional: para dar un feedback visual si el alumno está seleccionado
-};
-
-StudentItem.defaultProps = {
-  isSelected: false,
 };
 
 export default StudentItem;

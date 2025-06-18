@@ -167,10 +167,6 @@ export const StyledNavbarTitle = styled.h1`
   text-overflow: ellipsis;
   max-width: calc(100% - 20px);
 
-  span {
-    color: #e74c3c;
-  }
-
   @media (min-width: 768px) {
     font-size: 2rem;
     max-width: none;

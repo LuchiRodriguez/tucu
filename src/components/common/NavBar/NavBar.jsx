@@ -1,8 +1,6 @@
 import PropTypes from 'prop-types';
-// Eliminado: import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/authContextBase'; // Importamos useAuth
-// Eliminado: import LogoutButton from '../LogoutButton/LogoutButton';
 import logoImage from '../../../assets/png/logo.jpg'; // Importamos la imagen del logo
 
 import userIconImage from '../../../assets/png/user.png'; // La imagen de usuario
@@ -12,8 +10,6 @@ import {
   StyledNavbarContainer,
   StyledNavbarLogo,
   StyledProfileButton,
-  // Eliminado: StyledProfileDropdown,
-  // Eliminado: StyledDropdownItem,
   StyledNavbarContent,
   StyledHeaderGreeting,
   StyledRoutineCounter,
@@ -24,8 +20,7 @@ import {
 // Se importa StyledAppMessage desde HomePage/StyledHomePage para mensajes genéricos
 import { StyledAppMessage } from '../../../pages/HomePage/StyledHomePage';
 
-// Usamos parámetros por defecto directamente en la firma de la función,
-// eliminando la necesidad de Navbar.defaultProps.
+// Usamos parámetros por defecto directamente en la firma de la función
 function Navbar({
   type = 'student', // Por defecto 'student' si no se especifica
   loading, // Esta prop es requerida y debe ser provista por el componente padre
@@ -34,7 +29,6 @@ function Navbar({
   searchValue = '', // Valor por defecto para el campo de búsqueda (usado por coach)
   setSearchValue = () => {}, // Función vacía por defecto para el actualizador de búsqueda
 }) {
-  // Eliminado: const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { user, role, userName: authUserName } = useAuth();
   const navigate = useNavigate();
 
@@ -54,7 +48,6 @@ function Navbar({
 
   // Determina el nombre de usuario a mostrar. Prioriza el nombre de Firestore; si no, usa la parte del email.
   const currentUserName = authUserName || (user && user.email ? user.email.split('@')[0] : 'Usuario');
-  // Eliminado: const userRoleText = role === 'student' ? 'Alumno' : role === 'coach' ? 'Coach' : 'Invitado';
 
   // Lógica para renderizar el contenido central del Navbar, que cambia según el 'type' de la página
   let navbarCenterContent;
@@ -62,7 +55,7 @@ function Navbar({
     // Contenido para la vista del coach: título y buscador
     navbarCenterContent = (
       <>
-        <StyledNavbarTitle>Panel del Coach de <span>Prof Angel San Roman</span></StyledNavbarTitle>
+        <StyledNavbarTitle>Panel del Coach</StyledNavbarTitle>
         <StyledNavbarSearch
           placeholder="Buscar alumnos..."
           value={searchValue}
@@ -95,7 +88,6 @@ function Navbar({
 
   return (
     <StyledNavbarContainer $loading={loading}>
-      {/* Logo de la aplicación */}
       <StyledNavbarLogo
         src={logoImage}
         alt="Logo Prof Angel San Roman"

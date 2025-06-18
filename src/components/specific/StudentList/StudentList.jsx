@@ -8,14 +8,15 @@ import {
   StyledAppMessage, // Mensajes de la app
 } from '../../../pages/CoachPage/StyledCoachPage'; // Ajusta la ruta si es necesario
 
+// ¡CAMBIO CLAVE AQUÍ! Usamos parámetros por defecto en la firma de la función
 function StudentList({
-  students, // La lista de alumnos (ya filtrada por búsqueda desde el hook)
+  students = [], // Valor por defecto
   loading,
-  error,
-  searchText, // Texto de búsqueda, útil para el mensaje de "no resultados"
+  error = null, // Valor por defecto
+  searchText = '', // Valor por defecto
   onSelectStudent,
-  selectedStudentId,
-  onRetrySync, // Función para reintentar la sincronización en caso de error
+  selectedStudentId = null, // Valor por defecto
+  onRetrySync,
 }) {
   // Manejo de estados de carga, error y vacíos
   if (loading) {
@@ -46,7 +47,7 @@ function StudentList({
       // Si hay texto de búsqueda pero no se encontraron resultados
       return (
         <StyledAppMessage>
-          ¡No hay resultados para {searchText}!
+          ¡No hay resultados para: {searchText}!
         </StyledAppMessage>
       );
     } else {
@@ -74,6 +75,8 @@ function StudentList({
   );
 }
 
+// Eliminado: StudentList.defaultProps ya no es necesario
+
 // Validación de PropTypes para el componente StudentList
 StudentList.propTypes = {
   students: PropTypes.arrayOf(PropTypes.shape({
@@ -87,13 +90,6 @@ StudentList.propTypes = {
   onSelectStudent: PropTypes.func.isRequired,
   selectedStudentId: PropTypes.string,
   onRetrySync: PropTypes.func.isRequired,
-};
-
-StudentList.defaultProps = {
-  students: [],
-  error: null,
-  searchText: '',
-  selectedStudentId: null,
 };
 
 export default StudentList;

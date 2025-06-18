@@ -2,13 +2,10 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStudents } from '../../hooks/useStudents/useStudents';
 import { Modal } from '../../components/common/Modal/Modal';
-// import LogoutButton from '../../components/common/LogoutButton/LogoutButton'; // Ya no se importa aquí!
+import { useAuth } from '../../context/authContextBase'; // Importamos useAuth
 
-// Importamos el nuevo componente StudentList
 import StudentList from '../../components/specific/StudentList/StudentList';
-import Navbar from '../../components/common/NavBar/NavBar'; // Importamos el Navbar!
 
-// Importamos los componentes estilizados desde StyledCoachPage (solo los que quedan)
 import {
   StyledCoachPageContainer,
   StyledStudentListContainer,
@@ -20,10 +17,14 @@ import {
   StyledFormButton,
 } from './StyledCoachPage';
 
+import { StyledErrorMessage } from '../LoginPage/StyledLoginPage'; // Importamos StyledErrorMessage para mostrar el error
+import Navbar from '../../components/common/NavBar/NavBar';
+
 function CoachPage() {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth(); // Obtenemos user y authLoading
 
-  const { states, statesUpdaters } = useStudents();
+  const { states, statesUpdaters } = useStudents(user, authLoading); // Pasamos user y authLoading
 
   const {
     loading,
@@ -31,6 +32,7 @@ function CoachPage() {
     searchedStudents,
     searchValue,
     selectedStudentId,
+    addStudentError,
   } = states;
 
   const {
@@ -38,6 +40,7 @@ function CoachPage() {
     addStudent,
     selectStudent,
     sincronizeStudents,
+    setAddStudentError, // Aseguramos que esta función esté disponible desde el hook
   } = statesUpdaters;
 
   const [openCreateStudentModal, setOpenCreateStudentModal] = React.useState(false);
@@ -46,25 +49,38 @@ function CoachPage() {
 
   const handleSelectStudent = (studentId) => {
     selectStudent(studentId);
-    navigate(`/coach/students/${studentId}/routines`); // Navega a la ruta de rutinas del alumno
+    navigate(`/coach/students/${studentId}/routines`);
   };
 
-  const handleCreateStudentSubmit = (event) => {
+  const handleCreateStudentSubmit = async (event) => {
     event.preventDefault();
+    setAddStudentError(null); 
     if (newStudentName.trim() && newStudentEmail.trim()) {
-      addStudent(newStudentName.trim(), newStudentEmail.trim());
-      setNewStudentName('');
-      setNewStudentEmail('');
-      setOpenCreateStudentModal(false);
+      await addStudent(newStudentName.trim(), newStudentEmail.trim());
+      // Usamos un setTimeout breve para permitir que el estado addStudentError
+      // se actualice en el DOM antes de que la condición se evalúe para cerrar el modal.
+      setTimeout(() => {
+        if (!states.addStudentError) { // Volvemos a chequear el estado actualizado
+          setOpenCreateStudentModal(false);
+          setNewStudentName('');
+          setNewStudentEmail('');
+        }
+      }, 0); 
     }
+  };
+
+  const handleCloseModal = () => {
+    setOpenCreateStudentModal(false);
+    setNewStudentName('');
+    setNewStudentEmail('');
+    setAddStudentError(null);
   };
 
   return (
     <StyledCoachPageContainer>
-      {/* Usamos el Navbar genérico para la página del Coach */}
       <Navbar
         type="coach"
-        loading={loading}
+        loading={loading} // loading de useStudents (de los alumnos)
         searchValue={searchValue}
         setSearchValue={setSearchValue}
       />
@@ -89,6 +105,7 @@ function CoachPage() {
         <Modal>
           <StyledForm onSubmit={handleCreateStudentSubmit}>
             <h2>Crear Nuevo Alumno</h2>
+            {addStudentError && <StyledErrorMessage>{addStudentError}</StyledErrorMessage>}
             <StyledLabel htmlFor="studentName">Nombre del Alumno:</StyledLabel>
             <StyledInput
               id="studentName"
@@ -111,7 +128,7 @@ function CoachPage() {
               <StyledFormButton type="submit" primary>
                 Crear
               </StyledFormButton>
-              <StyledFormButton type="button" secondary onClick={() => setOpenCreateStudentModal(false)}>
+              <StyledFormButton type="button" secondary onClick={handleCloseModal}>
                 Cancelar
               </StyledFormButton>
             </StyledButtonContainer>

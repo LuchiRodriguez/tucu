@@ -1,325 +1,122 @@
 // src/hooks/useStudents/useStudents.jsx
-import React from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { db } from '../../config/firebase'; // Asegúrate de que db esté importado de tu configuración de Firebase
+import { collection, query, where, getDocs, addDoc, onSnapshot } from 'firebase/firestore'; // ¡Eliminado 'orderBy'!
 
-// --- FUNCIONES Y OBJETOS AUXILIARES FUERA DEL HOOK ---
-const ACTION_TYPES = {
-  ERROR: 'ERROR',
-  SUCCESS: 'SUCCESS',
-  SAVE: 'SAVE',
-  SINCRONIZE: 'SINCRONIZE',
-  LOADING: 'LOADING',
-};
+export function useStudents(currentUser, authLoading) { // Recibe currentUser y authLoading
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchValue, setSearchValue] = useState('');
+  const [selectedStudentId, setSelectedStudentId] = useState(null);
+  const [addStudentError, setAddStudentError] = useState(null); // Nuevo estado para errores al añadir alumno
 
-const reducer = (state, action) => {
-  switch (action.type) {
-    case ACTION_TYPES.ERROR:
-      return {
-        ...state,
-        error: true,
-        loading: false, // Aseguramos que loading se ponga en false en caso de error
-      };
-    case ACTION_TYPES.SUCCESS:
-      return {
-        ...state,
-        error: false,
-        loading: false,
-        sincronizedItem: true,
-        item: action.payload,
-      };
-    case ACTION_TYPES.SAVE:
-      return {
-        ...state,
-        item: action.payload,
-      };
-    case ACTION_TYPES.SINCRONIZE:
-      return {
-        ...state,
-        loading: true,
-        sincronizedItem: false,
-        // Limpiamos errores previos al re-sincronizar
-        error: false,
-      };
-    case ACTION_TYPES.LOADING:
-      return {
-        ...state,
-        loading: true,
-      };
-    default:
-      return state;
-  }
-};
+  const unsubscribeRef = useRef(null);
 
-const initialState = ({ initialValue }) => ({
-  // ¡CAMBIO CLAVE AQUÍ! Inicia en false para forzar la carga inicial
-  sincronizedItem: false,
-  error: false,
-  loading: true, // Sigue siendo true al inicio porque va a cargar
-  item: initialValue,
-});
+  const sincronizeStudents = () => {
+    setLoading(true);
+    setError(null);
+    setStudents([]); // Limpiamos los estudiantes al sincronizar
 
-// --- Hook Reutilizable: useLocalStorage ---
-function useLocalStorage(itemName, initialValue) {
-  const [state, dispatch] = React.useReducer(reducer, initialState({ initialValue }));
-
-  const {
-    sincronizedItem,
-    error,
-    loading,
-    item,
-  } = state;
-
-  React.useEffect(() => {
-    // Si NO está sincronizado, procede a cargar los datos
-    if (!sincronizedItem) {
-      dispatch({ type: ACTION_TYPES.LOADING }); // Aseguramos que loading esté true
-      setTimeout(() => {
-        try {
-          const localStorageItem = localStorage.getItem(itemName);
-          let parsedItem;
-
-          if (!localStorageItem) {
-            localStorage.setItem(itemName, JSON.stringify(initialValue));
-            parsedItem = initialValue;
-          } else {
-            parsedItem = JSON.parse(localStorageItem);
-          }
-
-          dispatch({ type: ACTION_TYPES.SUCCESS, payload: parsedItem });
-        } catch (e) {
-          console.error(e); // Para ver el error en consola si ocurre
-          dispatch({ type: ACTION_TYPES.ERROR });
-        }
-      }, 1000); // Simulamos un tiempo de carga de 1 segundo
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current();
     }
-  }, [sincronizedItem, itemName, initialValue]); // Dependencias del useEffect
 
-  const saveItem = (newItem) => {
     try {
-      localStorage.setItem(itemName, JSON.stringify(newItem));
-      dispatch({ type: ACTION_TYPES.SAVE, payload: newItem });
-    } catch (e) {
-      console.error(e);
-      dispatch({ type: ACTION_TYPES.ERROR });
+      const studentsCollectionRef = collection(db, 'users');
+      // Firestore necesita índices para consultas orderBy y where.
+      // Ya que 'orderBy' no se importa, aseguramos que la query solo use 'where'.
+      const q = query(studentsCollectionRef, where('role', '==', 'student'));
+      
+      unsubscribeRef.current = onSnapshot(q, (snapshot) => {
+        const studentsData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setStudents(studentsData);
+        setLoading(false);
+      }, (err) => {
+        console.error("Error fetching students from Firestore:", err);
+        setError("Error al cargar la lista de alumnos.");
+        setLoading(false);
+      });
+
+    } catch (err) {
+      console.error("Failed to setup students listener:", err);
+      setError("Error al iniciar la escucha de alumnos.");
+      setLoading(false);
     }
   };
 
-  const sincronizeItem = () => {
-    dispatch({ type: ACTION_TYPES.SINCRONIZE });
-  };
+  useEffect(() => {
+    // Solo sincronizamos si no estamos cargando autenticación y hay un usuario
+    if (!authLoading && currentUser) {
+      sincronizeStudents();
+    } else if (!authLoading && !currentUser) {
+      // Si no hay usuario y ya terminó de cargar la autenticación, dejamos de cargar estudiantes
+      setLoading(false);
+      // Opcional: setError("Debes iniciar sesión para ver los alumnos.");
+    }
 
-  return {
-    item,
-    saveItem,
-    loading,
-    error,
-    sincronizeItem,
-  };
-}
-
-// --- Hook Principal: useStudents ---
-function useStudents() {
-  const {
-    item: students,
-    saveItem: saveStudents,
-    loading,
-    error,
-    sincronizeItem: sincronizeStudents,
-  } = useLocalStorage('STUDENTS_V1', []);
-
-  const [searchValue, setSearchValue] = React.useState('');
-  const [selectedStudentId, setSelectedStudentId] = React.useState(null);
-
-  const searchedStudents = students.filter(student => {
-    const studentName = student.name.toLowerCase();
-    const searchText = searchValue.toLowerCase();
-    return studentName.includes(searchText);
-  });
-
-  const addStudent = (name, email) => {
-    const newStudent = {
-      id: `student-${Date.now()}`,
-      name,
-      email,
-      routines: [],
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+      }
     };
-    const updatedStudents = [...students, newStudent];
-    saveStudents(updatedStudents);
+  }, [currentUser, authLoading]); // Dependencias para que se ejecute cuando cambie el estado de autenticación
+
+  const addStudent = async (name, email) => {
+    setAddStudentError(null); // Limpiamos cualquier error anterior al intentar añadir
+
+    try {
+      const usersCollectionRef = collection(db, 'users');
+      const q = query(usersCollectionRef, where('email', '==', email));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        setAddStudentError("El correo electrónico ya está registrado. Por favor, usa otro.");
+        return;
+      }
+
+      await addDoc(usersCollectionRef, {
+        name: name,
+        email: email,
+        role: 'student',
+        createdAt: new Date(),
+      });
+      console.log("Alumno añadido con éxito.");
+
+    } catch (err) {
+      console.error("Error al añadir nuevo alumno:", err);
+      setAddStudentError("Error al intentar crear el alumno. Por favor, intentá de nuevo.");
+    }
   };
 
   const selectStudent = (studentId) => {
     setSelectedStudentId(studentId);
   };
 
-  const addRoutineToStudent = (studentId, name, description) => {
-    const newRoutine = {
-      id: `routine-${Date.now()}`,
-      name,
-      description,
-      isCompleted: false, // Las rutinas de alumnos no tienen esta prop, esto es más para Home
-      exercises: [], // Las rutinas tienen ejercicios
-    };
-    const updatedStudents = students.map(student => {
-      if (student.id === studentId) {
-        return {
-          ...student,
-          routines: [...student.routines, newRoutine],
-        };
-      }
-      return student;
-    });
-    saveStudents(updatedStudents);
+  const searchedStudents = students.filter(student =>
+    student.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+    student.email.toLowerCase().includes(searchValue.toLowerCase())
+  );
+
+  const states = {
+    loading,
+    error,
+    searchedStudents,
+    searchValue,
+    selectedStudentId,
+    addStudentError,
   };
 
-  const editRoutineForStudent = (studentId, routineId, newName, newDescription) => {
-    const updatedStudents = students.map(student => {
-      if (student.id === studentId) {
-        const updatedRoutines = student.routines.map(routine => {
-          if (routine.id === routineId) {
-            return {
-              ...routine,
-              name: newName,
-              description: newDescription,
-            };
-          }
-          return routine;
-        });
-        return { ...student, routines: updatedRoutines };
-      }
-      return student;
-    });
-    saveStudents(updatedStudents);
+  const statesUpdaters = {
+    setSearchValue,
+    addStudent,
+    selectStudent,
+    sincronizeStudents,
+    setAddStudentError, // Exportar la función para limpiar el error desde fuera
   };
 
-  const deleteRoutineFromStudent = (studentId, routineId) => {
-    const updatedStudents = students.map(student => {
-      if (student.id === studentId) {
-        const filteredRoutines = student.routines.filter(routine => routine.id !== routineId);
-        return { ...student, routines: filteredRoutines };
-      }
-      return student;
-    });
-    saveStudents(updatedStudents);
-  };
-
-  // Las funciones de ejercicio (addExerciseToRoutine, toggleExerciseCompleted, etc.)
-  // también necesitarán el studentId ahora. Estas funciones se modifican para operar
-  // sobre la rutina DENTRO de un alumno específico.
-
-  const addExerciseToRoutineForStudent = (studentId, routineId, apiExerciseData, sets, reps) => {
-    const newExercise = {
-      id: `exercise-${Date.now()}`,
-      name: apiExerciseData.name,
-      bodyPart: apiExerciseData.bodyPart,
-      equipment: apiExerciseData.equipment,
-      gifUrl: apiExerciseData.gifUrl,
-      target: apiExerciseData.target,
-      sets: sets,
-      reps: reps,
-      isCompleted: false,
-    };
-    const updatedStudents = students.map(student => {
-      if (student.id === studentId) {
-        const updatedRoutines = student.routines.map(routine => {
-          if (routine.id === routineId) {
-            return {
-              ...routine,
-              exercises: [...routine.exercises, newExercise],
-            };
-          }
-          return routine;
-        });
-        return { ...student, routines: updatedRoutines };
-      }
-      return student;
-    });
-    saveStudents(updatedStudents);
-  };
-
-  const toggleExerciseCompletedForStudent = (studentId, routineId, exerciseId) => {
-    const updatedStudents = students.map(student => {
-      if (student.id === studentId) {
-        const updatedRoutines = student.routines.map(routine => {
-          if (routine.id === routineId) {
-            const updatedExercises = routine.exercises.map(exercise => {
-              if (exercise.id === exerciseId) {
-                return { ...exercise, isCompleted: !exercise.isCompleted };
-              }
-              return exercise;
-            });
-            return { ...routine, exercises: updatedExercises };
-          }
-          return routine;
-        });
-        return { ...student, routines: updatedRoutines };
-      }
-      return student;
-    });
-    saveStudents(updatedStudents);
-  };
-
-  const editExerciseInRoutineForStudent = (studentId, routineId, exerciseId, newSets, newReps) => {
-    const updatedStudents = students.map(student => {
-      if (student.id === studentId) {
-        const updatedRoutines = student.routines.map(routine => {
-          if (routine.id === routineId) {
-            const updatedExercises = routine.exercises.map(exercise => {
-              if (exercise.id === exerciseId) {
-                return { ...exercise, sets: newSets, reps: newReps };
-              }
-              return exercise;
-            });
-            return { ...routine, exercises: updatedExercises };
-          }
-          return routine;
-        });
-        return { ...student, routines: updatedRoutines };
-      }
-      return student;
-    });
-    saveStudents(updatedStudents);
-  };
-
-  const deleteExerciseFromRoutineForStudent = (studentId, routineId, exerciseId) => {
-    const updatedStudents = students.map(student => {
-      if (student.id === studentId) {
-        const updatedRoutines = student.routines.map(routine => {
-          if (routine.id === routineId) {
-            const filteredExercises = routine.exercises.filter(exercise => exercise.id !== exerciseId);
-            return { ...routine, exercises: filteredExercises };
-          }
-          return routine;
-        });
-        return { ...student, routines: updatedRoutines };
-      }
-      return student;
-    });
-    saveStudents(updatedStudents);
-  };
-
-
-  return {
-    states: {
-      loading,
-      error,
-      searchedStudents,
-      searchValue,
-      selectedStudentId,
-    },
-    statesUpdaters: {
-      setSearchValue,
-      addStudent,
-      selectStudent,
-      sincronizeStudents,
-      // Nuevas funciones para rutinas y ejercicios de alumno
-      addRoutineToStudent,
-      editRoutineForStudent,
-      deleteRoutineFromStudent,
-      addExerciseToRoutineForStudent,
-      toggleExerciseCompletedForStudent,
-      editExerciseInRoutineForStudent,
-      deleteExerciseFromRoutineForStudent,
-    },
-  };
+  return { states, statesUpdaters };
 }
-
-export { useStudents };
