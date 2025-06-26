@@ -1,11 +1,10 @@
 // src/pages/ProfilePage/ProfilePage.jsx
-// No es necesario importar React en cada archivo JSX en React 17+
-import Navbar from '../../components/common/Navbar/Navbar'; // Importamos el Navbar
-import Card from '../../components/common/Card/Card'; // Importamos el componente Card genérico
-import { useAuth } from '../../context/authContextBase'; // Para obtener la info del usuario
-import LogoutButton from '../../components/common/LogoutButton/LogoutButton'; // Botón para cerrar sesión
+import Navbar from '../../components/common/Navbar/Navbar';
+import Card from '../../components/common/Card/Card';
+import LogoutButton from '../../components/common/LogoutButton/LogoutButton';
+import { useAuth } from '../../context/authContextBase';
+import { useStudents } from '../../hooks/useStudents/useStudents';
 
-// Importamos los componentes estilizados de esta página
 import {
   StyledProfilePageContainer,
   StyledProfileTitle,
@@ -15,28 +14,31 @@ import {
 } from './StyledProfilePage';
 
 function ProfilePage() {
-  // Obtenemos la información del usuario del contexto de autenticación
-  const { user, userName, loading: authLoading } = useAuth();
+  const { user, userName, loading: authLoading, role } = useAuth();
+  
+  const { states: studentStates } = useStudents(user, authLoading);
+  const { loading: studentsLoading, searchedStudents } = studentStates;
 
-  // Si aún está cargando la autenticación, podemos mostrar un mensaje o spinner
-  if (authLoading) {
+  const totalStudentsCount = role === 'coach' ? searchedStudents.length : 0;
+
+  const isLoadingPage = authLoading || (role === 'coach' && studentsLoading);
+
+  if (isLoadingPage) {
     return (
       <StyledProfilePageContainer>
-        <Navbar loading={true} />
-        <Card style={{ maxWidth: '600px', marginTop: '20px', padding: '20px' }}> {/* Card para el mensaje de carga */}
+        <Navbar loading={true} type={role || 'student'} isCoachDashboard={false} /> 
+        <Card style={{ maxWidth: '600px', marginTop: '20px', padding: '20px' }}>
           <StyledProfileTitle style={{ color: '#1a1a1a' }}>Cargando Perfil...</StyledProfileTitle>
         </Card>
       </StyledProfilePageContainer>
     );
   }
 
-  // Si no hay usuario logueado (por algún error de redirección o acceso directo),
-  // esto debería ser manejado por ProtectedRoute, pero es bueno tener un fallback.
   if (!user) {
     return (
       <StyledProfilePageContainer>
-        <Navbar loading={false} />
-        <Card style={{ maxWidth: '600px', marginTop: '20px', padding: '20px' }}> {/* Card para el mensaje de acceso denegado */}
+        <Navbar loading={false} type={role || 'student'} isCoachDashboard={false} /> 
+        <Card style={{ maxWidth: '600px', marginTop: '20px', padding: '20px' }}>
           <StyledProfileTitle style={{ color: '#1a1a1a' }}>Acceso Denegado</StyledProfileTitle>
           <p style={{ textAlign: 'center', color: '#555', marginTop: '10px' }}>Necesitas iniciar sesión para ver esta página.</p>
         </Card>
@@ -44,12 +46,9 @@ function ProfilePage() {
     );
   }
 
-  // Obtenemos el nombre completo directamente del contexto.
-  // El fallback del email solo se usará si 'userName' del contexto es null/undefined.
   const displayUserName = userName || (user && user.email ? user.email.split('@')[0] : 'Usuario');
   const displayUserEmail = user ? user.email : 'No disponible';
 
-  // Obtenemos la fecha de creación del usuario y la formateamos para mostrar solo 2 dígitos del año
   const creationDate = user.metadata.creationTime ? 
     new Date(user.metadata.creationTime).toLocaleDateString('es-AR', {
       year: '2-digit',
@@ -60,9 +59,10 @@ function ProfilePage() {
 
   return (
     <StyledProfilePageContainer>
-      {/* Navbar para la navegación y la consistencia visual */}
       <Navbar
-        loading={authLoading}
+        loading={isLoadingPage}
+        type={role}
+        isCoachDashboard={false}
       />
 
       <Card style={{ maxWidth: '600px', marginTop: '20px', padding: '20px' }}>
@@ -78,10 +78,14 @@ function ProfilePage() {
           <StyledProfileInfoItem>
             <strong>Activo desde:</strong> {creationDate}
           </StyledProfileInfoItem>
+          {/* ¡NUEVO! Mostramos la cantidad de alumnos solo si el rol es 'coach' */}
+          {role === 'coach' && (
+            <StyledProfileInfoItem>
+              <strong>Total de Alumnos:</strong> {totalStudentsCount}
+            </StyledProfileInfoItem>
+          )}
         </StyledProfileInfo>
         
-        {/* Aquí podrías añadir más opciones como editar perfil, etc. */}
-
         <StyledLogoutButtonWrapper>
           <LogoutButton />
         </StyledLogoutButtonWrapper>

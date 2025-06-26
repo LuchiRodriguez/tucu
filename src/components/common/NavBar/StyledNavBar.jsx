@@ -8,6 +8,7 @@ export const StyledNavbarContainer = styled.nav`
   justify-content: space-between; /* Espacio entre ítems en la fila (mobile y desktop) */
   align-items: center;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  background: white;
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -109,7 +110,7 @@ export const StyledDropdownItem = styled.div`
 `;
 
 export const StyledNavbarContent = styled.div`
-  margin-top: 10px;
+  gap: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;

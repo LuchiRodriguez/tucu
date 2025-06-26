@@ -41,6 +41,7 @@ function CollapsibleCard({ title, children, defaultOpen = false }) {
     // y un estilo para el margen inferior para separarlo de otras tarjetas
     <Card style={{ marginBottom: '12px' }}>
       {/* Encabezado de la tarjeta con el título y el botón de chevron */}
+      {/* ¡CAMBIO CLAVE AQUÍ! Usamos un botón con type="button" para el chevron */}
       <div
         onClick={toggleOpen}
         style={{
@@ -57,7 +58,7 @@ function CollapsibleCard({ title, children, defaultOpen = false }) {
         <StyledCardTitle style={{ margin: 0, flexGrow: 1, textAlign: 'left' }}>
           {title}
         </StyledCardTitle>
-        <StyledChevronButton>
+        <StyledChevronButton type="button"> {/* ¡AÑADIMOS type="button"! */}
           <ChevronIcon isOpen={isOpen} />
         </StyledChevronButton>
       </div>

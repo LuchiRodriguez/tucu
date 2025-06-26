@@ -1,10 +1,8 @@
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../context/authContextBase'; // Importamos useAuth
-import logoImage from '../../../assets/png/logo.jpg'; // Importamos la imagen del logo
-
-import userIconImage from '../../../assets/png/user.png'; // La imagen de usuario
-
+import { useAuth } from '../../../context/authContextBase';
+import logoImage from '../../../assets/png/logo.jpg';
+import userIconImage from '../../../assets/png/user.png';
 
 import {
   StyledNavbarContainer,
@@ -15,44 +13,37 @@ import {
   StyledRoutineCounter,
   StyledNavbarTitle,
   StyledNavbarSearch,
-} from './StyledNavbar'; // Asegúrate de la ruta correcta para StyledNavbar
+} from './StyledNavbar';
 
-// Se importa StyledAppMessage desde HomePage/StyledHomePage para mensajes genéricos
-import { StyledAppMessage } from '../../../pages/HomePage/StyledHomePage';
-
-// Usamos parámetros por defecto directamente en la firma de la función
 function Navbar({
-  type = 'student', // Por defecto 'student' si no se especifica
-  loading, // Esta prop es requerida y debe ser provista por el componente padre
-  totalActivedRoutines = 0, // Valor por defecto para el contador de rutinas
-  completedActivedRoutines = 0, // Valor por defecto para rutinas completadas
-  searchValue = '', // Valor por defecto para el campo de búsqueda (usado por coach)
-  setSearchValue = () => {}, // Función vacía por defecto para el actualizador de búsqueda
+  type = 'student',
+  loading,
+  totalActivedRoutines = 0,
+  completedActivedRoutines = 0,
+  searchValue = '',
+  setSearchValue = () => {},
+  studentName = '',
+  isCoachDashboard = false,
 }) {
   const { user, role, userName: authUserName } = useAuth();
   const navigate = useNavigate();
 
-  // Función para redirigir al perfil directamente
   const handleGoToProfile = () => {
-    navigate('/profile'); // Redirigimos directamente a la ProfilePage
+    navigate('/profile');
   };
 
-  // Redirige al hacer click en el logo según el rol
   const handleClickLogo = () => {
     if (role === 'coach') {
-      navigate('/coach'); // Si es coach, va al panel del coach
+      navigate('/coach');
     } else {
-      navigate('/home'); // Si es estudiante o rol desconocido, va a la home
+      navigate('/home');
     }
   };
 
-  // Determina el nombre de usuario a mostrar. Prioriza el nombre de Firestore; si no, usa la parte del email.
   const currentUserName = authUserName || (user && user.email ? user.email.split('@')[0] : 'Usuario');
 
-  // Lógica para renderizar el contenido central del Navbar, que cambia según el 'type' de la página
   let navbarCenterContent;
-  if (type === 'coach') {
-    // Contenido para la vista del coach: título y buscador
+  if (type === 'coach' && isCoachDashboard) {
     navbarCenterContent = (
       <>
         <StyledNavbarTitle>Panel del Coach</StyledNavbarTitle>
@@ -63,24 +54,38 @@ function Navbar({
         />
       </>
     );
-  } else { // type === 'student'
-    // Contenido para la vista del estudiante: saludo y contador de rutinas o mensaje de no rutinas
-    const showNoRoutinesMessageInHeader = totalActivedRoutines === 0;
+  } else if (type === 'coach') { // Si es coach, pero NO es el dashboard principal (ej. perfil del coach)
+    navbarCenterContent = (
+      <StyledNavbarTitle>
+        Panel del Coach
+      </StyledNavbarTitle>
+    );
+  } else if (type === 'studentRoutinesPage') {
+    navbarCenterContent = (
+      <>
+        <StyledNavbarTitle>Panel del Coach</StyledNavbarTitle>
+        <StyledHeaderGreeting style={{ fontSize: '1rem', marginTop: '5px' }}>
+          Rutinas de <span>{studentName}</span>
+        </StyledHeaderGreeting>
+      </>
+    );
+  } else { // type === 'student' (HomePage) o para el ProfilePage de un estudiante
     navbarCenterContent = (
       <>
         <StyledHeaderGreeting>
           ¡Hola, <span>{currentUserName}</span>!
         </StyledHeaderGreeting>
-        {/* Muestra el mensaje de no rutinas si no hay, o el contador si las hay */}
-        {showNoRoutinesMessageInHeader ? (
-          <StyledAppMessage style={{ marginTop: '0', fontSize: '0.9rem', color: '#bdc3c7' }}>
-            Aún no tienes rutinas creadas.
-          </StyledAppMessage>
-        ) : (
+        {totalActivedRoutines > 0 ? (
           <StyledRoutineCounter
-            totalActivedRoutines={totalActivedRoutines}
-            completedActivedRoutines={completedActivedRoutines}
-          />
+            $totalActivedRoutines={totalActivedRoutines}
+            $completedActivedRoutines={completedActivedRoutines}
+          >
+            Esta semana has completado <span>{completedActivedRoutines}</span> de <span>{totalActivedRoutines}</span> rutinas.
+          </StyledRoutineCounter>
+        ) : (
+          <StyledRoutineCounter style={{ color: '#bdc3c7' }}>
+            Aún no tienes rutinas asignadas.
+          </StyledRoutineCounter>
         )}
       </>
     );
@@ -93,38 +98,34 @@ function Navbar({
         alt="Logo Prof Angel San Roman"
         onClick={handleClickLogo}
         style={{ cursor: 'pointer' }}
-        // Fallback de imagen si la original no carga
         onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/90x90/CCCCCC/000000?text=Logo" }}
       />
 
-      {/* Contenido central del Navbar que es dinámico según el rol */}
       <StyledNavbarContent>
         {navbarCenterContent}
       </StyledNavbarContent>
 
-      {/* Botón de perfil para abrir/cerrar el dropdown */}
       <StyledProfileButton onClick={handleGoToProfile} style={{ cursor: 'pointer' }}>
-        {/* Usamos la imagen del usuario */}
         <img
           src={userIconImage}
           alt="Ícono de Perfil"
           onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/24x24/CCCCCC/000000?text=👤" }}
         />
       </StyledProfileButton>
-
-      {/* El Dropdown del perfil ha sido eliminado ya que el botón navega directamente. */}
     </StyledNavbarContainer>
   );
 }
 
-// Definición de PropTypes para validar las props recibidas por el componente Navbar
 Navbar.propTypes = {
-  type: PropTypes.oneOf(['student', 'coach']), // Puede ser 'student' o 'coach'
-  loading: PropTypes.bool.isRequired, // Indica si la página está cargando (obligatoria)
-  totalActivedRoutines: PropTypes.number, // Total de rutinas activas (para estudiante)
-  completedActivedRoutines: PropTypes.number, // Rutinas completadas (para estudiante)
-  searchValue: PropTypes.string, // Valor del campo de búsqueda (para coach)
-  setSearchValue: PropTypes.func, // Función para actualizar el valor de búsqueda (para coach)
+  type: PropTypes.oneOf(['student', 'coach', 'studentRoutinesPage']),
+  loading: PropTypes.bool.isRequired,
+  totalActivedRoutines: PropTypes.number,
+  completedActivedRoutines: PropTypes.number,
+  searchValue: PropTypes.string,
+  setSearchValue: PropTypes.func,
+  studentName: PropTypes.string,
+  isCoachDashboard: PropTypes.bool,
+  totalStudentsCount: PropTypes.number,
 };
 
 export default Navbar;

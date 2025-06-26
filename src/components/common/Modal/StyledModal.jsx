@@ -2,6 +2,7 @@
 import styled from 'styled-components';
 
 export const StyledModalBackground = styled.div`
+  overflow: overlay;
   background: rgba(32, 35, 41, .8); /* Fondo semitransparente oscuro */
   position: fixed; /* Fijo en la ventana */
   top: -10px; /* Cubre toda la pantalla */

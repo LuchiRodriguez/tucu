@@ -1,225 +1,131 @@
-import React from 'react';
-import {useLocalStorage} from '../useLocalStorage/useLocalStorage'
+// src/hooks/useRoutines/useRoutines.js
+import { useState, useEffect } from 'react';
+import { collection, query, onSnapshot, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { db } from '../../config/firebase';
+import { useAuth } from '../../context/authContextBase';
 
-function useRoutines() {
-  const {
-    item: routines,
-    saveItem: saveRoutines,
-    sincronizeItem: sincronizeRoutines,
-    loading,
-    error,
-  } = useLocalStorage('ROUTINES_V1', []);
-  const [searchValue, setSearchValue] = React.useState('');
+export function useRoutines() {
+  const { user, loading: authLoading } = useAuth();
+  const [routines, setRoutines] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null); // 'error' sigue siendo null o un string internamente
+  const [totalActivedRoutines, setTotalActivedRoutines] = useState(0);
+  const [completedActivedRoutines, setCompletedActivedRoutines] = useState(0);
 
-  const activedRoutines = routines.filter(routine => routine.isActive).length;
-  const totalRoutines = routines.length;
 
-  let searchedRoutines = [];
+  useEffect(() => {
+    if (authLoading || !user) {
+      if (!authLoading && !user) {
+        setError("No hay usuario autenticado para cargar las rutinas.");
+        setLoading(false);
+      }
+      return;
+    }
 
-  if (searchValue.length === 0) {
-    searchedRoutines = routines;
-  } else {
-    searchedRoutines = routines.filter(routine => {
-      const routineName = routine.name.toLowerCase();
-      const searchName = searchValue.toLowerCase();
-      return routineName.includes(searchName);
+    setLoading(true);
+    setError(null);
+
+    const routinesCollectionRef = collection(db, `users/${user.uid}/routines`);
+    const q = query(routinesCollectionRef);
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      try {
+        const fetchedRoutines = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setRoutines(fetchedRoutines);
+        console.log(`[useRoutines] Rutinas del usuario ${user.uid} cargadas/actualizadas:`, fetchedRoutines);
+
+        const total = fetchedRoutines.length;
+        const completed = fetchedRoutines.filter(routine => 
+          routine.exercises && routine.exercises.length > 0 && 
+          routine.exercises.every(ex => ex.completed)
+        ).length;
+
+        setTotalActivedRoutines(total);
+        setCompletedActivedRoutines(completed);
+        setError(null); // Aseguramos que el error se limpia en éxito
+
+      } catch (err) {
+        console.error("[useRoutines] Error al obtener las rutinas del usuario:", err);
+        setError("Error al cargar tus rutinas. Intenta de nuevo.");
+      } finally {
+        setLoading(false);
+      }
+    }, (err) => {
+      console.error("[useRoutines] Error en la suscripción a las rutinas:", err);
+      setError("No se pudieron cargar las rutinas. Posiblemente problemas de permisos de lectura.");
+      setLoading(false);
     });
-  }
 
-  // --- Funciones para manejar las Rutinas ---
+    return () => unsubscribe();
+  }, [user, authLoading]);
 
-  const addRoutine = (name, description = '', exercises = []) => {
-    const id = newRoutineId(routines);
-    const newRoutines = [...routines];
-    newRoutines.push({
-      id,
-      name,
-      description,
-      isActive: false,
-      exercises, // Inicializa con los ejercicios pasados (ej. vacío)
-    });
-    saveRoutines(newRoutines);
-  };
-
-  const toggleRoutineActive = (id) => {
-    const routineIndex = routines.findIndex(routine => routine.id === id);
-    if (routineIndex === -1) return;
-
-    const newRoutines = [...routines];
-    const routineToUpdate = { ...newRoutines[routineIndex] };
-
-    routineToUpdate.isActive = !routineToUpdate.isActive;
-    newRoutines[routineIndex] = routineToUpdate;
-    saveRoutines(newRoutines);
-  };
-
-  const editRoutine = (id, newName, newDescription) => {
-    const routineIndex = routines.findIndex(routine => routine.id === id);
-    if (routineIndex === -1) return;
-
-    const newRoutines = [...routines];
-    const routineToUpdate = { ...newRoutines[routineIndex] };
-
-    routineToUpdate.name = newName;
-    routineToUpdate.description = newDescription;
-    newRoutines[routineIndex] = routineToUpdate;
-    saveRoutines(newRoutines);
-  };
-
-  const deleteRoutine = (id) => {
-    const routineIndex = routines.findIndex(routine => routine.id === id);
-    if (routineIndex === -1) return;
-
-    const newRoutines = [...routines];
-    newRoutines.splice(routineIndex, 1);
-    saveRoutines(newRoutines);
-  };
-
-  // --- Funciones para manejar Ejercicios dentro de una Rutina ---
-  // (Estas funciones operan sobre el array 'exercises' de una rutina específica)
-
-  const addExerciseToRoutine = (routineId, apiExerciseData, sets, reps, notes = '') => {
-    const routineIndex = routines.findIndex(routine => routine.id === routineId);
-    if (routineIndex === -1) {
-      console.warn(`Routine with ID ${routineId} not found. Cannot add exercise.`);
+  const updateExerciseProgress = async (routineId, exerciseId, updates) => {
+    if (!user) {
+      console.error("No user authenticated to update exercise progress.");
       return;
     }
+    try {
+      const routineDocRef = doc(db, `users/${user.uid}/routines`, routineId);
+      
+      const routineSnap = await getDoc(routineDocRef);
+      if (!routineSnap.exists()) {
+        console.error("Rutina no encontrada para actualizar el ejercicio.");
+        return;
+      }
+      
+      const currentExercises = routineSnap.data().exercises;
+      const updatedExercises = currentExercises.map(ex => {
+        if (ex.id === exerciseId) {
+          return { ...ex, ...updates };
+        }
+        return ex;
+      });
 
-    const newRoutines = [...routines];
-    const routineToUpdate = { ...newRoutines[routineIndex] };
-
-    // Asegurarse de que exercises sea un array antes de hacer push
-    if (!routineToUpdate.exercises) {
-      routineToUpdate.exercises = [];
+      await updateDoc(routineDocRef, { exercises: updatedExercises });
+      console.log(`Progreso del ejercicio ${exerciseId} en rutina ${routineId} actualizado:`, updates);
+    } catch (err) {
+      console.error("Error al actualizar el progreso del ejercicio:", err);
+      setError("Error al guardar tu progreso. Intenta de nuevo.");
     }
-
-    const exerciseInRoutineId = newExerciseIdForRoutine(routineToUpdate.exercises);
-
-    const newExercise = {
-      id: exerciseInRoutineId, // ID único para este ejercicio en esta rutina (generado por tu app)
-      apiId: apiExerciseData.id, // <-- ¡CAMBIO AQUÍ! Usa el ID real de la API
-      name: apiExerciseData.name,
-      description: apiExerciseData.description, // <-- Añadimos la descripción
-      category_name: apiExerciseData.category_name, // <-- Nombre legible de la categoría
-      muscles_names: apiExerciseData.muscles_names, // <-- Nombres legibles de los músculos
-      equipment_names: apiExerciseData.equipment_names, // <-- Nombres legibles del equipo
-      // Si la API te da imágenes o videos directamente, también los podrías guardar aquí:
-      // image_url: apiExerciseData.image_url, 
-
-      // Propiedades específicas de MyCoach para este ejercicio en ESTA rutina
-      sets: sets,
-      reps: reps,
-      completed: false, // El estado 'completed' para este ejercicio en particular
-      notes: notes,
-    };
-
-    routineToUpdate.exercises.push(newExercise);
-    newRoutines[routineIndex] = routineToUpdate;
-    saveRoutines(newRoutines);
   };
 
-  const editExerciseInRoutine = (routineId, exerciseId, updatedFields) => {
-    const routineIndex = routines.findIndex(routine => routine.id === routineId);
-    if (routineIndex === -1) {
-      console.warn(`Routine with ID ${routineId} not found for editing exercise.`);
-      return;
-    }
-
-    const newRoutines = [...routines];
-    const routineToUpdate = { ...newRoutines[routineIndex] };
-
-    const exerciseIndex = routineToUpdate.exercises.findIndex(ex => ex.id === exerciseId);
-    if (exerciseIndex === -1) {
-      console.warn(`Exercise with ID ${exerciseId} not found in routine ${routineId}.`);
-      return;
-    }
-
-    const exerciseToUpdate = { ...routineToUpdate.exercises[exerciseIndex], ...updatedFields };
-
-    routineToUpdate.exercises[exerciseIndex] = exerciseToUpdate;
-    newRoutines[routineIndex] = routineToUpdate;
-    saveRoutines(newRoutines);
-  };
-
-  const deleteExerciseFromRoutine = (routineId, exerciseId) => {
-    const routineIndex = routines.findIndex(routine => routine.id === routineId);
-    if (routineIndex === -1) {
-      console.warn(`Routine with ID ${routineId} not found for deleting exercise.`);
-      return;
-    }
-
-    const newRoutines = [...routines];
-    const routineToUpdate = { ...newRoutines[routineIndex] };
-
-    routineToUpdate.exercises = routineToUpdate.exercises.filter(ex => ex.id !== exerciseId);
-    newRoutines[routineIndex] = routineToUpdate;
-    saveRoutines(newRoutines);
+  const toggleRoutineCompleted = (routineId, completedStatus) => {
+    console.log(`[useRoutines] Toggle rutina ${routineId} completada a ${completedStatus} (pendiente de implementar a nivel de rutina).`);
   };
 
   const toggleExerciseCompleted = (routineId, exerciseId) => {
-    const routineIndex = routines.findIndex(routine => routine.id === routineId);
-    if (routineIndex === -1) return;
+    const routine = routines.find(r => r.id === routineId);
+    if (!routine) return;
+    const exercise = routine.exercises.find(ex => ex.id === exerciseId);
+    if (!exercise) return;
 
-    const newRoutines = [...routines];
-    const routineToUpdate = { ...newRoutines[routineIndex] };
-
-    const exerciseIndex = routineToUpdate.exercises.findIndex(ex => ex.id === exerciseId);
-    if (exerciseIndex === -1) return;
-
-    const exerciseToUpdate = { ...routineToUpdate.exercises[exerciseIndex] };
-    exerciseToUpdate.completed = !exerciseToUpdate.completed;
-
-    routineToUpdate.exercises[exerciseIndex] = exerciseToUpdate;
-    newRoutines[routineIndex] = routineToUpdate;
-    saveRoutines(newRoutines);
+    updateExerciseProgress(routineId, exerciseId, { completed: !exercise.completed });
   };
 
-  // --- Estados y Actualizadores para devolver ---
+  const updateExerciseKilos = (routineId, exerciseId, newKilos) => {
+    updateExerciseProgress(routineId, exerciseId, { kilos: Number(newKilos) || 0 });
+  };
 
-  const states = {
+  const editExerciseInRoutine = (routineId, exerciseId, updatedFields) => {
+    console.log(`[useRoutines] Edit ejercicio ${exerciseId} en rutina ${routineId} con ${JSON.stringify(updatedFields)} (pendiente de implementar en Firestore, ahora se usa updateExerciseProgress).`);
+  };
+  const deleteExerciseFromRoutine = (routineId, exerciseId) => {
+    console.log(`[useRoutines] Delete ejercicio ${exerciseId} de rutina ${routineId} (pendiente de implementar en Firestore).`);
+  };
+
+  return {
+    routines,
     loading,
-    error,
-    totalRoutines,
-    activedRoutines,
-    searchValue,
-    searchedRoutines,
-    sincronizeRoutines,
-  };
-
-  const statesUpdaters = {
-    setSearchValue,
-    addRoutine,
-    editRoutine,
-    toggleRoutineActive,
-    deleteRoutine,
-    addExerciseToRoutine,
+    error: !!error, // ¡CAMBIO CLAVE! Convertimos 'error' a booleano
+    totalActivedRoutines,
+    completedActivedRoutines,
+    toggleRoutineCompleted,
+    toggleExerciseCompleted,
+    updateExerciseKilos,
     editExerciseInRoutine,
     deleteExerciseFromRoutine,
-    toggleExerciseCompleted,
   };
-
-  return { states, statesUpdaters };
 }
-
-// --- Funciones Auxiliares ---
-
-function newRoutineId(routineList) {
-  if (!routineList.length) {
-    return 1;
-  }
-  const idList = routineList.map(routine => routine.id);
-  const idMax = Math.max(...idList);
-  return idMax + 1;
-}
-
-function newExerciseIdForRoutine(exerciseList) {
-  if (!exerciseList || exerciseList.length === 0) {
-    return 1;
-  }
-  // Genera un ID basándose en el máximo ID existente + 1
-  const idList = exerciseList.map(ex => ex.id);
-  const idMax = Math.max(...idList);
-  return idMax + 1;
-}
-
-export {useRoutines};

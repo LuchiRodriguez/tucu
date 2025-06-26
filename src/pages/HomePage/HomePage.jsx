@@ -1,63 +1,56 @@
 // src/pages/HomePage/HomePage.jsx
+// import React from 'react'; // Eliminado, ya no es necesario en React 17+ para componentes funcionales
 import { useRoutines } from '../../hooks/useRoutines/useRoutines';
 import RoutineList from '../../components/specific/RoutineList/RoutineList';
-import Navbar from '../../components/common/Navbar/Navbar';
-import Card from '../../components/common/Card/Card'; // Importamos el componente Card
-import { useAuth } from '../../context/authContextBase'; // Importamos useAuth para el nombre del usuario
+import Navbar from '../../components/common/Navbar/Navbar'; // ¡DESCOMENTADO!
+import Card from '../../components/common/Card/Card';
+import { useAuth } from '../../context/authContextBase';
 
 import {
   StyledHomePageContainer,
   StyledAppMessage,
-  StyledWhatsappImageButton // Asegúrate de que este estilo exista en StyledHomePage.jsx
-} from './StyledHomePage'; // Ya no importamos StyledAppHeader, etc., de aquí.
+  StyledWhatsappImageButton
+} from './StyledHomePage';
 
-import whatsappLogo from '../../assets/png/whatsapp.webp'; // Importamos el logo de WhatsApp
+import whatsappLogo from '../../assets/png/whatsapp.webp';
 
 function HomePage() {
-  const { states, statesUpdaters } = useRoutines();
-  const { loading: authLoading } = useAuth(); // Obtenemos el objeto de usuario autenticado y el loading de auth
-
-  const {
-    loading: routinesLoading, // Renombramos para evitar conflicto con authLoading
-    error,
+  const { user, loading: authLoading } = useAuth();
+  const { 
+    routines, 
+    loading: routinesLoading, 
+    error: routinesError,
     totalActivedRoutines,
     completedActivedRoutines,
-    searchedRoutines,
-  } = states;
-
-  const {
-    toggleRoutineCompleted,
-    editExerciseInRoutine,
-    deleteExerciseFromRoutine,
     toggleExerciseCompleted,
-  } = statesUpdaters;
+    updateExerciseKilos,
+  } = useRoutines();
 
-  // El loading total de la página será el de auth o el de las rutinas
   const isLoadingPage = authLoading || routinesLoading;
 
-  // Lógica para determinar si el mensaje de "no rutinas" debe aparecer
-  const showNoRoutinesMessage = !isLoadingPage && !error && searchedRoutines.length === 0;
+  const userName = user && user.email ? user.email.split('@')[0] : 'Alumno';
+
+  const showNoRoutinesMessage = !isLoadingPage && !routinesError && routines.length === 0;
 
   return (
     <StyledHomePageContainer>
-      {/* El Navbar ahora maneja el saludo, el estado de carga y los contadores */}
       <Navbar
+        userName={userName}
         loading={isLoadingPage}
+        type="student"
         totalActivedRoutines={totalActivedRoutines}
         completedActivedRoutines={completedActivedRoutines}
+        isCoachDashboard={false}
       />
       
-      {/* Contenido principal de la HomePage dentro de una Card */}
-      {/* ¡CAMBIO CLAVE AQUÍ! Pasamos flexDirection="row" a la Card para que se comporte como fila */}
-      <Card style={{ marginTop: '20px'}} flexDirection="row"> 
-        {isLoadingPage && <StyledAppMessage>Cargando rutinas del alumno...</StyledAppMessage>}
-        {error && <StyledAppMessage>¡Uups! Hubo un error.</StyledAppMessage>}
+      <Card style={{ marginTop: '20px', maxWidth: '600px' }}>
+        {isLoadingPage && <StyledAppMessage>Cargando tus rutinas...</StyledAppMessage>}
+        {routinesError && <StyledAppMessage>¡Uups! Hubo un error al cargar tus rutinas.</StyledAppMessage>}
         
-        {/* Si no hay rutinas, y no hay carga ni error, mostramos el mensaje y el botón en la card */}
         {showNoRoutinesMessage && (
           <>
             <StyledAppMessage>
-              Pídele al profe que te cree una rutina.
+              Aún no tienes rutinas creadas. Pídele al profe que te cree una rutina.
             </StyledAppMessage>
             <StyledWhatsappImageButton
               href="https://wa.me/XXXXXXXXXX?text=Hola%20Profe,%20me%20podrías%20crear%20una%20rutina%3F"
@@ -73,23 +66,13 @@ function HomePage() {
           </>
         )}
 
-        {/* Solo renderizamos RoutineList si hay rutinas para mostrar */}
-        {!isLoadingPage && !error && searchedRoutines.length > 0 && (
+        {!isLoadingPage && !routinesError && routines.length > 0 && (
           <RoutineList
-            error={false}
-            loading={false}
-            searchedRoutines={searchedRoutines}
-            searchText={''}
-            onError={() => null}
-            onLoading={() => null}
-            onEmptyRoutines={() => null}
-            onEmptySearchResults={() => <StyledAppMessage>¡No hay resultados!</StyledAppMessage>}
-            toggleRoutineCompleted={toggleRoutineCompleted}
+            routines={routines}
+            loading={routinesLoading}
+            error={routinesError}
             toggleExerciseCompleted={toggleExerciseCompleted}
-            editExerciseInRoutine={editExerciseInRoutine}
-            deleteExerciseFromRoutine={deleteExerciseFromRoutine}
-            onEditRoutine={() => {}}
-            onDeleteRoutine={() => {}}
+            updateExerciseKilos={updateExerciseKilos}
           />
         )}
       </Card>
