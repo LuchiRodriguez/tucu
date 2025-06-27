@@ -56,7 +56,7 @@ const RoutineList = ({
 
   return (
     <section className="RoutineList-container" style={{ width: '100%' }}>
-      <h3 style={{ marginBottom: '15px', textAlign: 'center', color: '#2c3e50' }}>Tus Rutinas Asignadas:</h3>
+      <h3 style={{ marginBottom: '15px', textAlign: 'center' }}>Tus Rutinas Asignadas:</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {routines.map(routine => {
           // ¡NUEVA LÓGICA! Calcular el porcentaje de completado de la rutina
@@ -82,7 +82,7 @@ const RoutineList = ({
                   RIR General: {routine.rir || 0}
                 </p>
                 {/* ¡NUEVA LÍNEA! Mostrar el porcentaje de completado */}
-                <p style={{ fontSize: '1rem', color: '#2ecc71', fontWeight: 'bold', marginBottom: '15px' }}>
+                <p style={{ fontSize: '1rem', color: '#007bff', fontWeight: 'bold', marginBottom: '15px' }}>
                   Progreso: {completionPercentage}% Completado
                 </p>
                 <h5 style={{ marginBottom: '10px', color: '#2c3e50' }}>Ejercicios de la rutina:</h5>

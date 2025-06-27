@@ -118,7 +118,7 @@ export const StyledAppMessage = styled.p`
 `;
 
 export const StyledCreateButton = styled.button`
-  background-color: #2ecc71; /* Verde vivo para el botón de crear, energía */
+  background-color: #007bff; /* Verde vivo para el botón de crear, energía */
   color: white;
   border: none;
   border-radius: 50%; /* Redondo */

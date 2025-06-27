@@ -42,7 +42,7 @@ export const StyledKilosInput = styled.input`
   text-align: center;
   &:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: #000000;
   }
 `;
 

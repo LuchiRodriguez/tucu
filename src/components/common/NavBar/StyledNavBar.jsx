@@ -29,7 +29,7 @@ export const StyledNavbarContainer = styled.nav`
 `;
 
 export const StyledNavbarLogo = styled.img`
-  max-width: 90px; /* Tamaño del logo para móviles en el navbar */
+  max-width: 50px; /* Tamaño del logo para móviles en el navbar */
   height: auto;
   display: block;
 
@@ -40,9 +40,9 @@ export const StyledNavbarLogo = styled.img`
 `;
 
 export const StyledProfileButton = styled.button`
+  padding: 0;
   background-color: transparent;
   border: none;
-  cursor: pointer;
   transition: background-color 0.2s ease-in-out;
   
   height: 50px; /* MODIFICADO a 50px */
@@ -123,8 +123,7 @@ export const StyledNavbarContent = styled.div`
 `;
 
 export const StyledHeaderGreeting = styled.h2`
-  color: #1a1a1a;
-  font-size: 1.3rem;
+  font-size: 1rem;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -143,7 +142,7 @@ export const StyledHeaderGreeting = styled.h2`
 `;
 
 export const StyledRoutineCounter = styled.div`
-  font-size: 1rem;
+  font-size: 0.8rem;
   font-weight: 500;
   color: #bdc3c7; /* Se mantiene gris claro para el contador, para contraste si el fondo es blanco */
   text-align: center;
@@ -151,7 +150,7 @@ export const StyledRoutineCounter = styled.div`
 
   span {
     font-weight: 700;
-    color: #2ecc71;
+    color: #007bff;
   }
 
   @media (min-width: 768px) {
@@ -160,7 +159,7 @@ export const StyledRoutineCounter = styled.div`
 `;
 
 export const StyledNavbarTitle = styled.h1`
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: 700;
   margin: 0;
   white-space: nowrap;
@@ -175,12 +174,12 @@ export const StyledNavbarTitle = styled.h1`
 `;
 
 export const StyledNavbarSearch = styled.input`
-  width: 90%;
+  width: 80%;
   max-width: 300px;
   padding: 8px 12px;
   border: 1px solid #bdc3c7;
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: #333;
   background-color: #ecf0f1;
   transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;

@@ -357,10 +357,6 @@ function StudentRoutinesPage() {
     <StyledCoachPageContainer>
       <Navbar loading={false} type={navbarType} studentName={navbarStudentName} isCoachDashboard={false} /> {/* ¡DESCOMENTADO y CONFIRMACIÓN! */}
       <Card style={{ maxWidth: '600px', marginTop: '20px', padding: '20px' }}>
-        <h2 style={{ textAlign: 'center', color: '#2c3e50', marginBottom: '15px' }}>
-          Rutinas de {navbarStudentName}
-        </h2>
-        
         {studentRoutines.length === 0 ? (
           <StyledAppMessage style={{ marginTop: '0', fontSize: '0.9rem', color: '#555' }}>
             Este alumno aún no tiene rutinas creadas.

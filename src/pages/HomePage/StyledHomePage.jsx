@@ -12,12 +12,6 @@ export const StyledHomePageContainer = styled.div`
   color: #1a1a1a; /* Color de texto general */
 `;
 
-// StyledMainContent ha sido removido y reemplazado por el componente Card
-
-// Los estilos para StyledAppHeader, StyledHeaderGreeting, StyledRoutineCounter
-// se han movido a src/components/common/Navbar/StyledNavbar.jsx
-
-// Mantenemos StyledRoutineSearch por si se necesita más adelante
 export const StyledRoutineSearch = styled.input`
   width: 90%;
   max-width: 400px;

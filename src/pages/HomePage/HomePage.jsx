@@ -43,7 +43,7 @@ function HomePage() {
         isCoachDashboard={false}
       />
       
-      <Card style={{ marginTop: '20px', maxWidth: '600px' }}>
+      <Card style={{ marginTop: '20px', width: '90%' }}>
         {isLoadingPage && <StyledAppMessage>Cargando tus rutinas...</StyledAppMessage>}
         {routinesError && <StyledAppMessage>¡Uups! Hubo un error al cargar tus rutinas.</StyledAppMessage>}
         

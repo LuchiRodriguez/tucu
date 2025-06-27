@@ -41,7 +41,7 @@ export const StyledRegisterFormWrapper = styled.div`
 
 export const StyledLogo = styled.img`
   margin: 0 auto; /* Centra el logo horizontalmente */
-  width: 240px; /* Ancho deseado de 240px */
+  width: 150px; /* Ancho deseado de 240px */
   max-width: 100%; /* Asegura que el logo se achique en pantallas pequeñas si es necesario */
   height: auto;
   display: block; /* Asegura que el margin auto funcione */
@@ -49,7 +49,6 @@ export const StyledLogo = styled.img`
 
 export const StyledRegisterTitle = styled.h1`
   font-size: 2rem; /* Tamaño de título para móviles */
-  color: #2c3e50; /* Color oscuro (casi negro) para el título */
   margin: 0; /* ¡CAMBIO CLAVE AQUÍ! Margin 0 para el h1 */
 
   /* Media query para tablets y pantallas más grandes */
@@ -125,7 +124,7 @@ export const StyledInput = styled.input`
 `;
 
 export const StyledButton = styled.button`
-  background-color: #2ecc71;
+  background-color: #007bff;
   color: white;
   border: none;
   border-radius: 8px;

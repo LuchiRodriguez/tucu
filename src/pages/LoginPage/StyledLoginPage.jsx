@@ -41,7 +41,7 @@ export const StyledLoginFormWrapper = styled.div`
 
 export const StyledLogo = styled.img`
   margin: 0 auto;
-  width: 240px; /* ¡CAMBIO CLAVE AQUÍ! Ancho deseado de 240px */
+  width: 150px; /* ¡CAMBIO CLAVE AQUÍ! Ancho deseado de 240px */
   max-width: 100%; /* Asegura que el logo se achique en pantallas pequeñas si es necesario */
   height: auto;
   display: block; /* Asegura que el margin auto funcione */
@@ -53,7 +53,6 @@ export const StyledLogo = styled.img`
 
 export const StyledLoginTitle = styled.h1`
   font-size: 2rem; /* Tamaño de título para móviles */
-  color: #2c3e50; /* Un color oscuro para el título */
   margin-bottom: 8px; /* Margen ajustado */
   span {
     color: #007bff; /* Un color de acento diferente para el login, quizás azul */

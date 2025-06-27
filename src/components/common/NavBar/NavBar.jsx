@@ -13,7 +13,7 @@ import {
   StyledRoutineCounter,
   StyledNavbarTitle,
   StyledNavbarSearch,
-} from './StyledNavbar';
+} from './StyledNavBar';
 
 function Navbar({
   type = 'student',
@@ -64,7 +64,7 @@ function Navbar({
     navbarCenterContent = (
       <>
         <StyledNavbarTitle>Panel del Coach</StyledNavbarTitle>
-        <StyledHeaderGreeting style={{ fontSize: '1rem', marginTop: '5px' }}>
+        <StyledHeaderGreeting style={{ fontSize: '0.8rem', marginTop: '5px' }}>
           Rutinas de <span>{studentName}</span>
         </StyledHeaderGreeting>
       </>
@@ -80,7 +80,7 @@ function Navbar({
             $totalActivedRoutines={totalActivedRoutines}
             $completedActivedRoutines={completedActivedRoutines}
           >
-            Esta semana has completado <span>{completedActivedRoutines}</span> de <span>{totalActivedRoutines}</span> rutinas.
+            Has completado <span>{completedActivedRoutines}</span> de <span>{totalActivedRoutines}</span> rutinas.
           </StyledRoutineCounter>
         ) : (
           <StyledRoutineCounter style={{ color: '#bdc3c7' }}>
@@ -109,6 +109,7 @@ function Navbar({
         <img
           src={userIconImage}
           alt="Ícono de Perfil"
+          style={{ width: '50px', height: 'auto' }}
           onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/24x24/CCCCCC/000000?text=👤" }}
         />
       </StyledProfileButton>

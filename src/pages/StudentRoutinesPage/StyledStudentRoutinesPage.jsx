@@ -61,7 +61,7 @@ export const StyledRoutinesListWrapper = styled.div`
 `;
 
 export const StyledAddRoutineButton = styled.button`
-  background-color: #28a745; /* Verde para añadir (acción principal del coach aquí) */
+  background-color: #007bff; /* Verde para añadir (acción principal del coach aquí) */
   color: white;
   border: none;
   border-radius: 50%;
