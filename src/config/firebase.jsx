@@ -1,28 +1,24 @@
-// Importa las funciones necesarias de los SDK que vas a usar
+// src/config/firebase.jsx
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth"; // Para la autenticación (registro, login)
-import { getFirestore } from "firebase/firestore"; // Para la base de datos (guardar info de alumnos)
-import { getAnalytics } from "firebase/analytics";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
-// Tu objeto de configuración de Firebase (el que copiaste en el Paso 1)
+// Tu configuración de Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyDDFcbhF1kWP8J_U5GVBzC4GTDibbGN0po",
-  authDomain: "profangelsanroman-2d392.firebaseapp.com",
-  projectId: "profangelsanroman-2d392",
-  storageBucket: "profangelsanroman-2d392.firebasestorage.app",
-  messagingSenderId: "1022958173798",
-  appId: "1:1022958173798:web:0c9ea3c8b1593c2dd4b7a7",
-  measurementId: "G-Y5WG2WVWGF"
+  // ¡CAMBIO CLAVE AQUÍ! Accedemos a las variables de entorno.
+  // Asegúrate de que los nombres coincidan con los de tu archivo .env y tengan el prefijo VITE_.
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID, // Puede que no todos los proyectos lo tengan
 };
 
-// Inicializa la aplicación de Firebase
+// Inicializa Firebase
 const app = initializeApp(firebaseConfig);
 
-// Obtiene una instancia de Authentication y Firestore
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-const analytics = getAnalytics(app);
-
-// Exporta las instancias para usarlas en otros archivos de tu proyecto
-export { auth, db, analytics };
+// Obtén las instancias de los servicios que usas
+export const auth = getAuth(app);
+export const db = getFirestore(app);

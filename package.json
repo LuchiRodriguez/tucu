@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "homepage": "https://LuchiRodriguez.github.io/tucu",
+  "homepage": "https://luchirodriguez.github.io/tucu/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
