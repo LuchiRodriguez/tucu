@@ -54,7 +54,7 @@ export const StyledViewButton = styled.button`
   border: none;
   border-radius: 8px;
   padding: 8px 15px;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   cursor: pointer;
   transition: background-color 0.2s ease-in-out;
 

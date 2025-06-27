@@ -109,7 +109,7 @@ function Navbar({
         <img
           src={userIconImage}
           alt="Ícono de Perfil"
-          style={{ width: '50px', height: 'auto' }}
+          style={{ width: '40px', height: 'auto' }}
           onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/24x24/CCCCCC/000000?text=👤" }}
         />
       </StyledProfileButton>
