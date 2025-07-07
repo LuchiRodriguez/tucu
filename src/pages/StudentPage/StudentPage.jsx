@@ -140,7 +140,7 @@ function StudentPage() { // Renombrado de StudentRoutinesPage a StudentPage
       alert("No hay usuario autenticado.");
       return;
     }
-    if (window.confirm('¿Estás seguro de que quieres eliminar este grupo de rutinas (incluyendo borradores)?')) {
+    if (window.confirm('¿Estás seguro de que quieres eliminar esta rutina?')) {
       try {
         const groupDocRef = doc(db, `artifacts/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/users/${studentId}/routineGroups`, groupId);
         await deleteDoc(groupDocRef);

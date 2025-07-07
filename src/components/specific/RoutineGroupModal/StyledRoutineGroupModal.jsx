@@ -19,7 +19,6 @@ export const StyledModalContent = styled.div`
   box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.2);
   width: 100%;
   max-width: 600px; /* Ancho máximo para el modal */
-  height: 90vh; /* Altura del 90% del viewport */
   display: flex;
   flex-direction: column;
   position: relative; /* Para el spinner de carga */
@@ -36,7 +35,7 @@ export const StyledModalHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
+  padding: 10px 20px; /* Ajustado a 10px 20px */
   border-bottom: 1px solid #eee;
   background-color: #f8f9fa; /* Fondo ligeramente diferente para el header */
 `;
@@ -44,6 +43,7 @@ export const StyledModalHeader = styled.div`
 export const StyledModalTitle = styled.h2`
   font-size: 1.8rem;
   font-weight: 700;
+  /* color: #2c3e50; */ /* Color eliminado según tu indicación anterior */
   margin: 0;
 `;
 
@@ -65,12 +65,12 @@ export const StyledCloseButton = styled.button`
 `;
 
 export const StyledModalBody = styled.div`
-  flex-grow: 1; /* Permite que el cuerpo ocupe el espacio restante */
-  padding: 0 20px;
+  flex-grow: 1;
+  padding: 10px 20px; 
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
-  overflow-y: auto; /* Para que el contenido interno sea scrollable si es necesario */
+  overflow-y: auto;
 `;
 
 export const StyledFormGroup = styled.div`
@@ -155,7 +155,7 @@ export const StyledSelect = styled.select`
 
 export const StyledButtonContainer = styled.div`
   display: flex;
-  padding: 0 0 10px;
+  justify-content: space-between;
 `;
 
 export const StyledNavButton = styled.button`
@@ -277,7 +277,7 @@ export const StyledExerciseItem = styled.li`
 export const StyledExerciseListContainer = styled.ul`
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 0 0 10px;
   flex-grow: 1;
   overflow-y: auto;
   border: 1px solid #ddd;
@@ -288,6 +288,7 @@ export const StyledExerciseListContainer = styled.ul`
 
 export const StyledSectionTitle = styled.h3`
   font-size: 1.3rem;
+  /* color: #2c3e50; */ /* Color eliminado según tu indicación anterior */
   margin-bottom: 15px;
   border-bottom: 1px solid #eee;
   padding-bottom: 10px;
@@ -319,12 +320,17 @@ export const StyledLoadingOverlay = styled.div`
   z-index: 10; /* Para que esté por encima del contenido del modal */
 `;
 
-export const StyledErrorMessage = styled.p`
+// ¡CAMBIO CLAVE AQUÍ! StyledErrorMessage ahora acepta una prop $isVisible
+export const StyledErrorMessage = styled.p.withConfig({
+  shouldForwardProp: (prop) => !['isVisible'].includes(prop),
+})`
   color: #e74c3c;
   font-size: 0.9rem;
   margin-top: 5px;
   margin-bottom: 10px;
   text-align: center;
+  /* Controlamos la visibilidad con CSS */
+  display: ${props => props.$isVisible ? 'block' : 'none'};
 `;
 
 export const StyledSuccessMessage = styled.p`

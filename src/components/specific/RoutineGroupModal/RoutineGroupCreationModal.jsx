@@ -28,7 +28,7 @@ import {
   StyledSectionTitle,
   StyledSubSectionTitle,
   StyledCurrentRoutineInfo,
-  StyledErrorMessage,
+  StyledErrorMessage, // Aseguramos que StyledErrorMessage esté importado
   StyledExerciseInputGroup,
 } from './StyledRoutineGroupModal';
 
@@ -75,7 +75,6 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
 
   return (
     <StyledModalBody>
-      <StyledSectionTitle>Nuevo grupo de rutinas</StyledSectionTitle>
       <StyledFormGroup>
         <StyledLabel htmlFor="stage">Etapa de Entrenamiento</StyledLabel>
         <StyledSelect
@@ -276,7 +275,7 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
 
       <StyledExerciseListContainer as="ul">
         {currentRoutine.exercises.length === 0 ? (
-          <StyledAppMessage>Aún no hay ejercicios. Agrega uno.</StyledAppMessage>
+          <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>Aún no hay ejercicios. Agrega uno.</p>
         ) : (
           currentRoutine.exercises
             .sort((a, b) => a.order - b.order)
@@ -349,7 +348,7 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousS
 
       <StyledExerciseListContainer style={{ border: 'none', padding: '0', backgroundColor: 'transparent' }}>
         {currentRoutine.exercises.length === 0 ? (
-          <StyledAppMessage>No hay ejercicios para configurar.</StyledAppMessage>
+          <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>No hay ejercicios para configurar.</p>
         ) : (
           currentRoutine.exercises
             .sort((a, b) => a.order - b.order)
@@ -509,27 +508,18 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
       <StyledModalContent>
         <StyledModalHeader>
           <StyledModalTitle>
-            {stage === 1 && "Crear Grupo"}
+            {stage === 1 && "Nuevo grupo de rutinas"}
             {stage === 2 && "Detalles Rutina"}
             {stage === 3 && "Añadir Ejercicios"}
             {stage === 4 && "Series y Reps"}
           </StyledModalTitle>
           <StyledCloseButton onClick={handleCloseModal}>
-            X
+            X {/* Botón de cerrar con 'X' */}
           </StyledCloseButton>
         </StyledModalHeader>
 
-        {/* ¡ELIMINADO! Ya no mostramos el overlay de guardado */}
-        {/* {isSaving && (
-          <StyledLoadingOverlay>
-            <StyledSuccessMessage>Guardando borrador...</StyledSuccessMessage>
-          </StyledLoadingOverlay>
-        )} */}
-        {saveError && ( // Mantenemos el error, pero sin el overlay de guardado
-          <StyledLoadingOverlay>
-            <StyledErrorMessage>Error al guardar: {saveError}</StyledErrorMessage>
-          </StyledLoadingOverlay>
-        )}
+        {/* ¡CORRECCIÓN CLAVE AQUÍ! Pasamos la prop $isVisible */}
+        <StyledErrorMessage $isVisible={!!saveError}>{saveError}</StyledErrorMessage>
 
         {stage === 1 && (
           <Stage1GroupDetails
