@@ -203,7 +203,7 @@ function StudentPage() { // Renombrado de StudentRoutinesPage a StudentPage
           studentName={studentDisplayName} // Pasamos el nombre del alumno aquí
           isCoachDashboard={false} // No es el dashboard principal del coach
         />
-        <Card style={{ maxWidth: '800px', marginTop: '20px', padding: '20px' }}>
+        <Card style={{ maxWidth: '800px', marginTop: '20px', padding: '0 20px 20px'}}>
           <StyledAppMessage style={{ marginTop: '0', fontSize: '0.9rem', color: '#e74c3c' }}>
             {routineGroupsError}
           </StyledAppMessage>
@@ -225,7 +225,7 @@ function StudentPage() { // Renombrado de StudentRoutinesPage a StudentPage
               transition: 'background-color 0.2s ease, transform 0.2s ease',
             }}
           >
-            Crear Nuevo Grupo de Rutinas
+            Crear nuevo grupo de rutinas
           </button>
         </Card>
       </StyledCoachPageContainer>
@@ -241,8 +241,8 @@ function StudentPage() { // Renombrado de StudentRoutinesPage a StudentPage
         studentName={studentDisplayName} // Pasamos el nombre del alumno aquí
         isCoachDashboard={false} // No es el dashboard principal del coach
       />
-      <Card style={{ maxWidth: '800px', marginTop: '20px', padding: '20px' }}>
-        <h2 style={{ textAlign: 'center', color: '#2c3e50', marginBottom: '20px' }}>
+      <Card style={{ maxWidth: '800px', marginTop: '20px', padding: '0 20px 20px' }}>
+        <h2>
           <p className="text-gray-600 text-sm mt-2">Objetivo: {student?.objective || 'No definido'}</p>
         </h2>
 
@@ -328,7 +328,7 @@ function StudentPage() { // Renombrado de StudentRoutinesPage a StudentPage
             transition: 'background-color 0.2s ease, transform 0.2s ease',
           }}
         >
-          Crear Nuevo Grupo de Rutinas
+          Crear nuevo grupo de rutinas
         </button>
       </Card>
 

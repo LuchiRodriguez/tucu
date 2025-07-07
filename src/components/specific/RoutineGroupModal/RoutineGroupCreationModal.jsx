@@ -153,7 +153,6 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
 
   return (
     <StyledModalBody>
-      <StyledSectionTitle>Detalles de la Rutina</StyledSectionTitle>
       <StyledFormGroup>
         <StyledLabel htmlFor="routineName">Nombre de la Rutina</StyledLabel>
         <StyledInput
@@ -255,7 +254,7 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
 
   return (
     <StyledModalBody>
-      <StyledSectionTitle>Agregar Ejercicios: {currentRoutine.name}</StyledSectionTitle>
+      <StyledSectionTitle>{currentRoutine.name}</StyledSectionTitle>
       <StyledCurrentRoutineInfo>
         Descanso: {currentRoutine.restTime}s | RIR: {currentRoutine.rir}
       </StyledCurrentRoutineInfo>
@@ -509,8 +508,8 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
         <StyledModalHeader>
           <StyledModalTitle>
             {stage === 1 && "Nuevo grupo de rutinas"}
-            {stage === 2 && "Detalles Rutina"}
-            {stage === 3 && "Añadir Ejercicios"}
+            {stage === 2 && "Detalles de rutina"}
+            {stage === 3 && "Añadir ejercicios"}
             {stage === 4 && "Series y Reps"}
           </StyledModalTitle>
           <StyledCloseButton onClick={handleCloseModal}>

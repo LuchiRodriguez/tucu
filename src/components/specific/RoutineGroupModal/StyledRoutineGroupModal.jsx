@@ -19,6 +19,7 @@ export const StyledModalContent = styled.div`
   box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.2);
   width: 100%;
   max-width: 600px; /* Ancho máximo para el modal */
+  height: 80vh;
   display: flex;
   flex-direction: column;
   position: relative; /* Para el spinner de carga */
@@ -41,9 +42,7 @@ export const StyledModalHeader = styled.div`
 `;
 
 export const StyledModalTitle = styled.h2`
-  font-size: 1.8rem;
   font-weight: 700;
-  /* color: #2c3e50; */ /* Color eliminado según tu indicación anterior */
   margin: 0;
 `;
 
@@ -66,15 +65,12 @@ export const StyledCloseButton = styled.button`
 
 export const StyledModalBody = styled.div`
   flex-grow: 1;
+  gap: 10px;
   padding: 10px 20px; 
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
   overflow-y: auto;
-`;
-
-export const StyledFormGroup = styled.div`
-  margin-bottom: 18px; /* Espacio entre grupos de formulario */
 `;
 
 export const StyledLabel = styled.label`
@@ -156,6 +152,7 @@ export const StyledSelect = styled.select`
 export const StyledButtonContainer = styled.div`
   display: flex;
   justify-content: space-between;
+  margin-top: auto;
 `;
 
 export const StyledNavButton = styled.button`
@@ -276,6 +273,7 @@ export const StyledExerciseItem = styled.li`
 
 export const StyledExerciseListContainer = styled.ul`
   list-style: none;
+  height: 30vh;
   padding: 0;
   margin: 0 0 10px;
   flex-grow: 1;
@@ -288,8 +286,7 @@ export const StyledExerciseListContainer = styled.ul`
 
 export const StyledSectionTitle = styled.h3`
   font-size: 1.3rem;
-  /* color: #2c3e50; */ /* Color eliminado según tu indicación anterior */
-  margin-bottom: 15px;
+  margin: 10px 0;
   border-bottom: 1px solid #eee;
   padding-bottom: 10px;
 `;
@@ -304,9 +301,8 @@ export const StyledSubSectionTitle = styled.h4`
 export const StyledCurrentRoutineInfo = styled.p`
   font-size: 0.95rem;
   color: #555;
-  margin-bottom: 15px;
+  margin: 0;
   padding-bottom: 10px;
-  border-bottom: 1px dashed #eee;
 `;
 
 export const StyledLoadingOverlay = styled.div`
@@ -343,7 +339,7 @@ export const StyledSuccessMessage = styled.p`
 
 export const StyledExerciseInputGroup = styled.div`
   display: flex;
-  gap: 10px;
+  gap: 15px;
   align-items: center;
   margin-top: 10px;
 
