@@ -3,7 +3,7 @@ import React from 'react'; // Necesario para React.useEffect y otros hooks
 import { HashRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import HomePage from './pages/HomePage/HomePage';
 import CoachPage from './pages/CoachPage/CoachPage';
-import StudentRoutinesPage from './pages/StudentRoutinesPage/StudentRoutinesPage';
+import StudentPage from './pages/StudentPage/StudentPage';
 import RegisterPage from './pages/RegisterPage/RegisterPage';
 import LoginPage from './pages/LoginPage/LoginPage';
 import ProfilePage from './pages/ProfilePage/ProfilePage'; // ¡IMPORTADO!
@@ -75,7 +75,7 @@ function App() {
 
           <Route path="/coach/students/:studentId/routines" element={
             <ProtectedRoute allowedRoles={['coach']}>
-              <StudentRoutinesPage/>
+              <StudentPage/>
             </ProtectedRoute>
           }/>
 

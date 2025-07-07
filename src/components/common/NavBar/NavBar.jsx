@@ -46,7 +46,7 @@ function Navbar({
   if (type === 'coach' && isCoachDashboard) {
     navbarCenterContent = (
       <>
-        <StyledNavbarTitle>Panel del Coach</StyledNavbarTitle>
+        <StyledNavbarTitle>Panel del Profe</StyledNavbarTitle>
         <StyledNavbarSearch
           placeholder="Buscar alumnos..."
           value={searchValue}
@@ -57,13 +57,13 @@ function Navbar({
   } else if (type === 'coach') { // Si es coach, pero NO es el dashboard principal (ej. perfil del coach)
     navbarCenterContent = (
       <StyledNavbarTitle>
-        Panel del Coach
+        Panel del Profe
       </StyledNavbarTitle>
     );
   } else if (type === 'studentRoutinesPage') {
     navbarCenterContent = (
       <>
-        <StyledNavbarTitle>Panel del Coach</StyledNavbarTitle>
+        <StyledNavbarTitle>Panel del Profe</StyledNavbarTitle>
         <StyledHeaderGreeting style={{ fontSize: '0.8rem', marginTop: '5px' }}>
           Rutinas de <span>{studentName}</span>
         </StyledHeaderGreeting>
