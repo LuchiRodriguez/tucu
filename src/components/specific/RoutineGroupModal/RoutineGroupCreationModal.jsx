@@ -4,9 +4,8 @@ import { db } from '../../../config/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { useAuth } from '../../../context/authContextBase';
 import useRoutineGroupForm from '../../../hooks/useRoutineGroup/useRoutineGroupForm';
-import PropTypes from 'prop-types'; // Importamos PropTypes
+import PropTypes from 'prop-types';
 
-// Importamos los estilos del modal
 import {
   StyledModalOverlay,
   StyledModalContent,
@@ -29,10 +28,8 @@ import {
   StyledSectionTitle,
   StyledSubSectionTitle,
   StyledCurrentRoutineInfo,
-  StyledLoadingOverlay,
   StyledErrorMessage,
-  StyledSuccessMessage,
-  StyledExerciseInputGroup
+  StyledExerciseInputGroup,
 } from './StyledRoutineGroupModal';
 
 // Componente para el ícono de flecha (reutilizado)
@@ -78,7 +75,24 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
 
   return (
     <StyledModalBody>
-      <StyledSectionTitle>Nuevo Grupo de Rutinas</StyledSectionTitle>
+      <StyledSectionTitle>Nuevo grupo de rutinas</StyledSectionTitle>
+      <StyledFormGroup>
+        <StyledLabel htmlFor="stage">Etapa de Entrenamiento</StyledLabel>
+        <StyledSelect
+          id="stage"
+          value={groupData.stage}
+          onChange={(e) => setGroupData({ ...groupData, stage: e.target.value })}
+        >
+          <option value="">Selecciona una etapa</option>
+          <option value="adaptacion">Adaptación</option>
+          <option value="volumen">Volumen</option>
+          <option value="definicion">Definición</option>
+          <option value="fuerza">Fuerza</option>
+          <option value="mantenimiento">Mantenimiento</option>
+          {/* Agrega más opciones si es necesario */}
+        </StyledSelect>
+        {errors.stage && <StyledErrorMessage>{errors.stage}</StyledErrorMessage>}
+      </StyledFormGroup>
       <StyledFormGroup>
         <StyledLabel htmlFor="groupName">Nombre del Grupo</StyledLabel>
         <StyledInput
@@ -109,23 +123,6 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
           onChange={(e) => setGroupData({ ...groupData, dueDate: e.target.value })}
         />
         {errors.dueDate && <StyledErrorMessage>{errors.dueDate}</StyledErrorMessage>}
-      </StyledFormGroup>
-      <StyledFormGroup>
-        <StyledLabel htmlFor="stage">Etapa de Entrenamiento</StyledLabel>
-        <StyledSelect
-          id="stage"
-          value={groupData.stage}
-          onChange={(e) => setGroupData({ ...groupData, stage: e.target.value })}
-        >
-          <option value="">Selecciona una etapa</option>
-          <option value="adaptacion">Adaptación</option>
-          <option value="volumen">Volumen</option>
-          <option value="definicion">Definición</option>
-          <option value="fuerza">Fuerza</option>
-          <option value="mantenimiento">Mantenimiento</option>
-          {/* Agrega más opciones si es necesario */}
-        </StyledSelect>
-        {errors.stage && <StyledErrorMessage>{errors.stage}</StyledErrorMessage>}
       </StyledFormGroup>
       <StyledButtonContainer style={{ justifyContent: 'flex-end' }}>
         <StyledNavButton onClick={handleNext} $primary>
@@ -420,7 +417,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
     resetForm,
     saveDraft,
     loadDraft,
-    isSaving,
+    isSaving, // Mantenemos isSaving para la lógica interna
     saveError,
   } = useRoutineGroupForm(studentId, draftGroupId, user?.uid);
 
@@ -518,18 +515,17 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
             {stage === 4 && "Series y Reps"}
           </StyledModalTitle>
           <StyledCloseButton onClick={handleCloseModal}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            X
           </StyledCloseButton>
         </StyledModalHeader>
 
-        {isSaving && (
+        {/* ¡ELIMINADO! Ya no mostramos el overlay de guardado */}
+        {/* {isSaving && (
           <StyledLoadingOverlay>
             <StyledSuccessMessage>Guardando borrador...</StyledSuccessMessage>
           </StyledLoadingOverlay>
-        )}
-        {saveError && (
+        )} */}
+        {saveError && ( // Mantenemos el error, pero sin el overlay de guardado
           <StyledLoadingOverlay>
             <StyledErrorMessage>Error al guardar: {saveError}</StyledErrorMessage>
           </StyledLoadingOverlay>

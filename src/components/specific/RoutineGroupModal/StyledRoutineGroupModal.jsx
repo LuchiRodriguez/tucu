@@ -36,7 +36,7 @@ export const StyledModalHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
+  padding: 10px 20px;
   border-bottom: 1px solid #eee;
   background-color: #f8f9fa; /* Fondo ligeramente diferente para el header */
 `;
@@ -44,7 +44,6 @@ export const StyledModalHeader = styled.div`
 export const StyledModalTitle = styled.h2`
   font-size: 1.8rem;
   font-weight: 700;
-  color: #2c3e50;
   margin: 0;
 `;
 
@@ -67,9 +66,10 @@ export const StyledCloseButton = styled.button`
 
 export const StyledModalBody = styled.div`
   flex-grow: 1; /* Permite que el cuerpo ocupe el espacio restante */
-  padding: 20px;
+  padding: 0 20px;
   display: flex;
   flex-direction: column;
+  justify-content: space-evenly;
   overflow-y: auto; /* Para que el contenido interno sea scrollable si es necesario */
 `;
 
@@ -155,9 +155,7 @@ export const StyledSelect = styled.select`
 
 export const StyledButtonContainer = styled.div`
   display: flex;
-  justify-content: space-between;
-  margin-top: 25px;
-  gap: 15px; /* Espacio entre botones */
+  padding: 0 0 10px;
 `;
 
 export const StyledNavButton = styled.button`
@@ -290,7 +288,6 @@ export const StyledExerciseListContainer = styled.ul`
 
 export const StyledSectionTitle = styled.h3`
   font-size: 1.3rem;
-  color: #2c3e50;
   margin-bottom: 15px;
   border-bottom: 1px solid #eee;
   padding-bottom: 10px;
