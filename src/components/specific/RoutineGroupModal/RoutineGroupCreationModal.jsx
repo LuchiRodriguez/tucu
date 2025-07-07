@@ -13,7 +13,6 @@ import {
   StyledModalTitle,
   StyledCloseButton,
   StyledModalBody,
-  StyledFormGroup,
   StyledLabel,
   StyledInput,
   StyledTextArea,
@@ -75,7 +74,7 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
 
   return (
     <StyledModalBody>
-      <StyledFormGroup>
+      <div style={{ marginBottom: '18px' }}> {/* Reemplazado StyledFormGroup por div */}
         <StyledLabel htmlFor="stage">Etapa de Entrenamiento</StyledLabel>
         <StyledSelect
           id="stage"
@@ -91,8 +90,8 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
           {/* Agrega más opciones si es necesario */}
         </StyledSelect>
         {errors.stage && <StyledErrorMessage>{errors.stage}</StyledErrorMessage>}
-      </StyledFormGroup>
-      <StyledFormGroup>
+      </div> {/* Cierre de div */}
+      <div style={{ marginBottom: '18px' }}> {/* Reemplazado StyledFormGroup por div */}
         <StyledLabel htmlFor="groupName">Nombre del Grupo</StyledLabel>
         <StyledInput
           type="text"
@@ -102,8 +101,8 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
           placeholder="Ej: Fase 1 - Adaptación"
         />
         {errors.name && <StyledErrorMessage>{errors.name}</StyledErrorMessage>}
-      </StyledFormGroup>
-      <StyledFormGroup>
+      </div> {/* Cierre de div */}
+      <div style={{ marginBottom: '18px' }}> {/* Reemplazado StyledFormGroup por div */}
         <StyledLabel htmlFor="groupObjective">Objetivo (breve descripción)</StyledLabel>
         <StyledTextArea
           id="groupObjective"
@@ -112,8 +111,8 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
           placeholder="Ej: Fortalecer base muscular y mejorar técnica."
         ></StyledTextArea>
         {errors.objective && <StyledErrorMessage>{errors.objective}</StyledErrorMessage>}
-      </StyledFormGroup>
-      <StyledFormGroup>
+      </div> {/* Cierre de div */}
+      <div style={{ marginBottom: '18px' }}> {/* Reemplazado StyledFormGroup por div */}
         <StyledLabel htmlFor="dueDate">Fecha de Vencimiento</StyledLabel>
         <StyledInput
           type="date"
@@ -122,7 +121,7 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
           onChange={(e) => setGroupData({ ...groupData, dueDate: e.target.value })}
         />
         {errors.dueDate && <StyledErrorMessage>{errors.dueDate}</StyledErrorMessage>}
-      </StyledFormGroup>
+      </div> {/* Cierre de div */}
       <StyledButtonContainer style={{ justifyContent: 'flex-end' }}>
         <StyledNavButton onClick={handleNext} $primary>
           <ChevronIcon direction="right" />
@@ -141,6 +140,8 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
     if (!currentRoutine.name.trim()) newErrors.name = 'El nombre de la rutina es obligatorio.';
     if (currentRoutine.restTime === '' || isNaN(currentRoutine.restTime) || currentRoutine.restTime < 0) newErrors.restTime = 'El tiempo de descanso debe ser un número positivo.';
     if (currentRoutine.rir === '' || isNaN(currentRoutine.rir) || currentRoutine.rir < 0) newErrors.rir = 'El RIR debe ser un número positivo o cero.';
+    // ¡NUEVA VALIDACIÓN!
+    if (!currentRoutine.warmUp || !currentRoutine.warmUp.trim()) newErrors.warmUp = 'El calentamiento es obligatorio.';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -153,7 +154,8 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
 
   return (
     <StyledModalBody>
-      <StyledFormGroup>
+      <StyledSectionTitle>Detalles de la Rutina</StyledSectionTitle>
+      <div style={{ marginBottom: '18px' }}> {/* Reemplazado StyledFormGroup por div */}
         <StyledLabel htmlFor="routineName">Nombre de la Rutina</StyledLabel>
         <StyledInput
           type="text"
@@ -163,8 +165,8 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
           placeholder="Ej: Rutina de Piernas"
         />
         {errors.name && <StyledErrorMessage>{errors.name}</StyledErrorMessage>}
-      </StyledFormGroup>
-      <StyledFormGroup>
+      </div> {/* Cierre de div */}
+      <div style={{ marginBottom: '18px' }}> {/* Reemplazado StyledFormGroup por div */}
         <StyledLabel htmlFor="restTime">Tiempo de Descanso (segundos)</StyledLabel>
         <StyledInput
           type="number"
@@ -174,8 +176,8 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
           placeholder="Ej: 60"
         />
         {errors.restTime && <StyledErrorMessage>{errors.restTime}</StyledErrorMessage>}
-      </StyledFormGroup>
-      <StyledFormGroup>
+      </div> {/* Cierre de div */}
+      <div style={{ marginBottom: '18px' }}> {/* Reemplazado StyledFormGroup por div */}
         <StyledLabel htmlFor="rir">RIR (Repeticiones en Reserva)</StyledLabel>
         <StyledInput
           type="number"
@@ -185,7 +187,18 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
           placeholder="Ej: 2"
         />
         {errors.rir && <StyledErrorMessage>{errors.rir}</StyledErrorMessage>}
-      </StyledFormGroup>
+      </div> {/* Cierre de div */}
+      {/* ¡NUEVO CAMPO PARA CALENTAMIENTO! */}
+      <div style={{ marginBottom: '18px' }}>
+        <StyledLabel htmlFor="warmUp">Calentamiento</StyledLabel>
+        <StyledInput
+          id="warmUp"
+          value={currentRoutine.warmUp}
+          onChange={(e) => setCurrentRoutine({ ...currentRoutine, warmUp: e.target.value })}
+          placeholder="Ej: 5 minutos de cardio ligero, movilidad articular."
+        ></StyledInput>
+        {errors.warmUp && <StyledErrorMessage>{errors.warmUp}</StyledErrorMessage>}
+      </div>
       <StyledButtonContainer>
         <StyledNavButton onClick={goToPreviousStage}>
           <ChevronIcon direction="left" />
@@ -256,7 +269,7 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
     <StyledModalBody>
       <StyledSectionTitle>{currentRoutine.name}</StyledSectionTitle>
       <StyledCurrentRoutineInfo>
-        Descanso: {currentRoutine.restTime}s | RIR: {currentRoutine.rir}
+        Descanso: {currentRoutine.restTime}s | RIR: {currentRoutine.rir} | Calentamiento: {currentRoutine.warmUp}
       </StyledCurrentRoutineInfo>
       
       <div style={{ display: 'flex', marginBottom: '15px', gap: '10px' }}>
@@ -342,7 +355,7 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousS
     <StyledModalBody>
       <StyledSectionTitle>Series y Repeticiones: {currentRoutine.name}</StyledSectionTitle>
       <StyledCurrentRoutineInfo>
-        Descanso: {currentRoutine.restTime}s | RIR: {currentRoutine.rir}
+        Descanso: {currentRoutine.restTime}s | RIR: {currentRoutine.rir} | Calentamiento: {currentRoutine.warmUp}
       </StyledCurrentRoutineInfo>
 
       <StyledExerciseListContainer style={{ border: 'none', padding: '0', backgroundColor: 'transparent' }}>
@@ -469,6 +482,11 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
       alert("Por favor, asigna series y repeticiones/tiempo a todos los ejercicios de la rutina actual.");
       return;
     }
+    // ¡NUEVA VALIDACIÓN para el calentamiento!
+    if (currentRoutine && (!currentRoutine.warmUp || !currentRoutine.warmUp.trim())) {
+      alert("Por favor, agrega una descripción para el calentamiento de la rutina actual.");
+      return;
+    }
 
     try {
       const routineGroupRef = doc(db, `artifacts/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/users/${studentId}/routineGroups`, groupData.id || 'new');
@@ -483,6 +501,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
           name: r.name,
           restTime: r.restTime,
           rir: r.rir,
+          warmUp: r.warmUp, // ¡Aseguramos que el calentamiento se guarde!
           exercises: r.exercises,
         }))
       }, { merge: true });
