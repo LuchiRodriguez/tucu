@@ -9,6 +9,10 @@ import PropTypes from 'prop-types';
 // Importamos los datos de ejercicios locales
 import localExercisesData from '../../../data/exercises.json';
 
+// ¡NUEVO! Importamos CollapsibleCard
+import CollapsibleCard from '../../common/CollapsibleCard/CollapsibleCard';
+
+
 import {
   StyledModalOverlay,
   StyledModalContent,
@@ -156,8 +160,7 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
 
   return (
     <StyledModalBody>
-      <StyledSectionTitle>Detalles de la Rutina</StyledSectionTitle>
-      <div style={{ marginBottom: '18px' }}>
+      <div>
         <StyledLabel htmlFor="routineName">Nombre de la Rutina</StyledLabel>
         <StyledInput
           type="text"
@@ -221,7 +224,7 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
 
   const handleExerciseSelection = (exercise) => {
     setCurrentRoutine(prev => {
-      const currentExercises = prev.exercises || []; // ¡CAMBIO CLAVE AQUÍ! Aseguramos que sea un array
+      const currentExercises = prev.exercises || []; // Aseguramos que sea un array
       const isAlreadySelected = currentExercises.some(ex => ex.id === exercise.id);
       let updatedExercises;
 
@@ -237,7 +240,7 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
           time: 0,
           kilos: 0,
           completed: false,
-          order: currentExercises.length, // ¡CAMBIO CLAVE AQUÍ! Usamos la longitud del array ya validado
+          order: currentExercises.length, // Usamos la longitud del array ya validado
         };
         updatedExercises = [...currentExercises, newExercise];
       }
@@ -333,19 +336,16 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
         style={{ marginBottom: '15px' }}
       />
 
-      <StyledExerciseListContainer style={{ border: '1px solid #ddd', padding: '10px', backgroundColor: '#f8f8f8', maxHeight: '200px' }}>
         {Object.keys(groupedExercises).length === 0 && exerciseSearchText ? (
           <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>No se encontraron ejercicios con esa búsqueda.</p>
         ) : Object.keys(groupedExercises).length === 0 && !exerciseSearchText ? (
           <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>No hay ejercicios disponibles para seleccionar.</p>
         ) : (
           Object.keys(groupedExercises).map(categoryName => (
-            <div key={categoryName} style={{ marginBottom: '10px' }}>
-              <h5 style={{ margin: '0' }}>{categoryName}</h5> 
+            <CollapsibleCard key={categoryName} title={categoryName} defaultOpen={false}>
               {groupedExercises[categoryName].map(exercise => {
                 const isSelected = exercisesInRoutine.some(ex => ex.id === exercise.id);
                 const currentSelectedExercise = exercisesInRoutine.find(ex => ex.id === exercise.id);
-                
                 return (
                   <div
                     key={exercise.id}
@@ -404,14 +404,12 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
                   </div>
                 );
               })}
-            </div>
+            </CollapsibleCard>
           ))
         )}
-      </StyledExerciseListContainer>
 
       {/* Sección de ejercicios seleccionados y ordenables */}
       <StyledSubSectionTitle>Ejercicios en la Rutina:</StyledSubSectionTitle>
-      <StyledExerciseListContainer as="ul" style={{ height: 'auto', minHeight: '100px' }}>
         {exercisesInRoutine.length === 0 ? (
           <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>Selecciona ejercicios de la lista de arriba.</p>
         ) : (
@@ -434,7 +432,6 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
               </StyledExerciseItem>
             ))
         )}
-      </StyledExerciseListContainer>
 
       <StyledButtonContainer>
         <StyledNavButton onClick={goToPreviousStage}>
@@ -629,7 +626,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
           name: r.name,
           restTime: r.restTime,
           rir: r.rir,
-          warmUp: r.warmUp || '', // ¡CAMBIO CLAVE AQUÍ! Aseguramos que warmUp no sea undefined
+          warmUp: r.warmUp || '', // Aseguramos que warmUp no sea undefined
           exercises: r.exercises,
         }))
       }, { merge: true });
