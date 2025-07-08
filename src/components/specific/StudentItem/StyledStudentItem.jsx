@@ -49,6 +49,7 @@ export const StyledStudentEmail = styled.p`
 
 // Estilos para el botón de "Ver Rutinas" o un ícono de flecha
 export const StyledViewButton = styled.button`
+  width: 80px;
   background-color: #3498db; /* Azul para el botón de acción */
   color: white;
   border: none;

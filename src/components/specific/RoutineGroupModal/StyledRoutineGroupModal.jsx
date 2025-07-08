@@ -14,6 +14,7 @@ export const StyledModalOverlay = styled.div`
 `;
 
 export const StyledModalContent = styled.div`
+  padding: 15px;
   background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.2);
@@ -36,9 +37,7 @@ export const StyledModalHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px; /* Ajustado a 10px 20px */
   border-bottom: 1px solid #eee;
-  background-color: #f8f9fa; /* Fondo ligeramente diferente para el header */
 `;
 
 export const StyledModalTitle = styled.h2`
@@ -54,19 +53,12 @@ export const StyledCloseButton = styled.button`
   font-size: 1.8rem;
   padding: 5px;
   border-radius: 50%;
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    color: #e74c3c;
-    background-color: #f2f2f2;
-    transform: rotate(90deg);
-  }
 `;
 
 export const StyledModalBody = styled.div`
   flex-grow: 1;
   gap: 10px;
-  padding: 10px 20px; 
+  padding-top: 15px;
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
@@ -98,7 +90,7 @@ export const StyledInput = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #3498db; /* Azul al enfocar */
+    border-color: #3498db;
     box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
   }
 `;
@@ -156,7 +148,7 @@ export const StyledButtonContainer = styled.div`
 `;
 
 export const StyledNavButton = styled.button`
-  background-color: ${props => props.$primary ? '#3498db' : '#bdc3c7'}; /* Azul para primario, gris para secundario */
+  background-color: ${props => props.$primary ? '#3498db' : '#bdc3c7'};
   color: white;
   border: none;
   border-radius: 50%; /* Botones redondos */
@@ -169,12 +161,6 @@ export const StyledNavButton = styled.button`
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease-in-out;
-
-  &:hover {
-    background-color: ${props => props.$primary ? '#2980b9' : '#95a5a6'};
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-  }
 
   &:active {
     transform: translateY(0);
@@ -202,12 +188,6 @@ export const StyledSaveButton = styled.button`
   transition: all 0.2s ease-in-out;
   flex-grow: 1; /* Para que ocupe el espacio disponible en el centro */
 
-  &:hover {
-    background-color: #27ae60;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(46, 204, 113, 0.3);
-  }
-
   &:active {
     transform: translateY(0);
     box-shadow: 0 2px 5px rgba(46, 204, 113, 0.2);
@@ -233,9 +213,6 @@ export const StyledAddExerciseButton = styled.button`
   transition: background-color 0.2s ease-in-out;
   box-shadow: 0 2px 5px rgba(46, 204, 113, 0.2);
 
-  &:hover {
-    background-color: #27ae60;
-  }
 `;
 
 export const StyledRemoveExerciseButton = styled.button`
@@ -246,12 +223,7 @@ export const StyledRemoveExerciseButton = styled.button`
   font-size: 1.2rem;
   padding: 5px;
   border-radius: 50%;
-  transition: all 0.2s ease-in-out;
 
-  &:hover {
-    background-color: #fbe9e7;
-    color: #c0392b;
-  }
 `;
 
 export const StyledExerciseItem = styled.li`
@@ -285,17 +257,12 @@ export const StyledExerciseListContainer = styled.ul`
 `;
 
 export const StyledSectionTitle = styled.h3`
-  font-size: 1.3rem;
-  margin: 10px 0;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
+  margin: 0;
 `;
 
 export const StyledSubSectionTitle = styled.h4`
   font-size: 1.1rem;
-  color: #34495e;
-  margin-top: 20px;
-  margin-bottom: 10px;
+  margin: 0;
 `;
 
 export const StyledCurrentRoutineInfo = styled.p`
@@ -353,9 +320,7 @@ export const StyledExerciseSelectionItem = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
   padding: 8px 0;
-  border-bottom: 1px dashed #f0f0f0;
 
   &:last-child {
     border-bottom: none;

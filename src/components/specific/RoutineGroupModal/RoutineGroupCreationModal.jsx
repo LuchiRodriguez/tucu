@@ -6,6 +6,9 @@ import { useAuth } from '../../../context/authContextBase';
 import useRoutineGroupForm from '../../../hooks/useRoutineGroup/useRoutineGroupForm';
 import PropTypes from 'prop-types';
 
+// Importamos los datos de ejercicios locales
+import localExercisesData from '../../../data/exercises.json';
+
 import {
   StyledModalOverlay,
   StyledModalContent,
@@ -20,14 +23,14 @@ import {
   StyledButtonContainer,
   StyledNavButton,
   StyledSaveButton,
-  StyledAddExerciseButton,
+  // StyledAddExerciseButton, // Mantener por si se usa en otro lado, aunque no en Stage3AddExercises
   StyledRemoveExerciseButton,
   StyledExerciseItem,
   StyledExerciseListContainer,
   StyledSectionTitle,
   StyledSubSectionTitle,
   StyledCurrentRoutineInfo,
-  StyledErrorMessage, // Aseguramos que StyledErrorMessage esté importado
+  StyledErrorMessage,
   StyledExerciseInputGroup,
 } from './StyledRoutineGroupModal';
 
@@ -47,7 +50,7 @@ const ChevronIcon = ({ direction }) => (
   </svg>
 );
 
-// ¡NUEVO! Validación de PropTypes para ChevronIcon
+// Validación de PropTypes para ChevronIcon
 ChevronIcon.propTypes = {
   direction: PropTypes.oneOf(['left', 'right']).isRequired,
 };
@@ -74,7 +77,7 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
 
   return (
     <StyledModalBody>
-      <div style={{ marginBottom: '18px' }}> {/* Reemplazado StyledFormGroup por div */}
+      <div style={{ marginBottom: '18px' }}>
         <StyledLabel htmlFor="stage">Etapa de Entrenamiento</StyledLabel>
         <StyledSelect
           id="stage"
@@ -90,8 +93,8 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
           {/* Agrega más opciones si es necesario */}
         </StyledSelect>
         {errors.stage && <StyledErrorMessage>{errors.stage}</StyledErrorMessage>}
-      </div> {/* Cierre de div */}
-      <div style={{ marginBottom: '18px' }}> {/* Reemplazado StyledFormGroup por div */}
+      </div>
+      <div style={{ marginBottom: '18px' }}>
         <StyledLabel htmlFor="groupName">Nombre del Grupo</StyledLabel>
         <StyledInput
           type="text"
@@ -101,8 +104,8 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
           placeholder="Ej: Fase 1 - Adaptación"
         />
         {errors.name && <StyledErrorMessage>{errors.name}</StyledErrorMessage>}
-      </div> {/* Cierre de div */}
-      <div style={{ marginBottom: '18px' }}> {/* Reemplazado StyledFormGroup por div */}
+      </div>
+      <div style={{ marginBottom: '18px' }}>
         <StyledLabel htmlFor="groupObjective">Objetivo (breve descripción)</StyledLabel>
         <StyledTextArea
           id="groupObjective"
@@ -111,8 +114,8 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
           placeholder="Ej: Fortalecer base muscular y mejorar técnica."
         ></StyledTextArea>
         {errors.objective && <StyledErrorMessage>{errors.objective}</StyledErrorMessage>}
-      </div> {/* Cierre de div */}
-      <div style={{ marginBottom: '18px' }}> {/* Reemplazado StyledFormGroup por div */}
+      </div>
+      <div style={{ marginBottom: '18px' }}>
         <StyledLabel htmlFor="dueDate">Fecha de Vencimiento</StyledLabel>
         <StyledInput
           type="date"
@@ -121,7 +124,7 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
           onChange={(e) => setGroupData({ ...groupData, dueDate: e.target.value })}
         />
         {errors.dueDate && <StyledErrorMessage>{errors.dueDate}</StyledErrorMessage>}
-      </div> {/* Cierre de div */}
+      </div>
       <StyledButtonContainer style={{ justifyContent: 'flex-end' }}>
         <StyledNavButton onClick={handleNext} $primary>
           <ChevronIcon direction="right" />
@@ -140,7 +143,6 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
     if (!currentRoutine.name.trim()) newErrors.name = 'El nombre de la rutina es obligatorio.';
     if (currentRoutine.restTime === '' || isNaN(currentRoutine.restTime) || currentRoutine.restTime < 0) newErrors.restTime = 'El tiempo de descanso debe ser un número positivo.';
     if (currentRoutine.rir === '' || isNaN(currentRoutine.rir) || currentRoutine.rir < 0) newErrors.rir = 'El RIR debe ser un número positivo o cero.';
-    // ¡NUEVA VALIDACIÓN!
     if (!currentRoutine.warmUp || !currentRoutine.warmUp.trim()) newErrors.warmUp = 'El calentamiento es obligatorio.';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -155,7 +157,7 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
   return (
     <StyledModalBody>
       <StyledSectionTitle>Detalles de la Rutina</StyledSectionTitle>
-      <div style={{ marginBottom: '18px' }}> {/* Reemplazado StyledFormGroup por div */}
+      <div style={{ marginBottom: '18px' }}>
         <StyledLabel htmlFor="routineName">Nombre de la Rutina</StyledLabel>
         <StyledInput
           type="text"
@@ -165,8 +167,8 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
           placeholder="Ej: Rutina de Piernas"
         />
         {errors.name && <StyledErrorMessage>{errors.name}</StyledErrorMessage>}
-      </div> {/* Cierre de div */}
-      <div style={{ marginBottom: '18px' }}> {/* Reemplazado StyledFormGroup por div */}
+      </div>
+      <div style={{ marginBottom: '18px' }}>
         <StyledLabel htmlFor="restTime">Tiempo de Descanso (segundos)</StyledLabel>
         <StyledInput
           type="number"
@@ -176,8 +178,8 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
           placeholder="Ej: 60"
         />
         {errors.restTime && <StyledErrorMessage>{errors.restTime}</StyledErrorMessage>}
-      </div> {/* Cierre de div */}
-      <div style={{ marginBottom: '18px' }}> {/* Reemplazado StyledFormGroup por div */}
+      </div>
+      <div style={{ marginBottom: '18px' }}>
         <StyledLabel htmlFor="rir">RIR (Repeticiones en Reserva)</StyledLabel>
         <StyledInput
           type="number"
@@ -187,16 +189,15 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
           placeholder="Ej: 2"
         />
         {errors.rir && <StyledErrorMessage>{errors.rir}</StyledErrorMessage>}
-      </div> {/* Cierre de div */}
-      {/* ¡NUEVO CAMPO PARA CALENTAMIENTO! */}
+      </div>
       <div style={{ marginBottom: '18px' }}>
-        <StyledLabel htmlFor="warmUp">Calentamiento</StyledLabel>
-        <StyledInput
+        <StyledLabel htmlFor="warmUp">Calentamiento (descripción)</StyledLabel>
+        <StyledTextArea
           id="warmUp"
           value={currentRoutine.warmUp}
           onChange={(e) => setCurrentRoutine({ ...currentRoutine, warmUp: e.target.value })}
           placeholder="Ej: 5 minutos de cardio ligero, movilidad articular."
-        ></StyledInput>
+        ></StyledTextArea>
         {errors.warmUp && <StyledErrorMessage>{errors.warmUp}</StyledErrorMessage>}
       </div>
       <StyledButtonContainer>
@@ -213,30 +214,67 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
 
 // --- Stage 3: Añadir Ejercicios ---
 const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, goToPreviousStage, onClose }) => {
-  const [newExerciseName, setNewExerciseName] = useState('');
+  const [exerciseSearchText, setExerciseSearchText] = useState('');
 
-  const addExercise = () => {
-    if (newExerciseName.trim()) {
-      const newExercise = {
-        id: Date.now().toString(), // Simple ID
-        name: newExerciseName.trim(),
-        sets: '',
-        reps: '',
-        order: currentRoutine.exercises.length, // Para el orden inicial
-        type: 'reps_sets', // Por defecto a reps_sets, se puede añadir un selector si es necesario
-      };
-      setCurrentRoutine(prev => ({
+  // Aseguramos que currentRoutine.exercises siempre sea un array
+  const exercisesInRoutine = currentRoutine.exercises || [];
+
+  const handleExerciseSelection = (exercise) => {
+    setCurrentRoutine(prev => {
+      const currentExercises = prev.exercises || []; // ¡CAMBIO CLAVE AQUÍ! Aseguramos que sea un array
+      const isAlreadySelected = currentExercises.some(ex => ex.id === exercise.id);
+      let updatedExercises;
+
+      if (isAlreadySelected) {
+        updatedExercises = currentExercises.filter(ex => ex.id !== exercise.id);
+      } else {
+        const newExercise = {
+          id: exercise.id,
+          name: exercise.name,
+          type: exercise.type || 'reps_sets', // Default a reps_sets si no está definido
+          sets: 0,
+          reps: 0,
+          time: 0,
+          kilos: 0,
+          completed: false,
+          order: currentExercises.length, // ¡CAMBIO CLAVE AQUÍ! Usamos la longitud del array ya validado
+        };
+        updatedExercises = [...currentExercises, newExercise];
+      }
+      // Re-asignar el orden para reflejar la posición actual después de añadir/eliminar
+      const reorderedExercises = updatedExercises.map((ex, idx) => ({ ...ex, order: idx }));
+
+      return {
         ...prev,
-        exercises: [...prev.exercises, newExercise]
-      }));
-      setNewExerciseName('');
-    }
+        exercises: reorderedExercises,
+      };
+    });
   };
 
-  const removeExercise = (id) => {
+  const handleSetsChange = (exerciseId, value) => {
     setCurrentRoutine(prev => ({
       ...prev,
-      exercises: prev.exercises.filter(ex => ex.id !== id)
+      exercises: (prev.exercises || []).map(ex =>
+        ex.id === exerciseId ? { ...ex, sets: Number(value) || 0 } : ex
+      )
+    }));
+  };
+
+  const handleRepChange = (exerciseId, value) => {
+    setCurrentRoutine(prev => ({
+      ...prev,
+      exercises: (prev.exercises || []).map(ex =>
+        ex.id === exerciseId ? { ...ex, reps: Number(value) || 0 } : ex
+      )
+    }));
+  };
+
+  const handleTimeChange = (exerciseId, value) => {
+    setCurrentRoutine(prev => ({
+      ...prev,
+      exercises: (prev.exercises || []).map(ex =>
+        ex.id === exerciseId ? { ...ex, time: Number(value) || 0 } : ex
+      )
     }));
   };
 
@@ -250,8 +288,8 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
 
   const handleDrop = (e, dropIndex) => {
     const dragIndex = e.dataTransfer.getData("exerciseIndex");
-    const draggedExercise = currentRoutine.exercises[dragIndex];
-    const newExercises = [...currentRoutine.exercises];
+    const draggedExercise = exercisesInRoutine[dragIndex];
+    const newExercises = [...exercisesInRoutine];
 
     newExercises.splice(dragIndex, 1); // Elimina el elemento arrastrado
     newExercises.splice(dropIndex, 0, draggedExercise); // Inserta en la nueva posición
@@ -265,6 +303,19 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
     }));
   };
 
+  const filteredExercises = localExercisesData.filter(exercise =>
+    exercise.name.toLowerCase().includes(exerciseSearchText.toLowerCase())
+  );
+
+  const groupedExercises = filteredExercises.reduce((acc, exercise) => {
+    const category = exercise.category || 'Otros';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(exercise);
+    return acc;
+  }, {});
+
   return (
     <StyledModalBody>
       <StyledSectionTitle>{currentRoutine.name}</StyledSectionTitle>
@@ -272,25 +323,100 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
         Descanso: {currentRoutine.restTime}s | RIR: {currentRoutine.rir} | Calentamiento: {currentRoutine.warmUp}
       </StyledCurrentRoutineInfo>
       
-      <div style={{ display: 'flex', marginBottom: '15px', gap: '10px' }}>
-        <StyledInput
-          type="text"
-          value={newExerciseName}
-          onChange={(e) => setNewExerciseName(e.target.value)}
-          placeholder="Nombre del ejercicio"
-          style={{ flexGrow: 1 }}
-        />
-        <StyledAddExerciseButton onClick={addExercise}>
-          Agregar
-        </StyledAddExerciseButton>
-      </div>
+      {/* Sección para seleccionar ejercicios */}
+      <StyledSubSectionTitle>Seleccionar Ejercicios:</StyledSubSectionTitle>
+      <StyledInput
+        type="text"
+        value={exerciseSearchText}
+        onChange={(e) => setExerciseSearchText(e.target.value)}
+        placeholder="Buscar ejercicio..."
+        style={{ marginBottom: '15px' }}
+      />
 
-      <StyledExerciseListContainer as="ul">
-        {currentRoutine.exercises.length === 0 ? (
-          <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>Aún no hay ejercicios. Agrega uno.</p>
+      <StyledExerciseListContainer style={{ border: '1px solid #ddd', padding: '10px', backgroundColor: '#f8f8f8', maxHeight: '200px' }}>
+        {Object.keys(groupedExercises).length === 0 && exerciseSearchText ? (
+          <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>No se encontraron ejercicios con esa búsqueda.</p>
+        ) : Object.keys(groupedExercises).length === 0 && !exerciseSearchText ? (
+          <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>No hay ejercicios disponibles para seleccionar.</p>
         ) : (
-          currentRoutine.exercises
-            .sort((a, b) => a.order - b.order)
+          Object.keys(groupedExercises).map(categoryName => (
+            <div key={categoryName} style={{ marginBottom: '10px' }}>
+              <h5 style={{ margin: '0' }}>{categoryName}</h5> 
+              {groupedExercises[categoryName].map(exercise => {
+                const isSelected = exercisesInRoutine.some(ex => ex.id === exercise.id);
+                const currentSelectedExercise = exercisesInRoutine.find(ex => ex.id === exercise.id);
+                
+                return (
+                  <div
+                    key={exercise.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '8px',
+                      padding: '5px 0',
+                      borderBottom: '1px dashed #f0f0f0',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+                      <input
+                        type="checkbox"
+                        id={`select-exercise-${exercise.id}`}
+                        checked={isSelected}
+                        onChange={() => handleExerciseSelection(exercise)}
+                        style={{ marginRight: '10px' }}
+                      />
+                      <StyledLabel htmlFor={`select-exercise-${exercise.id}`} style={{ margin: 0, fontWeight: 'normal', cursor: 'pointer' }}>
+                        {exercise.name}
+                      </StyledLabel>
+                    </div>
+                    {isSelected && (
+                      <div style={{ display: 'flex', gap: '8px', marginLeft: '10px' }}>
+                        <StyledInput
+                          type="number"
+                          min="0"
+                          placeholder="Series"
+                          value={currentSelectedExercise?.sets === 0 ? '' : currentSelectedExercise?.sets}
+                          onChange={(e) => handleSetsChange(exercise.id, e.target.value)}
+                          style={{ width: '50px', textAlign: 'center' }}
+                        />
+                        {exercise.type === 'timed' ? (
+                          <StyledInput
+                            type="number"
+                            min="0"
+                            placeholder="Tiempo (seg)"
+                            value={currentSelectedExercise?.time === 0 ? '' : currentSelectedExercise?.time}
+                            onChange={(e) => handleTimeChange(exercise.id, e.target.value)}
+                            style={{ width: '80px', textAlign: 'center' }}
+                          />
+                        ) : (
+                          <StyledInput
+                            type="number"
+                            min="0"
+                            placeholder="Reps"
+                            value={currentSelectedExercise?.reps === 0 ? '' : currentSelectedExercise?.reps}
+                            onChange={(e) => handleRepChange(exercise.id, e.target.value)}
+                            style={{ width: '50px', textAlign: 'center' }}
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))
+        )}
+      </StyledExerciseListContainer>
+
+      {/* Sección de ejercicios seleccionados y ordenables */}
+      <StyledSubSectionTitle>Ejercicios en la Rutina:</StyledSubSectionTitle>
+      <StyledExerciseListContainer as="ul" style={{ height: 'auto', minHeight: '100px' }}>
+        {exercisesInRoutine.length === 0 ? (
+          <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>Selecciona ejercicios de la lista de arriba.</p>
+        ) : (
+          exercisesInRoutine
+            .sort((a, b) => a.order - b.order) // Aseguramos el orden visual
             .map((exercise, index) => (
               <StyledExerciseItem
                 key={exercise.id}
@@ -300,7 +426,7 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
                 onDrop={(e) => handleDrop(e, index)}
               >
                 <span>{index + 1}. {exercise.name}</span>
-                <StyledRemoveExerciseButton onClick={() => removeExercise(exercise.id)}>
+                <StyledRemoveExerciseButton onClick={() => handleExerciseSelection(exercise)}> {/* Usamos la misma función para deseleccionar */}
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
@@ -324,11 +450,14 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
 
 // --- Stage 4: Asignar Series y Repeticiones ---
 const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousStage, onSaveRoutineGroup, onAddAnotherRoutine, onClose }) => {
+  // Aseguramos que currentRoutine.exercises siempre sea un array
+  const exercisesInRoutine = currentRoutine.exercises || [];
+
   const handleSetChange = (exerciseId, value) => {
     setCurrentRoutine(prev => ({
       ...prev,
-      exercises: prev.exercises.map(ex =>
-        ex.id === exerciseId ? { ...ex, sets: value } : ex
+      exercises: (prev.exercises || []).map(ex =>
+        ex.id === exerciseId ? { ...ex, sets: Number(value) || 0 } : ex
       )
     }));
   };
@@ -336,8 +465,8 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousS
   const handleRepChange = (exerciseId, value) => {
     setCurrentRoutine(prev => ({
       ...prev,
-      exercises: prev.exercises.map(ex =>
-        ex.id === exerciseId ? { ...ex, reps: value } : ex
+      exercises: (prev.exercises || []).map(ex =>
+        ex.id === exerciseId ? { ...ex, reps: Number(value) || 0 } : ex
       )
     }));
   };
@@ -345,8 +474,8 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousS
   const handleTimeChange = (exerciseId, value) => {
     setCurrentRoutine(prev => ({
       ...prev,
-      exercises: prev.exercises.map(ex =>
-        ex.id === exerciseId ? { ...ex, time: value } : ex
+      exercises: (prev.exercises || []).map(ex =>
+        ex.id === exerciseId ? { ...ex, time: Number(value) || 0 } : ex
       )
     }));
   };
@@ -359,10 +488,10 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousS
       </StyledCurrentRoutineInfo>
 
       <StyledExerciseListContainer style={{ border: 'none', padding: '0', backgroundColor: 'transparent' }}>
-        {currentRoutine.exercises.length === 0 ? (
-          <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>No hay ejercicios para configurar.</p>
+        {exercisesInRoutine.length === 0 ? (
+          <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>No hay ejercicios para configurar. Vuelve a la etapa anterior para añadir.</p>
         ) : (
-          currentRoutine.exercises
+          exercisesInRoutine
             .sort((a, b) => a.order - b.order)
             .map((exercise, index) => (
               <StyledExerciseItem key={exercise.id} style={{ flexDirection: 'column', alignItems: 'flex-start', cursor: 'default' }}>
@@ -371,9 +500,9 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousS
                   <StyledLabel htmlFor={`sets-${exercise.id}`} style={{ marginBottom: '0' }}>Series:</StyledLabel>
                   <StyledInput
                     type="number"
-                    min="1"
+                    min="0"
                     id={`sets-${exercise.id}`}
-                    value={exercise.sets === '' ? '' : exercise.sets}
+                    value={exercise.sets === 0 ? '' : exercise.sets}
                     onChange={(e) => handleSetChange(exercise.id, e.target.value)}
                     placeholder="Ej: 3"
                   />
@@ -384,9 +513,9 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousS
                   </StyledLabel>
                   <StyledInput
                     type="number"
-                    min="1"
+                    min="0"
                     id={`value-${exercise.id}`}
-                    value={exercise.type === 'timed' ? (exercise.time === '' ? '' : exercise.time) : (exercise.reps === '' ? '' : exercise.reps)}
+                    value={exercise.type === 'timed' ? (exercise.time === 0 ? '' : exercise.time) : (exercise.reps === 0 ? '' : exercise.reps)}
                     onChange={(e) => exercise.type === 'timed' ? handleTimeChange(exercise.id, e.target.value) : handleRepChange(exercise.id, e.target.value)}
                     placeholder={exercise.type === 'timed' ? 'Ej: 45' : 'Ej: 8-12'}
                   />
@@ -428,7 +557,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
     resetForm,
     saveDraft,
     loadDraft,
-    isSaving, // Mantenemos isSaving para la lógica interna
+    isSaving,
     saveError,
   } = useRoutineGroupForm(studentId, draftGroupId, user?.uid);
 
@@ -474,15 +603,14 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
       alert("Debes agregar al menos una rutina al grupo.");
       return;
     }
-    if (currentRoutine && currentRoutine.exercises.length === 0) {
+    if (currentRoutine && (!currentRoutine.exercises || currentRoutine.exercises.length === 0)) {
       alert("La rutina actual no tiene ejercicios.");
       return;
     }
-    if (currentRoutine && currentRoutine.exercises.some(ex => !ex.sets || (ex.type === 'timed' ? !ex.time : !ex.reps))) {
-      alert("Por favor, asigna series y repeticiones/tiempo a todos los ejercicios de la rutina actual.");
+    if (currentRoutine && (currentRoutine.exercises || []).some(ex => !ex.sets || (ex.type === 'timed' ? ex.time === 0 : ex.reps === 0))) {
+      alert("Por favor, asigna series y repeticiones/tiempo a todos los ejercicios de la rutina actual. Deben ser mayores a 0.");
       return;
     }
-    // ¡NUEVA VALIDACIÓN para el calentamiento!
     if (currentRoutine && (!currentRoutine.warmUp || !currentRoutine.warmUp.trim())) {
       alert("Por favor, agrega una descripción para el calentamiento de la rutina actual.");
       return;
@@ -501,7 +629,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
           name: r.name,
           restTime: r.restTime,
           rir: r.rir,
-          warmUp: r.warmUp, // ¡Aseguramos que el calentamiento se guarde!
+          warmUp: r.warmUp || '', // ¡CAMBIO CLAVE AQUÍ! Aseguramos que warmUp no sea undefined
           exercises: r.exercises,
         }))
       }, { merge: true });
@@ -532,11 +660,10 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
             {stage === 4 && "Series y Reps"}
           </StyledModalTitle>
           <StyledCloseButton onClick={handleCloseModal}>
-            X {/* Botón de cerrar con 'X' */}
+            X
           </StyledCloseButton>
         </StyledModalHeader>
 
-        {/* ¡CORRECCIÓN CLAVE AQUÍ! Pasamos la prop $isVisible */}
         <StyledErrorMessage $isVisible={!!saveError}>{saveError}</StyledErrorMessage>
 
         {stage === 1 && (
