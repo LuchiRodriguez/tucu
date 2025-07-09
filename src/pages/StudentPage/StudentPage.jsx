@@ -243,8 +243,14 @@ function StudentPage() { // Renombrado de StudentRoutinesPage a StudentPage
       />
       <Card style={{ maxWidth: '800px', marginTop: '20px', padding: '0 20px 20px' }}>
         <h2>
-          <p className="text-gray-600 text-sm mt-2">Objetivo: {student?.objective || 'No definido'}</p>
+          {/* Aquí se asume que el nombre del alumno ya se muestra en el Navbar o en un título principal */}
+          {/* <p className="text-gray-600 text-sm mt-2">Objetivo: {student?.objective || 'No definido'}</p> */}
         </h2>
+        <h2 style={{ textAlign: 'center', color: '#2c3e50', marginBottom: '15px' }}>
+          Grupos de Rutinas de {studentDisplayName}
+        </h2>
+        <p className="text-gray-600 text-sm mt-2" style={{ textAlign: 'center', marginBottom: '20px' }}>Objetivo del Alumno: {student?.objective || 'No definido'}</p>
+
 
         {Object.keys(groupedRoutineGroups).length === 0 ? (
           <StyledAppMessage style={{ marginTop: '0', fontSize: '0.9rem', color: '#555' }}>
@@ -252,61 +258,80 @@ function StudentPage() { // Renombrado de StudentRoutinesPage a StudentPage
           </StyledAppMessage>
         ) : (
           <div style={{ width: '100%' }}>
-            {Object.entries(groupedRoutineGroups).map(([stageName, groups]) => (
-              <CollapsibleCard key={stageName} title={`Etapa: ${stageName.charAt(0).toUpperCase() + stageName.slice(1)}`} defaultOpen={true}>
-                <div className="space-y-4 p-2">
-                  {groups.map(group => (
-                    <div key={group.id} className="border border-gray-200 rounded-md p-4 shadow-sm bg-gray-50">
-                      <h4 className="font-bold text-lg mb-2 text-blue-700">{group.name}</h4>
-                      <p className="text-gray-700 text-sm mb-1">Objetivo del Grupo: {group.objective}</p>
-                      <p className="text-gray-700 text-sm mb-2">Vencimiento: {group.dueDate}</p>
-                      {group.status === 'draft' && <p className="text-orange-500 text-sm font-semibold">Borrador (Solo visible para el profe)</p>}
+            {Object.entries(groupedRoutineGroups).map(([stageName, groups]) => {
+              console.log(`[StudentPage] CollapsibleCard Key: ${stageName}`); // Log para CollapsibleCard
+              return (
+                <CollapsibleCard key={stageName} title={`Etapa: ${stageName.charAt(0).toUpperCase() + stageName.slice(1)}`} defaultOpen={true}>
+                  <div className="space-y-4 p-2">
+                    {groups.map((group, groupIdx) => {
+                      // Log para depuración: Verificar IDs de grupo
+                      console.log(`[StudentPage]   Group Key: ${group.id}, Name: ${group.name}`);
+                      return (
+                        <div key={group.id} className="border border-gray-200 rounded-md p-4 shadow-sm bg-gray-50">
+                          <h4 className="font-bold text-lg mb-2 text-blue-700">{group.name}</h4>
+                          <p className="text-gray-700 text-sm mb-1">Objetivo del Grupo: {group.objective}</p>
+                          <p className="text-gray-700 text-sm mb-2">Vencimiento: {group.dueDate}</p>
+                          {group.status === 'draft' && <p className="text-orange-500 text-sm font-semibold">Borrador (Solo visible para el profe)</p>}
 
-                      <h5 className="font-semibold text-md mt-4 mb-2">Rutinas en este Grupo:</h5>
-                      {group.routines && group.routines.length > 0 ? (
-                        <ul className="list-disc pl-5 space-y-2">
-                          {group.routines.map(routine => (
-                            <li key={routine.id} className="text-gray-800 text-sm">
-                              **{routine.name}**: Descanso {routine.restTime}s, RIR {routine.rir}
-                              <ul className="list-circle pl-5 text-xs text-gray-600 mt-1">
-                                {routine.exercises && routine.exercises.length > 0 ? (
-                                  routine.exercises.map((ex, idx) => (
-                                    <li key={ex.id}>{idx + 1}. {ex.name} ({ex.sets} Series, {ex.type === 'timed' ? `${ex.time}s` : `${ex.reps} Reps`})</li>
-                                  ))
-                                ) : (
-                                  <li>No hay ejercicios en esta rutina.</li>
-                                )}
-                              </ul>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-gray-600 text-sm">No hay rutinas en este grupo aún.</p>
-                      )}
+                          <h5 className="font-semibold text-md mt-4 mb-2">Rutinas en este Grupo:</h5>
+                          {group.routines && group.routines.length > 0 ? (
+                            <ul className="list-disc pl-5 space-y-2">
+                              {group.routines.map((routine, routineIdx) => {
+                                // Log para depuración: Verificar IDs de rutina
+                                const routineKey = routine.id || `routine-${group.id}-${routineIdx}`;
+                                console.log(`[StudentPage]     Routine Key: ${routineKey}, Name: ${routine.name}`);
+                                return (
+                                  <li key={routineKey} className="text-gray-800 text-sm">
+                                    <strong>{routine.name}</strong>: Descanso {routine.restTime}s, RIR {routine.rir}
+                                    <ul className="list-circle pl-5 text-xs text-gray-600 mt-1">
+                                      {routine.exercises && routine.exercises.length > 0 ? (
+                                        routine.exercises.map((ex, exIdx) => {
+                                          // Log para depuración: Verificar IDs de ejercicio
+                                          const exerciseKey = ex.id || `ex-${routine.id}-${exIdx}`;
+                                          console.log(`[StudentPage]       Exercise Key: ${exerciseKey}, Name: ${ex.name}`);
+                                          return (
+                                            <li key={exerciseKey}>
+                                              {exIdx + 1}. {ex.name} ({ex.sets} Series, {ex.type === 'timed' ? `${ex.time}s` : `${ex.reps} Reps`})
+                                            </li>
+                                          );
+                                        })
+                                      ) : (
+                                        <li key={`no-exercises-${routine.id}`}>No hay ejercicios en esta rutina.</li>
+                                      )}
+                                    </ul>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          ) : (
+                            <p className="text-gray-600 text-sm">No hay rutinas en este grupo aún.</p>
+                          )}
 
-                      <div className="flex justify-end gap-2 mt-4">
-                        {group.status === 'draft' && (
-                          <StyledFormButton
-                            type="button"
-                            onClick={() => handleEditRoutineGroup(group.id)}
-                            style={{ backgroundColor: '#f39c12', padding: '8px 12px', fontSize: '0.85rem' }}
-                          >
-                            Continuar Editando Borrador
-                          </StyledFormButton>
-                        )}
-                        <StyledFormButton
-                          type="button"
-                          onClick={() => handleDeleteRoutineGroup(group.id)}
-                          style={{ backgroundColor: '#e74c3c', padding: '8px 12px', fontSize: '0.85rem' }}
-                        >
-                          Eliminar Grupo
-                        </StyledFormButton>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CollapsibleCard>
-            ))}
+                          <div className="flex justify-end gap-2 mt-4">
+                            {group.status === 'draft' && (
+                              <StyledFormButton
+                                type="button"
+                                onClick={() => handleEditRoutineGroup(group.id)}
+                                style={{ backgroundColor: '#f39c12', padding: '8px 12px', fontSize: '0.85rem' }}
+                              >
+                                Continuar Editando Borrador
+                              </StyledFormButton>
+                            )}
+                            <StyledFormButton
+                              type="button"
+                              onClick={() => handleDeleteRoutineGroup(group.id)}
+                              style={{ backgroundColor: '#e74c3c', padding: '8px 12px', fontSize: '0.85rem' }}
+                            >
+                              Eliminar Grupo
+                            </StyledFormButton>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CollapsibleCard>
+              );
+            })}
           </div>
         )}
 

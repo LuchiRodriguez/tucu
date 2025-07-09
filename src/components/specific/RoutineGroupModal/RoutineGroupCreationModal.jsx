@@ -160,7 +160,7 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
 
   return (
     <StyledModalBody>
-      <div>
+      <div style={{ marginBottom: '18px' }}>
         <StyledLabel htmlFor="routineName">Nombre de la Rutina</StyledLabel>
         <StyledInput
           type="text"
@@ -219,66 +219,83 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
 const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, goToPreviousStage, onClose }) => {
   const [exerciseSearchText, setExerciseSearchText] = useState('');
 
-  // Aseguramos que currentRoutine.exercises siempre sea un array
-  const exercisesInRoutine = currentRoutine.exercises || [];
+  // Aseguramos que currentRoutine sea siempre un objeto y exercises un array
+  const safeCurrentRoutine = currentRoutine || {};
+  const exercisesInRoutine = safeCurrentRoutine.exercises || [];
+
+  // Add a useEffect to log currentRoutine changes
+  useEffect(() => {
+    console.count("Stage3AddExercises Render"); // Contar cuántas veces se renderiza
+    console.log("[Stage3AddExercises] currentRoutine object:", JSON.stringify(safeCurrentRoutine, null, 2));
+    console.log("[Stage3AddExercises] exercisesInRoutine derived:", JSON.stringify(exercisesInRoutine, null, 2));
+  }, [safeCurrentRoutine]); // Dependemos solo de safeCurrentRoutine
 
   const handleExerciseSelection = (exercise) => {
-    setCurrentRoutine(prev => {
-      const currentExercises = prev.exercises || []; // Aseguramos que sea un array
-      const isAlreadySelected = currentExercises.some(ex => ex.id === exercise.id);
-      let updatedExercises;
+    console.log("[Stage3] handleExerciseSelection llamado para:", exercise.name, "ID:", exercise.id);
+    console.log("[Stage3] Estado actual de safeCurrentRoutine (antes de setCurrentRoutine):", JSON.stringify(safeCurrentRoutine, null, 2));
+    console.log("[Stage3] Estado actual de exercisesInRoutine (antes de setCurrentRoutine):", JSON.stringify(exercisesInRoutine, null, 2));
 
-      if (isAlreadySelected) {
-        updatedExercises = currentExercises.filter(ex => ex.id !== exercise.id);
-      } else {
-        const newExercise = {
-          id: exercise.id,
-          name: exercise.name,
-          type: exercise.type || 'reps_sets', // Default a reps_sets si no está definido
-          sets: 0,
-          reps: 0,
-          time: 0,
-          kilos: 0,
-          completed: false,
-          order: currentExercises.length, // Usamos la longitud del array ya validado
-        };
-        updatedExercises = [...currentExercises, newExercise];
-      }
-      // Re-asignar el orden para reflejar la posición actual después de añadir/eliminar
-      const reorderedExercises = updatedExercises.map((ex, idx) => ({ ...ex, order: idx }));
+    // Calculate the updated exercises array
+    const currentExercises = safeCurrentRoutine?.exercises || []; // Use safeCurrentRoutine here
+    const isAlreadySelected = currentExercises.some(ex => ex.id === exercise.id);
+    let updatedExercises;
 
-      return {
-        ...prev,
-        exercises: reorderedExercises,
+    if (isAlreadySelected) {
+      updatedExercises = currentExercises.filter(ex => ex.id !== exercise.id);
+      console.log("[Stage3] Deseleccionando. Nuevos ejercicios (después de filter):", updatedExercises);
+    } else {
+      const newExercise = {
+        id: exercise.id,
+        name: exercise.name,
+        type: exercise.type || 'reps_sets',
+        sets: 0,
+        reps: 0,
+        time: 0,
+        kilos: 0,
+        completed: false,
       };
-    });
+      updatedExercises = [...currentExercises, newExercise];
+      console.log("[Stage3] Seleccionando. Nuevos ejercicios (después de push):", updatedExercises);
+    }
+    // Re-asignar el orden para reflejar la posición actual después de añadir/eliminar
+    const reorderedExercises = updatedExercises.map((ex, idx) => ({ ...ex, order: idx }));
+    console.log("[Stage3] Ejercicios reordenados (antes de retornar):", reorderedExercises);
+
+    // Now, create the *full updated routine object* to pass to setCurrentRoutine
+    const updatedRoutine = {
+      ...safeCurrentRoutine, // Spread the existing safeCurrentRoutine
+      exercises: reorderedExercises, // Update the exercises array
+    };
+
+    // Pass the fully updated routine object directly
+    setCurrentRoutine(updatedRoutine);
   };
 
   const handleSetsChange = (exerciseId, value) => {
-    setCurrentRoutine(prev => ({
-      ...prev,
-      exercises: (prev.exercises || []).map(ex =>
-        ex.id === exerciseId ? { ...ex, sets: Number(value) || 0 } : ex
-      )
-    }));
+    // Get the current routine state
+    const currentRoutineCopy = { ...safeCurrentRoutine };
+    // Update the specific exercise's sets
+    currentRoutineCopy.exercises = (currentRoutineCopy.exercises || []).map(ex =>
+      ex.id === exerciseId ? { ...ex, sets: Number(value) || 0 } : ex
+    );
+    // Pass the updated routine object
+    setCurrentRoutine(currentRoutineCopy);
   };
 
   const handleRepChange = (exerciseId, value) => {
-    setCurrentRoutine(prev => ({
-      ...prev,
-      exercises: (prev.exercises || []).map(ex =>
-        ex.id === exerciseId ? { ...ex, reps: Number(value) || 0 } : ex
-      )
-    }));
+    const currentRoutineCopy = { ...safeCurrentRoutine };
+    currentRoutineCopy.exercises = (currentRoutineCopy.exercises || []).map(ex =>
+      ex.id === exerciseId ? { ...ex, reps: Number(value) || 0 } : ex
+    );
+    setCurrentRoutine(currentRoutineCopy);
   };
 
   const handleTimeChange = (exerciseId, value) => {
-    setCurrentRoutine(prev => ({
-      ...prev,
-      exercises: (prev.exercises || []).map(ex =>
-        ex.id === exerciseId ? { ...ex, time: Number(value) || 0 } : ex
-      )
-    }));
+    const currentRoutineCopy = { ...safeCurrentRoutine };
+    currentRoutineCopy.exercises = (currentRoutineCopy.exercises || []).map(ex =>
+      ex.id === exerciseId ? { ...ex, time: Number(value) || 0 } : ex
+    );
+    setCurrentRoutine(currentRoutineCopy);
   };
 
   const handleDragStart = (e, index) => {
@@ -300,10 +317,14 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
     // Actualiza el orden para reflejar el nuevo índice
     const updatedExercises = newExercises.map((ex, idx) => ({ ...ex, order: idx }));
 
-    setCurrentRoutine(prev => ({
-      ...prev,
-      exercises: updatedExercises
-    }));
+    // Create the updated routine object
+    const updatedRoutine = {
+      ...safeCurrentRoutine,
+      exercises: updatedExercises,
+    };
+
+    // Pass the updated routine object directly
+    setCurrentRoutine(updatedRoutine);
   };
 
   const filteredExercises = localExercisesData.filter(exercise =>
@@ -321,9 +342,9 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
 
   return (
     <StyledModalBody>
-      <StyledSectionTitle>{currentRoutine.name}</StyledSectionTitle>
+      <StyledSectionTitle>{safeCurrentRoutine.name}</StyledSectionTitle>
       <StyledCurrentRoutineInfo>
-        Descanso: {currentRoutine.restTime}s | RIR: {currentRoutine.rir} | Calentamiento: {currentRoutine.warmUp}
+        Descanso: {safeCurrentRoutine.restTime}s | RIR: {safeCurrentRoutine.rir} | Calentamiento: {safeCurrentRoutine.warmUp}
       </StyledCurrentRoutineInfo>
       
       {/* Sección para seleccionar ejercicios */}
@@ -336,6 +357,8 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
         style={{ marginBottom: '15px' }}
       />
 
+      {/* Contenedor para la lista de ejercicios seleccionables */}
+      <div style={{ border: '1px solid #ddd', padding: '10px', backgroundColor: '#f8f8f8', maxHeight: '200px', overflowY: 'auto', borderRadius: '8px' }}>
         {Object.keys(groupedExercises).length === 0 && exerciseSearchText ? (
           <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>No se encontraron ejercicios con esa búsqueda.</p>
         ) : Object.keys(groupedExercises).length === 0 && !exerciseSearchText ? (
@@ -345,7 +368,9 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
             <CollapsibleCard key={categoryName} title={categoryName} defaultOpen={false}>
               {groupedExercises[categoryName].map(exercise => {
                 const isSelected = exercisesInRoutine.some(ex => ex.id === exercise.id);
-                const currentSelectedExercise = exercisesInRoutine.find(ex => ex.id === exercise.id);
+                // Aseguramos que currentSelectedExercise sea un objeto para acceder a sus propiedades de forma segura
+                const currentSelectedExercise = exercisesInRoutine.find(ex => ex.id === exercise.id) || {};
+                
                 return (
                   <div
                     key={exercise.id}
@@ -376,7 +401,8 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
                           type="number"
                           min="0"
                           placeholder="Series"
-                          value={currentSelectedExercise?.sets === 0 ? '' : currentSelectedExercise?.sets}
+                          // Normalizamos el valor a string vacío si es 0, undefined o null
+                          value={currentSelectedExercise.sets === 0 || currentSelectedExercise.sets === undefined || currentSelectedExercise.sets === null ? '' : currentSelectedExercise.sets}
                           onChange={(e) => handleSetsChange(exercise.id, e.target.value)}
                           style={{ width: '50px', textAlign: 'center' }}
                         />
@@ -385,7 +411,8 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
                             type="number"
                             min="0"
                             placeholder="Tiempo (seg)"
-                            value={currentSelectedExercise?.time === 0 ? '' : currentSelectedExercise?.time}
+                            // Normalizamos el valor a string vacío si es 0, undefined o null
+                            value={currentSelectedExercise.time === 0 || currentSelectedExercise.time === undefined || currentSelectedExercise.time === null ? '' : currentSelectedExercise.time}
                             onChange={(e) => handleTimeChange(exercise.id, e.target.value)}
                             style={{ width: '80px', textAlign: 'center' }}
                           />
@@ -394,7 +421,8 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
                             type="number"
                             min="0"
                             placeholder="Reps"
-                            value={currentSelectedExercise?.reps === 0 ? '' : currentSelectedExercise?.reps}
+                            // Normalizamos el valor a string vacío si es 0, undefined o null
+                            value={currentSelectedExercise.reps === 0 || currentSelectedExercise.reps === undefined || currentSelectedExercise.reps === null ? '' : currentSelectedExercise.reps}
                             onChange={(e) => handleRepChange(exercise.id, e.target.value)}
                             style={{ width: '50px', textAlign: 'center' }}
                           />
@@ -407,9 +435,12 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
             </CollapsibleCard>
           ))
         )}
+      </div>
 
       {/* Sección de ejercicios seleccionados y ordenables */}
       <StyledSubSectionTitle>Ejercicios en la Rutina:</StyledSubSectionTitle>
+      {/* Contenedor para la lista de ejercicios seleccionados */}
+      <StyledExerciseListContainer as="ul" style={{ height: 'auto', minHeight: '100px', border: '1px solid #ddd', padding: '10px', backgroundColor: '#f8f8f8', borderRadius: '8px' }}>
         {exercisesInRoutine.length === 0 ? (
           <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>Selecciona ejercicios de la lista de arriba.</p>
         ) : (
@@ -432,6 +463,7 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
               </StyledExerciseItem>
             ))
         )}
+      </StyledExerciseListContainer>
 
       <StyledButtonContainer>
         <StyledNavButton onClick={goToPreviousStage}>
@@ -540,7 +572,7 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousS
 
 // --- Componente Principal del Modal ---
 const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = null }) => {
-  const { user } = useAuth();
+  const { user } = useAuth(); // Obtenemos el usuario del contexto de autenticación
   const {
     stage,
     groupData,
@@ -556,7 +588,11 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
     loadDraft,
     isSaving,
     saveError,
-  } = useRoutineGroupForm(studentId, draftGroupId, user?.uid);
+  } = useRoutineGroupForm(studentId, draftGroupId, user?.uid); // Pasamos user.uid al hook
+
+  // Log de currentRoutine justo después de obtenerlo del hook
+  console.log("[RoutineGroupCreationModal] currentRoutine from hook:", JSON.stringify(currentRoutine, null, 2));
+
 
   useEffect(() => {
     if (isOpen && draftGroupId) {
@@ -567,22 +603,28 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
   }, [isOpen, draftGroupId, loadDraft, resetForm]);
 
   useEffect(() => {
-    if (!isOpen && (groupData.name || routines.length > 0)) {
-      saveDraft(true);
-    }
+    // ¡CAMBIO CLAVE AQUÍ! Solo intentar guardar el borrador si hay un usuario logueado
+    // y si hay datos para guardar (groupData.name o routines.length > 0)
+    // if (!isOpen && user && (groupData.name || routines.length > 0)) { // COMENTADO TEMPORALMENTE
+    //   saveDraft(true); // COMENTADO TEMPORALMENTE
+    // }
     const handleBeforeUnload = () => {
-      if (groupData.name || routines.length > 0) {
-        saveDraft(true);
+      // ¡CAMBIO CLAVE AQUÍ! También verificar el usuario antes de guardar al cerrar la ventana
+      if (user && (groupData.name || routines.length > 0)) {
+        // saveDraft(true); // COMENTADO TEMPORALMENTE
       }
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [isOpen, groupData, routines, saveDraft]);
+  }, [isOpen, groupData, routines, saveDraft, user]); // Añadimos 'user' a las dependencias
 
   const handleCloseModal = () => {
-    saveDraft(true);
+    // ¡CAMBIO CLAVE AQUÍ! Solo intentar guardar el borrador si hay un usuario logueado
+    if (user) {
+      // saveDraft(true); // COMENTADO TEMPORALMENTE
+    }
     onClose();
   };
 
@@ -604,10 +646,41 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
       alert("La rutina actual no tiene ejercicios.");
       return;
     }
-    if (currentRoutine && (currentRoutine.exercises || []).some(ex => !ex.sets || (ex.type === 'timed' ? ex.time === 0 : ex.reps === 0))) {
-      alert("Por favor, asigna series y repeticiones/tiempo a todos los ejercicios de la rutina actual. Deben ser mayores a 0.");
+    // Asegurarse de que todos los ejercicios tengan sets y reps/time > 0
+    // Y que los campos no sean undefined si se están guardando
+    const routinesToSave = routines.map(r => ({
+      ...r,
+      warmUp: r.warmUp || '', // Aseguramos que warmUp no sea undefined
+      exercises: (r.exercises || []).map(ex => ({
+        id: ex.id,
+        name: ex.name,
+        type: ex.type || 'reps_sets',
+        sets: ex.sets || 0, // Aseguramos que sets sea un número o 0
+        reps: ex.reps || 0, // Aseguramos que reps sea un número o 0
+        time: ex.time || 0, // Aseguramos que time sea un número o 0
+        kilos: ex.kilos === undefined ? 0 : ex.kilos, // Aseguramos que kilos sea un número o 0
+        completed: ex.completed === undefined ? false : ex.completed, // Aseguramos que completed sea un booleano o false
+        order: ex.order || 0, // Aseguramos que order sea un número o 0
+      }))
+    }));
+
+    // Validación final antes de guardar
+    const hasInvalidExerciseData = routinesToSave.some(r =>
+      (r.exercises || []).some(ex => {
+        if (ex.sets <= 0) return true;
+        if (ex.type === 'timed') {
+          return ex.time <= 0;
+        } else {
+          return ex.reps <= 0;
+        }
+      })
+    );
+
+    if (hasInvalidExerciseData) {
+      alert("Por favor, asigna al menos 1 serie y 1 repetición/segundo a todos los ejercicios de cada rutina.");
       return;
     }
+
     if (currentRoutine && (!currentRoutine.warmUp || !currentRoutine.warmUp.trim())) {
       alert("Por favor, agrega una descripción para el calentamiento de la rutina actual.");
       return;
@@ -615,21 +688,46 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
 
     try {
       const routineGroupRef = doc(db, `artifacts/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/users/${studentId}/routineGroups`, groupData.id || 'new');
-      await setDoc(routineGroupRef, {
+      
+      // Construimos el objeto a guardar, asegurando que no haya 'undefined'
+      const dataToSave = {
         ...groupData,
         status: 'active',
         createdAt: groupData.createdAt || new Date(),
         updatedAt: new Date(),
-        assignedBy: user.uid,
-        routines: routines.map(r => ({
-          id: r.id,
-          name: r.name,
-          restTime: r.restTime,
-          rir: r.rir,
-          warmUp: r.warmUp || '', // Aseguramos que warmUp no sea undefined
-          exercises: r.exercises,
-        }))
-      }, { merge: true });
+        assignedBy: user.uid, // user.uid debería estar definido aquí por el chequeo inicial
+        routines: routinesToSave // Usamos las rutinas ya saneadas
+      };
+
+      // Limpieza final de propiedades undefined (aunque los pasos anteriores deberían evitarlo)
+      Object.keys(dataToSave).forEach(key => {
+        if (dataToSave[key] === undefined) {
+          delete dataToSave[key];
+        }
+      });
+      // Para las rutinas anidadas
+      dataToSave.routines = dataToSave.routines.map(r => {
+        const cleanedRoutine = { ...r };
+        Object.keys(cleanedRoutine).forEach(key => {
+          if (cleanedRoutine[key] === undefined) {
+            delete cleanedRoutine[key];
+          }
+        });
+        // Para los ejercicios anidados dentro de cada rutina
+        cleanedRoutine.exercises = cleanedRoutine.exercises.map(ex => {
+          const cleanedExercise = { ...ex };
+          Object.keys(cleanedExercise).forEach(key => {
+            if (cleanedExercise[key] === undefined) {
+              delete cleanedExercise[key];
+            }
+          });
+          return cleanedExercise;
+        });
+        return cleanedRoutine;
+      });
+
+
+      await setDoc(routineGroupRef, dataToSave, { merge: true });
 
       alert('¡Grupo de rutinas guardado exitosamente!');
       resetForm();
@@ -653,7 +751,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
           <StyledModalTitle>
             {stage === 1 && "Nuevo grupo de rutinas"}
             {stage === 2 && "Detalles de rutina"}
-            {stage === 3 && "Añadir ejercicios"}
+            {stage === 3 && "Añadir Ejercicios"} {/* Cambiado de 'Añadir ejercicios' a 'Añadir Ejercicios' */}
             {stage === 4 && "Series y Reps"}
           </StyledModalTitle>
           <StyledCloseButton onClick={handleCloseModal}>

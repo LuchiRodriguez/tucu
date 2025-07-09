@@ -1,8 +1,31 @@
-// src/hooks/useRoutineGroupForm.js
+// src/hooks/useRoutineGroup/useRoutineGroupForm.js
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { db } from '../../config/firebase'; // Asegúrate de que esta ruta sea correcta
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore'; // Eliminadas collection y addDoc
 import { v4 as uuidv4 } from 'uuid'; // Para generar IDs únicos para rutinas/ejercicios
+
+// Función auxiliar para limpiar objetos de propiedades 'undefined' antes de guardar en Firestore
+const cleanObjectForFirestore = (obj) => {
+  if (obj === null || typeof obj !== 'object') {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => cleanObjectForFirestore(item));
+  }
+
+  const cleaned = {};
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const value = obj[key];
+      if (value !== undefined) { // Solo incluimos la propiedad si no es undefined
+        cleaned[key] = cleanObjectForFirestore(value); // Recursivamente limpia valores anidados
+      }
+    }
+  }
+  return cleaned;
+};
+
 
 // Estado inicial para un nuevo grupo de rutinas
 const initialGroupData = {
@@ -21,8 +44,9 @@ const initialGroupData = {
 const initialRoutineData = {
   id: '', // Se generará al agregarla al grupo
   name: '',
-  restTime: '',
-  rir: '',
+  restTime: '', // Siempre inicializado como string vacío para inputs numéricos
+  rir: '',      // Siempre inicializado como string vacío para inputs numéricos
+  warmUp: '',   // ¡NUEVO! Inicializado como string vacío
   exercises: [], // Array de ejercicios
 };
 
@@ -38,20 +62,58 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId) => 
   const currentDraftIdRef = useRef(initialDraftGroupId);
   const debounceTimeoutRef = useRef(null);
 
+  // --- NUEVOS LOGS PARA DIAGNÓSTICO ---
+  console.log("[useRoutineGroupForm] Current routines array (before derivation):", JSON.stringify(routines, null, 2));
+  console.log("[useRoutineGroupForm] Current routine index (before derivation):", currentRoutineIndex);
+
   // Derivar la rutina actual que se está editando
-  const currentRoutine = routines[currentRoutineIndex] || initialRoutineData;
+  // ¡CAMBIO CLAVE AQUÍ! Aseguramos que routines sea un array y que el índice sea válido
+  const currentRoutine = (Array.isArray(routines) && routines[currentRoutineIndex]) 
+    ? routines[currentRoutineIndex] 
+    : initialRoutineData;
+  console.log("[useRoutineGroupForm] Derived currentRoutine:", JSON.stringify(currentRoutine, null, 2));
 
   const setCurrentRoutine = (newRoutine) => {
+    // ¡NUEVO LOG! Para ver qué objeto está recibiendo setCurrentRoutine
+    console.log("[useRoutineGroupForm] setCurrentRoutine received newRoutine:", JSON.stringify(newRoutine, null, 2));
+
     setRoutines(prevRoutines => {
-      const updatedRoutines = [...prevRoutines];
-      updatedRoutines[currentRoutineIndex] = newRoutine;
-      return updatedRoutines;
+      // Aseguramos que prevRoutines sea un array válido
+      const currentRoutines = Array.isArray(prevRoutines) ? [...prevRoutines] : [];
+      // Aseguramos que newRoutine sea un objeto válido
+      const routineToSet = newRoutine && typeof newRoutine === 'object' ? newRoutine : { ...initialRoutineData, id: uuidv4() };
+
+      let targetIndex = currentRoutineIndex;
+
+      // Si el índice actual está fuera de los límites, intentamos ajustarlo
+      if (targetIndex < 0 || targetIndex >= currentRoutines.length) {
+        // Si el array está vacío, agregamos la rutina y ajustamos el índice a 0
+        if (currentRoutines.length === 0) {
+          currentRoutines.push(routineToSet);
+          targetIndex = 0;
+          setCurrentRoutineIndex(0); // Aseguramos que el estado del índice se actualice
+        } else {
+          // Si el índice está fuera de límites pero el array no está vacío,
+          // esto podría indicar un desajuste. Por ahora, lo agregamos al final
+          // y ajustamos el índice al último elemento.
+          console.warn("[useRoutineGroupForm] currentRoutineIndex out of bounds during setCurrentRoutine. Appending new routine.");
+          currentRoutines.push(routineToSet);
+          targetIndex = currentRoutines.length - 1;
+          setCurrentRoutineIndex(targetIndex); // Aseguramos que el estado del índice se actualice
+        }
+      } else {
+        // Si el índice es válido, actualizamos la rutina en esa posición
+        currentRoutines[targetIndex] = routineToSet;
+      }
+      
+      console.log("[useRoutineGroupForm] setRoutines called with:", JSON.stringify(currentRoutines, null, 2));
+      return currentRoutines;
     });
   };
 
   const resetForm = useCallback(() => {
     setStage(1);
-    setGroupData({ ...initialGroupData, id: uuidv4(), createdAt: new Date() }); // Nuevo ID para el borrador
+    setGroupData({ ...initialGroupData, id: uuidv4(), createdAt: new Date() }); // Corregido: uuidV4 -> uuidv4
     setRoutines([{ ...initialRoutineData, id: uuidv4() }]); // Empezar con una rutina vacía
     setCurrentRoutineIndex(0);
     currentDraftIdRef.current = null; // Limpiar el ID del borrador
@@ -81,7 +143,28 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId) => 
           updatedAt: data.updatedAt?.toDate() || new Date(),
           assignedBy: data.assignedBy,
         });
-        setRoutines(data.routines || [{ ...initialRoutineData, id: uuidv4() }]); // Cargar rutinas o una nueva
+        
+        // ¡CAMBIO CLAVE AQUÍ! Normalizamos los datos al cargar
+        const loadedRoutines = (data.routines || []).map(r => ({
+          ...r,
+          name: r.name || '',
+          restTime: r.restTime === undefined || r.restTime === null ? '' : r.restTime, // Convertir undefined/null a ''
+          rir: r.rir === undefined || r.rir === null ? '' : r.rir,             // Convertir undefined/null a ''
+          warmUp: r.warmUp === undefined || r.warmUp === null ? '' : r.warmUp, // Convertir undefined/null a ''
+          exercises: (r.exercises || []).map(ex => ({ // También limpiar ejercicios anidados
+            ...ex,
+            name: ex.name || '',
+            type: ex.type || 'reps_sets',
+            sets: ex.sets === undefined || ex.sets === null ? 0 : ex.sets,
+            reps: ex.reps === undefined || ex.reps === null ? 0 : ex.reps,
+            time: ex.time === undefined || ex.time === null ? 0 : ex.time,
+            kilos: ex.kilos === undefined || ex.kilos === null ? 0 : ex.kilos,
+            completed: ex.completed === undefined || ex.completed === null ? false : ex.completed,
+            order: ex.order === undefined || ex.order === null ? 0 : ex.order,
+          }))
+        }));
+
+        setRoutines(loadedRoutines.length > 0 ? loadedRoutines : [{ ...initialRoutineData, id: uuidv4() }]); // Cargar rutinas o una nueva
         setCurrentRoutineIndex(0); // Siempre empezar por la primera rutina al cargar
         currentDraftIdRef.current = initialDraftGroupId;
         setStage(1); // Volver a la primera etapa al cargar el borrador
@@ -125,12 +208,16 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId) => 
             name: r.name,
             restTime: r.restTime,
             rir: r.rir,
+            warmUp: r.warmUp, // Asegurarse de incluir warmUp
             exercises: r.exercises,
           }))
         };
 
+        // ¡CAMBIO CLAVE AQUÍ! Limpiamos el objeto antes de enviarlo a Firestore
+        const cleanedGroupToSave = cleanObjectForFirestore(groupToSave);
+
         const docRef = doc(db, `artifacts/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/users/${studentId}/routineGroups`, groupData.id);
-        await setDoc(docRef, groupToSave, { merge: true });
+        await setDoc(docRef, cleanedGroupToSave, { merge: true }); // <-- Aplica el objeto limpio
         console.log("Borrador guardado exitosamente:", groupData.id);
         currentDraftIdRef.current = groupData.id; // Asegurar que el ID del borrador se mantenga
       } catch (e) {
