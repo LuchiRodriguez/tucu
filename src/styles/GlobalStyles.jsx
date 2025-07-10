@@ -24,6 +24,30 @@ const GlobalStyles = createGlobalStyle`
   body {
     overflow-x: hidden;
   }
+
+  /* Reset de estilos básicos para elementos comunes */
+  h1, h2, h3, h4, h5, h6, p, ul, ol, li, figure, figcaption, blockquote, dl, dd {
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ¡NUEVO! Quitar viñetas de listas */
+  ul, li {
+    list-style: none;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit; /* Hereda el color del texto del padre por defecto */
+  }
+
+  button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font: inherit; /* Hereda la fuente del padre */
+    padding: 0;
+  }
 `;
 
 export default GlobalStyles;

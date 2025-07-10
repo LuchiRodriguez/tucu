@@ -13,7 +13,7 @@ import {
   StyledRoutineCounter,
   StyledNavbarTitle,
   StyledNavbarSearch,
-} from './StyledNavBar';
+} from './StyledNavbar';
 
 function Navbar({
   type = 'student',
@@ -24,9 +24,13 @@ function Navbar({
   setSearchValue = () => {},
   studentName = '',
   isCoachDashboard = false,
+  totalStudentsCount = 0, // Esta prop no se usa en la lógica actual de contenido del Navbar
 }) {
   const { user, role, userName: authUserName } = useAuth();
   const navigate = useNavigate();
+
+  // ¡NUEVO! Agregamos este console.log para depurar la prop 'type'
+  console.log("Navbar props: type=", type, "isCoachDashboard=", isCoachDashboard, "role=", role);
 
   const handleGoToProfile = () => {
     navigate('/profile');

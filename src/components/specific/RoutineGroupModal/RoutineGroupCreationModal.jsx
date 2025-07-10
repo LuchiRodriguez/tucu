@@ -357,113 +357,109 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
         style={{ marginBottom: '15px' }}
       />
 
-      {/* Contenedor para la lista de ejercicios seleccionables */}
-      <div style={{ border: '1px solid #ddd', padding: '10px', backgroundColor: '#f8f8f8', maxHeight: '200px', overflowY: 'auto', borderRadius: '8px' }}>
-        {Object.keys(groupedExercises).length === 0 && exerciseSearchText ? (
-          <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>No se encontraron ejercicios con esa búsqueda.</p>
-        ) : Object.keys(groupedExercises).length === 0 && !exerciseSearchText ? (
-          <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>No hay ejercicios disponibles para seleccionar.</p>
-        ) : (
-          Object.keys(groupedExercises).map(categoryName => (
-            <CollapsibleCard key={categoryName} title={categoryName} defaultOpen={false}>
-              {groupedExercises[categoryName].map(exercise => {
-                const isSelected = exercisesInRoutine.some(ex => ex.id === exercise.id);
-                // Aseguramos que currentSelectedExercise sea un objeto para acceder a sus propiedades de forma segura
-                const currentSelectedExercise = exercisesInRoutine.find(ex => ex.id === exercise.id) || {};
-                
-                return (
-                  <div
-                    key={exercise.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      marginBottom: '8px',
-                      padding: '5px 0',
-                      borderBottom: '1px dashed #f0f0f0',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-                      <input
-                        type="checkbox"
-                        id={`select-exercise-${exercise.id}`}
-                        checked={isSelected}
-                        onChange={() => handleExerciseSelection(exercise)}
-                        style={{ marginRight: '10px' }}
+      {/* Contenido de la lista de ejercicios seleccionables, sin el div contenedor */}
+      {Object.keys(groupedExercises).length === 0 && exerciseSearchText ? (
+        <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>No se encontraron ejercicios con esa búsqueda.</p>
+      ) : Object.keys(groupedExercises).length === 0 && !exerciseSearchText ? (
+        <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>No hay ejercicios disponibles para seleccionar.</p>
+      ) : (
+        Object.keys(groupedExercises).map(categoryName => (
+          <CollapsibleCard key={categoryName} title={categoryName} defaultOpen={false}>
+            {groupedExercises[categoryName].map(exercise => {
+              const isSelected = exercisesInRoutine.some(ex => ex.id === exercise.id);
+              // Aseguramos que currentSelectedExercise sea un objeto para acceder a sus propiedades de forma segura
+              const currentSelectedExercise = exercisesInRoutine.find(ex => ex.id === exercise.id) || {};
+              
+              return (
+                <div
+                  key={exercise.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '8px',
+                    padding: '5px 0',
+                    borderBottom: '1px dashed #f0f0f0',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+                    <input
+                      type="checkbox"
+                      id={`select-exercise-${exercise.id}`}
+                      checked={isSelected}
+                      onChange={() => handleExerciseSelection(exercise)}
+                      style={{ marginRight: '10px' }}
+                    />
+                    <StyledLabel htmlFor={`select-exercise-${exercise.id}`} style={{ margin: 0, fontWeight: 'normal', cursor: 'pointer' }}>
+                      {exercise.name}
+                    </StyledLabel>
+                  </div>
+                  {isSelected && (
+                    <div style={{ display: 'flex', gap: '8px', marginLeft: '10px' }}>
+                      <StyledInput
+                        type="number"
+                        min="0"
+                        placeholder="Series"
+                        // Normalizamos el valor a string vacío si es 0, undefined o null
+                        value={currentSelectedExercise.sets === 0 || currentSelectedExercise.sets === undefined || currentSelectedExercise.sets === null ? '' : currentSelectedExercise.sets}
+                        onChange={(e) => handleSetsChange(exercise.id, e.target.value)}
+                        style={{ width: '50px', textAlign: 'center' }}
                       />
-                      <StyledLabel htmlFor={`select-exercise-${exercise.id}`} style={{ margin: 0, fontWeight: 'normal', cursor: 'pointer' }}>
-                        {exercise.name}
-                      </StyledLabel>
-                    </div>
-                    {isSelected && (
-                      <div style={{ display: 'flex', gap: '8px', marginLeft: '10px' }}>
+                      {exercise.type === 'timed' ? (
                         <StyledInput
                           type="number"
                           min="0"
-                          placeholder="Series"
+                          placeholder="Tiempo (seg)"
                           // Normalizamos el valor a string vacío si es 0, undefined o null
-                          value={currentSelectedExercise.sets === 0 || currentSelectedExercise.sets === undefined || currentSelectedExercise.sets === null ? '' : currentSelectedExercise.sets}
-                          onChange={(e) => handleSetsChange(exercise.id, e.target.value)}
+                          value={currentSelectedExercise.time === 0 || currentSelectedExercise.time === undefined || currentSelectedExercise.time === null ? '' : currentSelectedExercise.time}
+                          onChange={(e) => handleTimeChange(exercise.id, e.target.value)}
+                          style={{ width: '80px', textAlign: 'center' }}
+                        />
+                      ) : (
+                        <StyledInput
+                          type="number"
+                          min="0"
+                          placeholder="Reps"
+                          // Normalizamos el valor a string vacío si es 0, undefined o null
+                          value={currentSelectedExercise.reps === 0 || currentSelectedExercise.reps === undefined || currentSelectedExercise.reps === null ? '' : currentSelectedExercise.reps}
+                          onChange={(e) => handleRepChange(exercise.id, e.target.value)}
                           style={{ width: '50px', textAlign: 'center' }}
                         />
-                        {exercise.type === 'timed' ? (
-                          <StyledInput
-                            type="number"
-                            min="0"
-                            placeholder="Tiempo (seg)"
-                            // Normalizamos el valor a string vacío si es 0, undefined o null
-                            value={currentSelectedExercise.time === 0 || currentSelectedExercise.time === undefined || currentSelectedExercise.time === null ? '' : currentSelectedExercise.time}
-                            onChange={(e) => handleTimeChange(exercise.id, e.target.value)}
-                            style={{ width: '80px', textAlign: 'center' }}
-                          />
-                        ) : (
-                          <StyledInput
-                            type="number"
-                            min="0"
-                            placeholder="Reps"
-                            // Normalizamos el valor a string vacío si es 0, undefined o null
-                            value={currentSelectedExercise.reps === 0 || currentSelectedExercise.reps === undefined || currentSelectedExercise.reps === null ? '' : currentSelectedExercise.reps}
-                            onChange={(e) => handleRepChange(exercise.id, e.target.value)}
-                            style={{ width: '50px', textAlign: 'center' }}
-                          />
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </CollapsibleCard>
-          ))
-        )}
-      </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </CollapsibleCard>
+        ))
+      )}
 
       {/* Sección de ejercicios seleccionados y ordenables */}
       <StyledSubSectionTitle>Ejercicios en la Rutina:</StyledSubSectionTitle>
-      {/* Contenedor para la lista de ejercicios seleccionados */}
-      <StyledExerciseListContainer as="ul" style={{ height: 'auto', minHeight: '100px', border: '1px solid #ddd', padding: '10px', backgroundColor: '#f8f8f8', borderRadius: '8px' }}>
-        {exercisesInRoutine.length === 0 ? (
-          <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>Selecciona ejercicios de la lista de arriba.</p>
-        ) : (
-          exercisesInRoutine
-            .sort((a, b) => a.order - b.order) // Aseguramos el orden visual
-            .map((exercise, index) => (
-              <StyledExerciseItem
-                key={exercise.id}
-                draggable
-                onDragStart={(e) => handleDragStart(e, index)}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, index)}
-              >
-                <span>{index + 1}. {exercise.name}</span>
-                <StyledRemoveExerciseButton onClick={() => handleExerciseSelection(exercise)}> {/* Usamos la misma función para deseleccionar */}
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </StyledRemoveExerciseButton>
-              </StyledExerciseItem>
-            ))
-        )}
-      </StyledExerciseListContainer>
+      {/* Contenido de la lista de ejercicios seleccionados, sin el StyledExerciseListContainer */}
+      {exercisesInRoutine.length === 0 ? (
+        <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>Selecciona ejercicios de la lista de arriba.</p>
+      ) : (
+        exercisesInRoutine
+          .sort((a, b) => a.order - b.order) // Aseguramos el orden visual
+          .map((exercise, index) => (
+            <StyledExerciseItem
+              key={exercise.id}
+              draggable
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, index)}
+            >
+              <span>{index + 1}. {exercise.name}</span>
+              <StyledRemoveExerciseButton onClick={() => handleExerciseSelection(exercise)}> {/* Usamos la misma función para deseleccionar */}
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </StyledRemoveExerciseButton>
+            </StyledExerciseItem>
+          ))
+      )}
 
       <StyledButtonContainer>
         <StyledNavButton onClick={goToPreviousStage}>

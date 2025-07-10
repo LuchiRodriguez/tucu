@@ -10,18 +10,9 @@ export const StyledCardContainer = styled.div.withConfig({
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 12px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
   display: flex;
-  /* Flex-direction ahora es dinámico, por defecto es 'column' */
   flex-direction: ${props => props.$flexDirection || 'column'}; 
-  align-items: center; /* Se mantiene para centrar horizontalmente si el item es más chico que el contenedor */
-  gap: 12px;
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
-  }
+  align-items: center;
 `;
 
 // 2. Componente p estilizado para el título (EXPORTADO)
@@ -60,5 +51,3 @@ export const StyledChevronButton = styled.button`
     color: #007bff;
   }
 `;
-
-// Puedes añadir más componentes estilizados aquí si los necesitas para la Card
