@@ -1,7 +1,7 @@
 // src/components/specific/RoutineGroupModal/RoutineGroupCreationModal.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react'; // Añadido useCallback
 import { db } from '../../../config/firebase';
-import { doc, setDoc, getDoc } from 'firebase/firestore'; // Añadido getDoc
+import { doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore'; // Añadido getDoc, collection, query, where, getDocs
 import { useAuth } from '../../../context/authContextBase';
 import useRoutineGroupForm from '../../../hooks/useRoutineGroup/useRoutineGroupForm';
 import PropTypes from 'prop-types';
@@ -45,7 +45,7 @@ const ChevronIcon = ({ direction }) => (
       transform: direction === 'left' ? 'rotate(180deg)' : 'none',
     }}
   >
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+    <path strokeLinecap="round" strokeWidth={2} d="M9 5l7 7-7 7" />
   </svg>
 );
 
@@ -53,8 +53,52 @@ ChevronIcon.propTypes = {
   direction: PropTypes.oneOf(['left', 'right']).isRequired,
 };
 
-const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose }) => {
+// --- Stage 1: Detalles del Grupo ---
+const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, studentId, draftGroupId, isEditingIndividualRoutine, setGroupNameConflictError, groupNameConflictError }) => {
   const [errors, setErrors] = useState({});
+
+  // Efecto para validar el nombre del grupo y la etapa en tiempo real
+  useEffect(() => {
+    const checkDuplicateGroup = async () => {
+      // No validar si no hay nombre o etapa, o si estamos editando una rutina individual
+      if (!groupData.name.trim() || !groupData.stage.trim() || isEditingIndividualRoutine || !studentId) {
+        setGroupNameConflictError(null);
+        return;
+      }
+
+      const routineGroupsCollectionRef = collection(db, `artifacts/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/users/${studentId}/routineGroups`);
+      const q = query(
+        routineGroupsCollectionRef,
+        where('stage', '==', groupData.stage),
+        where('name', '==', groupData.name),
+        where('status', '==', 'active') // Solo verificar grupos activos
+      );
+      const querySnapshot = await getDocs(q);
+
+      const now = new Date();
+      const foundDuplicate = querySnapshot.docs.find(docSnap => {
+        const existingGroup = docSnap.data();
+        const dueDate = existingGroup.dueDate ? new Date(existingGroup.dueDate) : null;
+        // Si es un ID de grupo diferente al que estamos editando (si draftGroupId existe)
+        // Y el grupo existente no está vencido
+        return (docSnap.id !== draftGroupId) && (!dueDate || dueDate >= now);
+      });
+
+      if (foundDuplicate) {
+        setGroupNameConflictError("Ya existe un grupo de rutinas activo con este nombre y etapa para este alumno.");
+      } else {
+        setGroupNameConflictError(null);
+      }
+    };
+
+    // Usar debounce para evitar múltiples llamadas a Firestore en cada pulsación de tecla
+    const debounceCheck = setTimeout(() => {
+      checkDuplicateGroup();
+    }, 500);
+
+    return () => clearTimeout(debounceCheck); // Limpiar el timeout si el componente se desmonta o las dependencias cambian
+  }, [groupData.name, groupData.stage, studentId, draftGroupId, isEditingIndividualRoutine, setGroupNameConflictError]);
+
 
   const validate = () => {
     const newErrors = {};
@@ -62,6 +106,12 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
     if (!groupData.objective.trim()) newErrors.objective = 'El objetivo es obligatorio.';
     if (!groupData.dueDate) newErrors.dueDate = 'La fecha de vencimiento es obligatoria.';
     if (!groupData.stage) newErrors.stage = 'La etapa de entrenamiento es obligatoria.';
+    
+    // Añadir el error de conflicto de nombre si existe
+    if (groupNameConflictError) {
+      newErrors.groupNameConflict = groupNameConflictError;
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -100,6 +150,7 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
           placeholder="Ej: Fase 1 - Adaptación"
         />
         {errors.name && <StyledErrorMessage $isVisible={!!errors.name}>{errors.name}</StyledErrorMessage>}
+        {groupNameConflictError && <StyledErrorMessage $isVisible={true}>{groupNameConflictError}</StyledErrorMessage>} {/* Mostrar error de conflicto */}
       </div>
       <div style={{ marginBottom: '18px' }}>
         <StyledLabel htmlFor="groupObjective">Objetivo (breve descripción)</StyledLabel>
@@ -130,6 +181,19 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
   );
 };
 
+Stage1GroupDetails.propTypes = {
+  groupData: PropTypes.object.isRequired,
+  setGroupData: PropTypes.func.isRequired,
+  goToNextStage: PropTypes.func.isRequired,
+  studentId: PropTypes.string.isRequired,
+  draftGroupId: PropTypes.string,
+  isEditingIndividualRoutine: PropTypes.bool.isRequired,
+  setGroupNameConflictError: PropTypes.func.isRequired,
+  groupNameConflictError: PropTypes.string,
+};
+
+
+// --- Stage 2: Detalles de la Rutina ---
 const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage, goToPreviousStage, onClose }) => {
   const [errors, setErrors] = useState({});
 
@@ -206,7 +270,16 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
   );
 };
 
-const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, goToPreviousStage, onClose }) => {
+Stage2RoutineDetails.propTypes = {
+  currentRoutine: PropTypes.object.isRequired,
+  setCurrentRoutine: PropTypes.func.isRequired,
+  goToNextStage: PropTypes.func.isRequired,
+  goToPreviousStage: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
+};
+
+// --- Stage 3: Añadir Ejercicios ---
+const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, goToPreviousStage, onClose, editingRoutineData }) => {
   const [exerciseSearchText, setExerciseSearchText] = useState('');
 
   const safeCurrentRoutine = currentRoutine || {};
@@ -219,40 +292,37 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
   }, [safeCurrentRoutine]);
 
   const handleExerciseSelection = (exercise) => {
-    console.log("[Stage3] handleExerciseSelection llamado para:", exercise.name, "ID:", exercise.id);
-    console.log("[Stage3] Estado actual de safeCurrentRoutine (antes de setCurrentRoutine):", JSON.stringify(safeCurrentRoutine, null, 2));
-    console.log("[Stage3] Estado actual de exercisesInRoutine (antes de setCurrentRoutine):", JSON.stringify(exercisesInRoutine, null, 2));
+    setCurrentRoutine(prev => {
+      const currentExercises = prev.exercises || [];
+      const isAlreadySelected = currentExercises.some(ex => ex.id === exercise.id);
+      let updatedExercises;
 
-    const currentExercises = safeCurrentRoutine?.exercises || [];
-    const isAlreadySelected = currentExercises.some(ex => ex.id === exercise.id);
-    let updatedExercises;
+      if (isAlreadySelected) {
+        updatedExercises = currentExercises.filter(ex => ex.id !== exercise.id);
+      } else {
+        // Al seleccionar, intentar recuperar los valores existentes de editingRoutineData
+        // Esto es crucial para preservar los valores al re-seleccionar un ejercicio que ya estaba en la rutina original
+        const existingExerciseInInitialEditData = (editingRoutineData?.exercises || []).find(ex => ex.id === exercise.id);
 
-    if (isAlreadySelected) {
-      updatedExercises = currentExercises.filter(ex => ex.id !== exercise.id);
-      console.log("[Stage3] Deseleccionando. Nuevos ejercicios (después de filter):", updatedExercises);
-    } else {
-      const newExercise = {
-        id: exercise.id,
-        name: exercise.name,
-        type: exercise.type || 'reps_sets',
-        sets: 0,
-        reps: 0,
-        time: 0,
-        kilos: 0,
-        completed: false,
+        const newExercise = {
+          id: exercise.id,
+          name: exercise.name,
+          type: exercise.type || 'reps_sets',
+          sets: existingExerciseInInitialEditData?.sets !== undefined ? existingExerciseInInitialEditData.sets : 0,
+          reps: existingExerciseInInitialEditData?.reps !== undefined ? existingExerciseInInitialEditData.reps : 0,
+          time: existingExerciseInInitialEditData?.time !== undefined ? existingExerciseInInitialEditData.time : 0,
+          kilos: existingExerciseInInitialEditData?.kilos !== undefined ? existingExerciseInInitialEditData.kilos : 0,
+          completed: existingExerciseInInitialEditData?.completed !== undefined ? existingExerciseInInitialEditData.completed : false,
+        };
+        updatedExercises = [...currentExercises, newExercise];
+      }
+      const reorderedExercises = updatedExercises.map((ex, idx) => ({ ...ex, order: idx }));
+
+      return {
+        ...prev,
+        exercises: reorderedExercises,
       };
-      updatedExercises = [...currentExercises, newExercise];
-      console.log("[Stage3] Seleccionando. Nuevos ejercicios (después de push):", updatedExercises);
-    }
-    const reorderedExercises = updatedExercises.map((ex, idx) => ({ ...ex, order: idx }));
-    console.log("[Stage3] Ejercicios reordenados (antes de retornar):", reorderedExercises);
-
-    const updatedRoutine = {
-      ...safeCurrentRoutine,
-      exercises: reorderedExercises,
-    };
-
-    setCurrentRoutine(updatedRoutine);
+    });
   };
 
   const handleSetsChange = (exerciseId, value) => {
@@ -343,7 +413,6 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
           <CollapsibleCard key={categoryName} title={categoryName} defaultOpen={false}>
             {groupedExercises[categoryName].map(exercise => {
               const isSelected = exercisesInRoutine.some(ex => ex.id === exercise.id);
-              const currentSelectedExercise = exercisesInRoutine.find(ex => ex.id === exercise.id) || {};
               
               return (
                 <div
@@ -393,7 +462,7 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
               <span>{index + 1}. {exercise.name}</span>
               <StyledRemoveExerciseButton onClick={() => handleExerciseSelection(exercise)}>
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </StyledRemoveExerciseButton>
             </StyledExerciseItem>
@@ -412,6 +481,16 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
   );
 };
 
+Stage3AddExercises.propTypes = {
+  currentRoutine: PropTypes.object.isRequired,
+  setCurrentRoutine: PropTypes.func.isRequired,
+  goToNextStage: PropTypes.func.isRequired,
+  goToPreviousStage: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
+  editingRoutineData: PropTypes.object, // Añadido propType
+};
+
+// --- Stage 4: Asignar Series y Repeticiones ---
 const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousStage, onSaveRoutineGroup, onAddAnotherRoutine, onClose, isEditingIndividualRoutine }) => {
   const exercisesInRoutine = currentRoutine.exercises || [];
 
@@ -494,7 +573,7 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousS
         <StyledSaveButton onClick={onSaveRoutineGroup}>
           {isEditingIndividualRoutine ? 'Guardar Rutina' : 'Guardar Grupo'}
         </StyledSaveButton>
-        {!isEditingIndividualRoutine && ( // Solo mostrar "Añadir otra rutina" si no estamos editando una individual
+        {!isEditingIndividualRoutine && (
           <StyledNavButton onClick={onAddAnotherRoutine} $primary>
             <ChevronIcon direction="right" />
           </StyledNavButton>
@@ -505,8 +584,12 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousS
 };
 
 
+// --- Componente Principal del Modal ---
 const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = null, editingRoutineData = null }) => {
   const { user } = useAuth();
+  // Estado para el error de conflicto de nombre de grupo
+  const [groupNameConflictError, setGroupNameConflictError] = useState(null);
+
   const {
     stage,
     groupData,
@@ -522,39 +605,33 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
     loadDraft,
     isSaving,
     saveError,
-    setStage, // ¡NUEVO! Para controlar la etapa desde el modal
-    setRoutines, // ¡NUEVO! Para inicializar rutinas desde el modal
-    setCurrentRoutineIndex, // ¡NUEVO! Para inicializar el índice de rutina
-  } = useRoutineGroupForm(studentId, draftGroupId, user?.uid, editingRoutineData); // Pasamos editingRoutineData
+    setStage,
+    setRoutines,
+    setCurrentRoutineIndex,
+  } = useRoutineGroupForm(studentId, draftGroupId, user?.uid, editingRoutineData);
 
-  // Determinar si estamos editando una rutina individual
   const isEditingIndividualRoutine = !!editingRoutineData && !!editingRoutineData.id;
 
-  // Log de currentRoutine justo después de obtenerlo del hook
   console.log("[RoutineGroupCreationModal] currentRoutine from hook:", JSON.stringify(currentRoutine, null, 2));
 
-  // Efecto para inicializar el formulario o cargar el borrador/rutina individual
   useEffect(() => {
     if (!isOpen) {
-      // Si el modal se cierra, reseteamos el formulario completamente
       resetForm();
+      // Limpiar el error de conflicto de nombre al cerrar el modal
+      setGroupNameConflictError(null);
       return;
     }
 
     if (isEditingIndividualRoutine) {
-      // Si estamos editando una rutina individual, inicializamos el hook con esa rutina
-      // y la ponemos en la etapa 2 (Detalles de rutina)
       console.log("[RoutineGroupCreationModal] Abriendo para editar rutina individual:", editingRoutineData);
-      setGroupData(prev => ({ ...prev, id: draftGroupId })); // Asegurar que el groupData.id esté presente
-      setRoutines([editingRoutineData]); // Establecer solo la rutina a editar
-      setCurrentRoutineIndex(0); // El índice siempre será 0 para la rutina que estamos editando
-      setStage(2); // Ir directamente a la etapa de detalles de rutina
+      setGroupData(prev => ({ ...prev, id: draftGroupId }));
+      setRoutines([editingRoutineData]);
+      setCurrentRoutineIndex(0);
+      setStage(2);
     } else if (draftGroupId) {
-      // Si hay un draftGroupId, cargar el borrador del grupo
       console.log("[RoutineGroupCreationModal] Abriendo para editar grupo (borrador):", draftGroupId);
       loadDraft();
     } else {
-      // Si no hay draftGroupId ni editingRoutineData, es un nuevo grupo
       console.log("[RoutineGroupCreationModal] Abriendo para crear nuevo grupo.");
       resetForm();
     }
@@ -575,7 +652,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
 
   const handleCloseModal = () => {
     if (user) {
-      // saveDraft(true); // Comentado temporalmente para evitar guardar al cerrar el modal
+      saveDraft(true); // Se intentará guardar el borrador si hay cambios
     }
     onClose();
   };
@@ -586,7 +663,6 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
       return;
     }
 
-    // Validaciones generales
     if (!groupData.name || !groupData.objective || !groupData.dueDate || !groupData.stage) {
       alert("Por favor, completa todos los detalles del grupo de rutinas.");
       return;
@@ -599,12 +675,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
       alert("La rutina actual no tiene ejercicios.");
       return;
     }
-    if (currentRoutine && (!currentRoutine.warmUp || !currentRoutine.warmUp.trim())) {
-      alert("Por favor, agrega una descripción para el calentamiento de la rutina actual.");
-      return;
-    }
 
-    // Validación de ejercicios (sets, reps/time)
     const hasInvalidExerciseData = routines.some(r =>
       (r.exercises || []).some(ex => {
         if (ex.sets <= 0) return true;
@@ -621,19 +692,51 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
       return;
     }
 
+    if (currentRoutine && (!currentRoutine.warmUp || !currentRoutine.warmUp.trim())) {
+      alert("Por favor, agrega una descripción para el calentamiento de la rutina actual.");
+      return;
+    }
+
     try {
-      const groupDocRef = doc(db, `artifacts/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/users/${studentId}/routineGroups`, groupData.id);
+      const routineGroupsCollectionRef = collection(db, `artifacts/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/users/${studentId}/routineGroups`);
+
+      // Re-validación robusta para el conflicto de nombre justo antes de guardar
+      if (!isEditingIndividualRoutine && !draftGroupId) {
+        const q = query(
+          routineGroupsCollectionRef,
+          where('stage', '==', groupData.stage),
+          where('name', '==', groupData.name),
+          where('status', '==', 'active')
+        );
+        const querySnapshot = await getDocs(q);
+
+        const now = new Date();
+        const existingActiveGroup = querySnapshot.docs.find(docSnap => {
+          const existingGroup = docSnap.data();
+          const dueDate = existingGroup.dueDate ? new Date(existingGroup.dueDate) : null;
+          // Si es un ID de grupo diferente al que estamos creando (groupData.id es el ID del nuevo grupo)
+          // Y el grupo existente no está vencido
+          return (docSnap.id !== groupData.id) && (!dueDate || dueDate >= now);
+        });
+
+        if (existingActiveGroup) {
+          alert("Este alumno ya tiene un grupo de rutinas activo con la misma etapa y nombre. Por favor, elige otro nombre o etapa, o espera a que el grupo actual venza.");
+          return; // Detener el guardado
+        }
+      }
+
+      const routineGroupRef = doc(db, `artifacts/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/users/${studentId}/routineGroups`, groupData.id);
 
       if (isEditingIndividualRoutine) {
         // Lógica para guardar una rutina individual
-        const docSnap = await getDoc(groupDocRef);
+        const docSnap = await getDoc(routineGroupRef);
         if (!docSnap.exists()) {
           alert("Error: El grupo de rutinas padre no existe.");
           return;
         }
         const existingGroupData = docSnap.data();
         const updatedRoutinesArray = (existingGroupData.routines || []).map(r =>
-          r.id === currentRoutine.id ? currentRoutine : r // Reemplazar la rutina editada
+          r.id === currentRoutine.id ? currentRoutine : r
         );
 
         const dataToUpdate = {
@@ -642,18 +745,18 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
           routines: updatedRoutinesArray,
         };
         const cleanedDataToUpdate = cleanObjectForFirestore(dataToUpdate);
-        await setDoc(groupDocRef, cleanedDataToUpdate, { merge: true });
+        await setDoc(routineGroupRef, cleanedDataToUpdate, { merge: true });
         alert('¡Rutina individual guardada exitosamente!');
 
       } else {
         // Lógica para guardar un grupo completo (nueva creación o edición de borrador)
         const dataToSave = {
           ...groupData,
-          status: 'active', // Cambiar a 'active' al guardar
+          status: 'active',
           createdAt: groupData.createdAt || new Date(),
           updatedAt: new Date(),
           assignedBy: user.uid,
-          routines: routines.map(r => ({ // Aseguramos que los campos de rutina estén saneados
+          routines: routines.map(r => ({
             id: r.id,
             name: r.name,
             restTime: r.restTime || 0,
@@ -668,12 +771,12 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
               time: ex.time || 0,
               kilos: ex.kilos === undefined ? 0 : ex.kilos,
               completed: ex.completed === undefined ? false : ex.completed,
-              order: ex.order || 0,
+              order: ex.order === undefined ? 0 : ex.order,
             }))
           }))
         };
         const cleanedDataToSave = cleanObjectForFirestore(dataToSave);
-        await setDoc(groupDocRef, cleanedDataToSave, { merge: true });
+        await setDoc(routineGroupRef, cleanedDataToSave, { merge: true });
         alert('¡Grupo de rutinas guardado exitosamente!');
       }
 
@@ -717,7 +820,6 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
           <StyledErrorMessage $isVisible={true}>{saveError}</StyledErrorMessage>
         )}
 
-        {/* Renderizado condicional basado en si estamos editando una rutina individual */}
         {isEditingIndividualRoutine ? (
           <>
             {stage === 2 && (
@@ -736,6 +838,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
                 goToNextStage={goToNextStage}
                 goToPreviousStage={goToPreviousStage}
                 onClose={handleCloseModal}
+                editingRoutineData={editingRoutineData}
               />
             )}
             {stage === 4 && (
@@ -746,7 +849,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
                 onSaveRoutineGroup={handleSaveRoutineGroup}
                 onAddAnotherRoutine={handleAddAnotherRoutine}
                 onClose={handleCloseModal}
-                isEditingIndividualRoutine={isEditingIndividualRoutine} // Pasar esta prop a Stage4
+                isEditingIndividualRoutine={isEditingIndividualRoutine}
               />
             )}
           </>
@@ -757,7 +860,11 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
                 groupData={groupData}
                 setGroupData={setGroupData}
                 goToNextStage={goToNextStage}
-                onClose={handleCloseModal}
+                studentId={studentId}
+                draftGroupId={draftGroupId}
+                isEditingIndividualRoutine={isEditingIndividualRoutine}
+                setGroupNameConflictError={setGroupNameConflictError} // Pasamos el setter
+                groupNameConflictError={groupNameConflictError} // Pasamos el estado
               />
             )}
             {stage === 2 && (
@@ -776,6 +883,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
                 goToNextStage={goToNextStage}
                 goToPreviousStage={goToPreviousStage}
                 onClose={handleCloseModal}
+                editingRoutineData={editingRoutineData}
               />
             )}
             {stage === 4 && (
@@ -786,7 +894,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
                 onSaveRoutineGroup={handleSaveRoutineGroup}
                 onAddAnotherRoutine={handleAddAnotherRoutine}
                 onClose={handleCloseModal}
-                isEditingIndividualRoutine={isEditingIndividualRoutine} // Pasar esta prop a Stage4
+                isEditingIndividualRoutine={isEditingIndividualRoutine}
               />
             )}
           </>
@@ -801,7 +909,7 @@ RoutineGroupCreationModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   studentId: PropTypes.string.isRequired,
   draftGroupId: PropTypes.string,
-  editingRoutineData: PropTypes.object, // ¡NUEVA PROP! Puede ser null o un objeto de rutina
+  editingRoutineData: PropTypes.object,
 };
 
 export default RoutineGroupCreationModal;

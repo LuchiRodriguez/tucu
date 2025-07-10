@@ -226,15 +226,12 @@ export const StyledRemoveExerciseButton = styled.button`
 `;
 
 export const StyledExerciseItem = styled.li`
-  background-color: #fdfdfd;
   padding: 12px;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
-  border: 1px solid #eee;
   cursor: grab; /* Indica que es arrastrable */
 
   &:active {

@@ -44,7 +44,7 @@ const initialRoutineDataTemplate = {
   exercises: [],
 };
 
-const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, initialRoutineData = null) => { // ¡NUEVA PROP!
+const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, initialRoutineData = null) => {
   const [stage, setStage] = useState(1);
   const [groupData, setGroupData] = useState({ ...initialGroupDataTemplate, id: uuidv4(), createdAt: new Date() });
   const [routines, setRoutines] = useState([{ ...initialRoutineDataTemplate, id: uuidv4() }]);
@@ -170,8 +170,24 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
       return;
     }
 
-    if (!groupData.name && routines.every(r => !r.name && r.exercises.length === 0)) {
-      console.log("[useRoutineGroupForm] saveDraft: No hay datos significativos para guardar. Omitiendo.");
+    // Filtra las rutinas que están completamente vacías antes de decidir si guardar
+    const meaningfulRoutines = routines.filter(r =>
+      r.name.trim() ||
+      (r.restTime !== '' && r.restTime !== 0) ||
+      (r.rir !== '' && r.rir !== 0) ||
+      r.warmUp.trim() ||
+      r.exercises.length > 0
+    );
+
+    // Verifica si los datos del grupo tienen contenido significativo
+    const isGroupDataMeaningful = groupData.name.trim() || groupData.objective.trim() || groupData.dueDate || groupData.stage;
+
+    // Si es un *nuevo* grupo (no estamos editando un borrador/grupo existente)
+    // Y los datos del grupo están vacíos
+    // Y no hay rutinas significativas (o no hay ninguna, o todas fueron filtradas por estar vacías)
+    // ENTONCES, no guardar.
+    if (!initialDraftGroupId && !isGroupDataMeaningful && meaningfulRoutines.length === 0) {
+      console.log("[useRoutineGroupForm] saveDraft: Nuevo grupo y todo el contenido (grupo + rutinas) está vacío. Omitiendo guardado de borrador.");
       return;
     }
 
@@ -187,13 +203,23 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
           ...groupData,
           updatedAt: new Date(),
           assignedBy: coachId,
-          routines: routines.map(r => ({
+          routines: meaningfulRoutines.map(r => ({ // Usa las rutinas filtradas aquí
             id: r.id,
-            name: r.name,
-            restTime: r.restTime,
-            rir: r.rir,
-            warmUp: r.warmUp,
-            exercises: r.exercises,
+            name: r.name || '', // Asegura un string vacío si es null/undefined
+            restTime: r.restTime === undefined || r.restTime === null ? '' : r.restTime, // Mantiene el tipo original
+            rir: r.rir === undefined || r.rir === null ? '' : r.rir, // Mantiene el tipo original
+            warmUp: r.warmUp || '', // Asegura un string vacío
+            exercises: (r.exercises || []).map(ex => ({ // Asegura que todos los campos de ejercicio estén presentes o con valor por defecto
+              id: ex.id,
+              name: ex.name || '',
+              type: ex.type || 'reps_sets',
+              sets: ex.sets === undefined || ex.sets === null ? 0 : ex.sets,
+              reps: ex.reps === undefined || ex.reps === null ? 0 : ex.reps,
+              time: ex.time === undefined || ex.time === null ? 0 : ex.time,
+              kilos: ex.kilos === undefined || ex.kilos === null ? 0 : ex.kilos,
+              completed: ex.completed === undefined || ex.completed === null ? false : ex.completed,
+              order: ex.order === undefined || ex.order === null ? 0 : ex.order,
+            }))
           }))
         };
 
@@ -210,7 +236,7 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
         setIsSaving(false);
       }
     }, forceSave ? 0 : 2000);
-  }, [studentId, groupData, routines, coachId]);
+  }, [studentId, groupData, routines, coachId, initialDraftGroupId]);
 
   // Efecto para guardar borrador automáticamente con cada cambio significativo
   useEffect(() => {
@@ -251,13 +277,13 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
 
   return {
     stage,
-    setStage, // ¡EXPORTADO!
+    setStage,
     groupData,
     setGroupData,
     routines,
-    setRoutines, // ¡EXPORTADO!
+    setRoutines,
     currentRoutineIndex,
-    setCurrentRoutineIndex, // ¡EXPORTADO!
+    setCurrentRoutineIndex,
     currentRoutine,
     setCurrentRoutine,
     goToNextStage,
