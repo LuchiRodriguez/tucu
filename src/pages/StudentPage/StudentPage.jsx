@@ -1,37 +1,54 @@
 // src/pages/StudentPage/StudentPage.jsx
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc, collection, onSnapshot, query, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, onSnapshot, query, deleteDoc, updateDoc } from 'firebase/firestore'; // Importar updateDoc
 import { db } from '../../config/firebase';
 import Card from '../../components/common/Card/Card';
 import Navbar from '../../components/common/Navbar/Navbar';
 import CollapsibleCard from '../../components/common/CollapsibleCard/CollapsibleCard';
-import RoutineGroupCreationModal from '../../components/specific/RoutineGroupModal/RoutineGroupCreationModal'; // Ruta actualizada
-import { useAuth } from '../../context/authContextBase'; // Asumiendo que tienes un AuthContext para el usuario logueado (coach)
+import RoutineGroupCreationModal from '../../components/specific/RoutineGroupModal/RoutineGroupCreationModal';
+import { useAuth } from '../../context/authContextBase';
 
 import {
   StyledCoachPageContainer,
   StyledAppMessage,
-  StyledFormButton, // Mantener si se usan en los botones de editar/eliminar rutina
+  StyledFormButton,
 } from '../CoachPage/StyledCoachPage';
-import editImage from '../../assets/png/edit.png'; // Importamos la imagen de editar
-import deleteImage from '../../assets/png/delete.png'; // Importamos la imagen de eliminar
+import editImage from '../../assets/png/edit.png';
+import deleteImage from '../../assets/png/delete.png';
 
-function StudentPage() { // Renombrado de StudentRoutinesPage a StudentPage
+// Función auxiliar para formatear segundos a minutos y segundos (MM:SS)
+const formatTime = (totalSeconds) => {
+  if (totalSeconds === undefined || totalSeconds === null || isNaN(totalSeconds)) {
+    return 'N/A';
+  }
+  if (totalSeconds < 60) {
+    return `${totalSeconds} Segundos`;
+  } else {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
+    return `${minutes}:${formattedSeconds} Minutos`;
+  }
+};
+
+
+function StudentPage() {
   const { studentId } = useParams();
   const navigate = useNavigate();
-  const { user, userName: coachName } = useAuth(); // Obtener el usuario autenticado (el profe) y su nombre
+  const { user, userName: coachName } = useAuth();
 
   const [student, setStudent] = useState(null);
   const [loadingStudent, setLoadingStudent] = useState(true);
   const [studentError, setStudentError] = useState(null);
 
-  const [routineGroups, setRoutineGroups] = useState([]); // Ahora almacenamos grupos de rutinas
+  const [routineGroups, setRoutineGroups] = useState([]);
   const [loadingRoutineGroups, setLoadingRoutineGroups] = useState(true);
   const [routineGroupsError, setRoutineGroupsError] = useState(null);
 
   const [isRoutineGroupModalOpen, setIsRoutineGroupModalOpen] = useState(false);
-  const [editingDraftId, setEditingDraftId] = useState(null); // Para cargar un borrador específico
+  const [editingDraftId, setEditingDraftId] = useState(null); // Para editar un grupo completo
+  const [editingRoutineData, setEditingRoutineData] = useState(null); // Para editar una rutina individual
 
   // Efecto para cargar la información del alumno
   useEffect(() => {
@@ -47,7 +64,6 @@ function StudentPage() { // Renombrado de StudentRoutinesPage a StudentPage
       setStudent(null);
 
       try {
-        // Asumiendo que los alumnos están en la colección 'users'
         const studentDocRef = doc(db, "users", studentId);
         const studentDocSnap = await getDoc(studentDocRef);
 
@@ -69,7 +85,7 @@ function StudentPage() { // Renombrado de StudentRoutinesPage a StudentPage
 
   // Efecto para escuchar los grupos de rutinas del alumno en tiempo real
   useEffect(() => {
-    if (!studentId || !user?.uid) { // Asegurarse de que el profe esté logueado
+    if (!studentId || !user?.uid) {
       setRoutineGroupsError("ID del alumno o del profe no proporcionado para cargar grupos de rutinas.");
       setLoadingRoutineGroups(false);
       return;
@@ -78,9 +94,8 @@ function StudentPage() { // Renombrado de StudentRoutinesPage a StudentPage
     setLoadingRoutineGroups(true);
     setRoutineGroupsError(null);
 
-    // Ruta de la colección de grupos de rutinas para este alumno
     const routineGroupsCollectionRef = collection(db, `artifacts/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/users/${studentId}/routineGroups`);
-    const q = query(routineGroupsCollectionRef); // Podrías agregar un .where('assignedBy', '==', user.uid) si solo quieres ver los grupos creados por el profe actual
+    const q = query(routineGroupsCollectionRef);
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       try {
@@ -88,8 +103,7 @@ function StudentPage() { // Renombrado de StudentRoutinesPage a StudentPage
           id: doc.id,
           ...doc.data()
         }));
-        // Filtrar borradores para que solo el profe los vea, y solo si los creó él
-        const visibleGroups = groupsData.filter(group => 
+        const visibleGroups = groupsData.filter(group =>
           group.status === 'active' || (group.status === 'draft' && group.assignedBy === user.uid)
         );
         setRoutineGroups(visibleGroups);
@@ -107,12 +121,12 @@ function StudentPage() { // Renombrado de StudentRoutinesPage a StudentPage
     });
 
     return () => unsubscribe();
-  }, [studentId, user?.uid]); // Dependencia del user.uid para filtrar borradores
+  }, [studentId, user?.uid]);
 
   // Función para agrupar las rutinas por etapa
   const groupedRoutineGroups = useMemo(() => {
     return routineGroups.reduce((acc, group) => {
-      const stage = group.stage || 'Sin Etapa'; // Manejar grupos sin etapa definida
+      const stage = group.stage || 'Sin Etapa';
       if (!acc[stage]) {
         acc[stage] = [];
       }
@@ -122,28 +136,67 @@ function StudentPage() { // Renombrado de StudentRoutinesPage a StudentPage
   }, [routineGroups]);
 
   const handleOpenCreateRoutineGroupModal = () => {
-    setEditingDraftId(null); // Asegurarse de que es una nueva creación
+    setEditingDraftId(null); // Asegurarse de que es una nueva creación de grupo
+    setEditingRoutineData(null); // Asegurarse de que no estamos editando una rutina individual
     setIsRoutineGroupModalOpen(true);
   };
 
   const handleCloseRoutineGroupModal = () => {
     setIsRoutineGroupModalOpen(false);
     setEditingDraftId(null); // Resetear el ID del borrador al cerrar
+    setEditingRoutineData(null); // Resetear los datos de la rutina individual al cerrar
   };
 
   const handleEditRoutineGroup = (groupId) => {
     setEditingDraftId(groupId); // Cargar este borrador específico
+    setEditingRoutineData(null); // Asegurarse de que no estamos editando una rutina individual
     setIsRoutineGroupModalOpen(true);
+  };
+
+  // Función para editar una rutina individual dentro de un grupo
+  const handleEditIndividualRoutine = (groupId, routineToEdit) => {
+    console.log(`Editando rutina individual: ${routineToEdit.name} (ID: ${routineToEdit.id}) del grupo: ${groupId}`);
+    setEditingDraftId(groupId); // Necesitamos el ID del grupo padre
+    setEditingRoutineData(routineToEdit); // Pasamos la rutina completa a editar
+    setIsRoutineGroupModalOpen(true);
+  };
+
+  // ¡NUEVO! Función para eliminar una rutina individual dentro de un grupo
+  const handleDeleteIndividualRoutine = async (groupId, routineIdToDelete) => {
+    if (!user) {
+      console.error("No hay usuario autenticado para eliminar la rutina.");
+      return;
+    }
+
+    if (window.confirm('¿Estás seguro de que quieres eliminar esta rutina individual?')) {
+      try {
+        const groupDocRef = doc(db, `artifacts/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/users/${studentId}/routineGroups`, groupId);
+        const groupDocSnap = await getDoc(groupDocRef);
+
+        if (groupDocSnap.exists()) {
+          const groupData = groupDocSnap.data();
+          const currentRoutines = groupData.routines || [];
+
+          const updatedRoutines = currentRoutines.filter(routine => routine.id !== routineIdToDelete);
+
+          await updateDoc(groupDocRef, { routines: updatedRoutines });
+          console.log(`Rutina con ID ${routineIdToDelete} eliminada del grupo ${groupId} con éxito.`);
+        } else {
+          console.warn(`Grupo de rutinas con ID ${groupId} no encontrado para eliminar la rutina.`);
+        }
+      } catch (err) {
+        console.error("Error al eliminar la rutina individual:", err);
+        // Usar un modal personalizado en lugar de alert
+        // alert("Error al eliminar la rutina individual. Verifica los permisos.");
+      }
+    }
   };
 
   const handleDeleteRoutineGroup = async (groupId) => {
     if (!user) {
-      // Usar un modal personalizado en lugar de alert
-      // alert("No hay usuario autenticado."); 
       console.error("No hay usuario autenticado.");
       return;
     }
-    // Usar un modal personalizado en lugar de window.confirm
     if (window.confirm('¿Estás seguro de que quieres eliminar este grupo de rutinas (incluyendo borradores)?')) {
       try {
         const groupDocRef = doc(db, `artifacts/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/users/${studentId}/routineGroups`, groupId);
@@ -151,14 +204,11 @@ function StudentPage() { // Renombrado de StudentRoutinesPage a StudentPage
         console.log(`Grupo de rutinas con ID ${groupId} eliminado con éxito.`);
       } catch (err) {
         console.error("Error al eliminar el grupo de rutinas:", err);
-        // Usar un modal personalizado en lugar de alert
-        // alert("Error al eliminar el grupo de rutinas. Verifica los permisos.");
       }
     }
   };
 
-  // ¡CAMBIO CLAVE AQUÍ! Corregimos el nombre del tipo para que coincida con el Navbar
-  const navbarType = 'studentRoutinesPage'; 
+  const navbarType = 'studentRoutinesPage';
   const navbarStudentName = student?.name || student?.email?.split('@')[0] || 'Este Alumno';
 
   if (loadingStudent || loadingRoutineGroups) {
@@ -236,26 +286,23 @@ function StudentPage() { // Renombrado de StudentRoutinesPage a StudentPage
                 <div className="space-y-4 p-2">
                   {groups.map(group => (
                     <div key={group.id} className="border border-gray-200 rounded-md p-4 shadow-sm bg-gray-50">
-                      {/* ¡CAMBIO CLAVE AQUÍ! Implementamos las imágenes de editar y eliminar */}
                       <h4 style={{display: 'flex', alignItems: 'center', gap: '10px', margin: '0', justifyContent: 'space-between'}} className="font-bold text-lg mb-2">
                         <div style={{display: 'flex', alignItems: 'center', gap: '10px', margin: '0'}}>
                           {group.name}
                           <span style={{color: 'gray'}}>{group.status === 'draft' && <p className="text-orange-500 text-sm font-semibold">Borrador</p>}
                           </span>
                         </div>
-                        <div style={{display: 'flex', gap: '10px'}}> {/* Contenedor para los botones de acción */}
-                          {group.status === 'draft' && (
-                            <img 
-                              src={editImage}
-                              alt="Editar"
-                              style={{ width: '24px', height: '24px', cursor: 'pointer' }} 
-                              onClick={() => handleEditRoutineGroup(group.id)}
-                            />
-                          )}
+                        <div style={{display: 'flex', gap: '10px'}}>
+                          <img
+                            src={editImage}
+                            alt="Editar Grupo"
+                            style={{ width: '24px', height: '24px', cursor: 'pointer' }}
+                            onClick={() => handleEditRoutineGroup(group.id)}
+                          />
                           <img
                             src={deleteImage}
-                            alt="Eliminar"
-                            style={{ width: '24px', height: '24px', cursor: 'pointer' }} 
+                            alt="Eliminar Grupo"
+                            style={{ width: '24px', height: '24px', cursor: 'pointer' }}
                             onClick={() => handleDeleteRoutineGroup(group.id)}
                           />
                         </div>
@@ -264,33 +311,61 @@ function StudentPage() { // Renombrado de StudentRoutinesPage a StudentPage
                       <p style={{margin: '0'}} className="text-gray-700 text-sm mb-1">Objetivo del grupo: {group.objective}</p>
                       <p className="text-gray-700 text-sm mb-2">Vencimiento: {group.dueDate}</p>
                       
-
                       <h4 className="font-semibold text-md mt-4 mb-2">Rutinas en este Grupo:</h4>
                       {group.routines && group.routines.length > 0 ? (
-                        <ul className="list-none pl-5 space-y-2" style={{listStyleType: 'none', padding: '0'}}>
+                        <div className="space-y-2">
                           {group.routines.map((routine, routineIdx) => {
                             const routineKey = routine.id || `routine-${group.id}-${routineIdx}`;
                             return (
-                              <li key={routineKey} className="text-gray-800 text-sm list-none" >
-                                <strong>Nombre: {routine.name}</strong>
-                                <ul className="list-none pl-5 text-xs text-gray-600 mt-1" style={{listStyleType: 'none', padding: '10px'}}>
+                              <CollapsibleCard key={routineKey} title={routine.name} defaultOpen={false}>
+                                <div style={{ padding: '5px 0' }}>
+                                  <p style={{ fontSize: '0.9rem', color: '#777', marginBottom: '8px' }}>
+                                    Descanso: {formatTime(routine.restTime)} | RIR: {routine.rir || 0}
+                                  </p>
+                                  <p style={{ fontSize: '0.9rem', color: '#777', marginBottom: '15px' }}>
+                                    Calentamiento: {routine.warmUp || 'No especificado'}
+                                  </p>
+                                  <h5 style={{ marginBottom: '10px', color: '#2c3e50' }}>Ejercicios:</h5>
                                   {routine.exercises && routine.exercises.length > 0 ? (
-                                    routine.exercises.map((ex, exIdx) => {
-                                      const exerciseKey = ex.id || `ex-${routine.id}-${exIdx}`;
-                                      return (
-                                        <li key={exerciseKey}>
-                                          {exIdx + 1}. {ex.name} ({ex.sets} Series, {ex.type === 'timed' ? `${ex.time}s` : `${ex.reps} Reps`})
-                                        </li>
-                                      );
-                                    })
+                                    <ul style={{ listStyle: 'none', padding: '0', margin: '0' }}>
+                                      {routine.exercises.map((ex, exIdx) => {
+                                        const exerciseKey = ex.id || `ex-${routine.id}-${exIdx}`;
+                                        return (
+                                          <li key={exerciseKey} style={{ fontSize: '0.9rem', color: '#555', marginBottom: '4px' }}>
+                                            {exIdx + 1}. {ex.name}
+                                            {ex.type === 'timed' ? (
+                                              ` (${ex.sets || 0} Series, ${formatTime(ex.time)} de trabajo)`
+                                            ) : (
+                                              ` (${ex.sets || 0} Series, ${ex.reps || 0} Reps, ${ex.kilos || 0} Kg)`
+                                            )}
+                                          </li>
+                                        );
+                                      })}
+                                    </ul>
                                   ) : (
-                                    <li key={`no-exercises-${routine.id}`}>No hay ejercicios en esta rutina.</li>
+                                    <p className="text-gray-600 text-sm">No hay ejercicios en esta rutina.</p>
                                   )}
-                                </ul>
-                              </li>
+                                  <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                                    <StyledFormButton
+                                      type="button"
+                                      onClick={() => handleEditIndividualRoutine(group.id, routine)}
+                                      style={{ backgroundColor: '#3498db', padding: '8px 12px', fontSize: '0.85rem' }}
+                                    >
+                                      Editar Rutina
+                                    </StyledFormButton>
+                                    <StyledFormButton // ¡NUEVO BOTÓN!
+                                      type="button"
+                                      onClick={() => handleDeleteIndividualRoutine(group.id, routine.id)}
+                                      style={{ backgroundColor: '#e74c3c', padding: '8px 12px', fontSize: '0.85rem' }}
+                                    >
+                                      Eliminar Rutina
+                                    </StyledFormButton>
+                                  </div>
+                                </div>
+                              </CollapsibleCard>
                             );
                           })}
-                        </ul>
+                        </div>
                       ) : (
                         <p className="text-gray-600 text-sm">No hay rutinas en este grupo aún.</p>
                       )}
@@ -329,6 +404,7 @@ function StudentPage() { // Renombrado de StudentRoutinesPage a StudentPage
         onClose={handleCloseRoutineGroupModal}
         studentId={studentId}
         draftGroupId={editingDraftId}
+        editingRoutineData={editingRoutineData}
       />
     </StyledCoachPageContainer>
   );

@@ -176,7 +176,7 @@ export const StyledNavButton = styled.button`
 `;
 
 export const StyledSaveButton = styled.button`
-  background-color: #2ecc71; /* Verde para guardar */
+  background-color: #2ecc71;
   color: white;
   border: none;
   border-radius: 8px;
@@ -186,7 +186,6 @@ export const StyledSaveButton = styled.button`
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(46, 204, 113, 0.2);
   transition: all 0.2s ease-in-out;
-  flex-grow: 1; /* Para que ocupe el espacio disponible en el centro */
 
   &:active {
     transform: translateY(0);

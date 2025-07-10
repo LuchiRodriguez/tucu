@@ -1,15 +1,12 @@
 // src/components/specific/RoutineGroupModal/RoutineGroupCreationModal.jsx
 import { useState, useEffect } from 'react';
 import { db } from '../../../config/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore'; // Añadido getDoc
 import { useAuth } from '../../../context/authContextBase';
 import useRoutineGroupForm from '../../../hooks/useRoutineGroup/useRoutineGroupForm';
 import PropTypes from 'prop-types';
 
-// Importamos los datos de ejercicios locales
 import localExercisesData from '../../../data/exercises.json';
-
-// ¡NUEVO! Importamos CollapsibleCard
 import CollapsibleCard from '../../common/CollapsibleCard/CollapsibleCard';
 
 
@@ -27,7 +24,6 @@ import {
   StyledButtonContainer,
   StyledNavButton,
   StyledSaveButton,
-  // StyledAddExerciseButton, // Mantener por si se usa en otro lado, aunque no en Stage3AddExercises
   StyledRemoveExerciseButton,
   StyledExerciseItem,
   StyledExerciseListContainer,
@@ -38,7 +34,6 @@ import {
   StyledExerciseInputGroup,
 } from './StyledRoutineGroupModal';
 
-// Componente para el ícono de flecha (reutilizado)
 const ChevronIcon = ({ direction }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -54,12 +49,10 @@ const ChevronIcon = ({ direction }) => (
   </svg>
 );
 
-// Validación de PropTypes para ChevronIcon
 ChevronIcon.propTypes = {
   direction: PropTypes.oneOf(['left', 'right']).isRequired,
 };
 
-// --- Stage 1: Detalles del Grupo ---
 const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose }) => {
   const [errors, setErrors] = useState({});
 
@@ -94,9 +87,8 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
           <option value="definicion">Definición</option>
           <option value="fuerza">Fuerza</option>
           <option value="mantenimiento">Mantenimiento</option>
-          {/* Agrega más opciones si es necesario */}
         </StyledSelect>
-        {errors.stage && <StyledErrorMessage>{errors.stage}</StyledErrorMessage>}
+        {errors.stage && <StyledErrorMessage $isVisible={!!errors.stage}>{errors.stage}</StyledErrorMessage>}
       </div>
       <div style={{ marginBottom: '18px' }}>
         <StyledLabel htmlFor="groupName">Nombre del Grupo</StyledLabel>
@@ -107,7 +99,7 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
           onChange={(e) => setGroupData({ ...groupData, name: e.target.value })}
           placeholder="Ej: Fase 1 - Adaptación"
         />
-        {errors.name && <StyledErrorMessage>{errors.name}</StyledErrorMessage>}
+        {errors.name && <StyledErrorMessage $isVisible={!!errors.name}>{errors.name}</StyledErrorMessage>}
       </div>
       <div style={{ marginBottom: '18px' }}>
         <StyledLabel htmlFor="groupObjective">Objetivo (breve descripción)</StyledLabel>
@@ -117,7 +109,7 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
           onChange={(e) => setGroupData({ ...groupData, objective: e.target.value })}
           placeholder="Ej: Fortalecer base muscular y mejorar técnica."
         ></StyledTextArea>
-        {errors.objective && <StyledErrorMessage>{errors.objective}</StyledErrorMessage>}
+        {errors.objective && <StyledErrorMessage $isVisible={!!errors.objective}>{errors.objective}</StyledErrorMessage>}
       </div>
       <div style={{ marginBottom: '18px' }}>
         <StyledLabel htmlFor="dueDate">Fecha de Vencimiento</StyledLabel>
@@ -127,7 +119,7 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
           value={groupData.dueDate}
           onChange={(e) => setGroupData({ ...groupData, dueDate: e.target.value })}
         />
-        {errors.dueDate && <StyledErrorMessage>{errors.dueDate}</StyledErrorMessage>}
+        {errors.dueDate && <StyledErrorMessage $isVisible={!!errors.dueDate}>{errors.dueDate}</StyledErrorMessage>}
       </div>
       <StyledButtonContainer style={{ justifyContent: 'flex-end' }}>
         <StyledNavButton onClick={handleNext} $primary>
@@ -138,7 +130,6 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, onClose })
   );
 };
 
-// --- Stage 2: Detalles de la Rutina ---
 const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage, goToPreviousStage, onClose }) => {
   const [errors, setErrors] = useState({});
 
@@ -169,7 +160,7 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
           onChange={(e) => setCurrentRoutine({ ...currentRoutine, name: e.target.value })}
           placeholder="Ej: Rutina de Piernas"
         />
-        {errors.name && <StyledErrorMessage>{errors.name}</StyledErrorMessage>}
+        {errors.name && <StyledErrorMessage $isVisible={!!errors.name}>{errors.name}</StyledErrorMessage>}
       </div>
       <div style={{ marginBottom: '18px' }}>
         <StyledLabel htmlFor="restTime">Tiempo de Descanso (segundos)</StyledLabel>
@@ -180,7 +171,7 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
           onChange={(e) => setCurrentRoutine({ ...currentRoutine, restTime: Number(e.target.value) })}
           placeholder="Ej: 60"
         />
-        {errors.restTime && <StyledErrorMessage>{errors.restTime}</StyledErrorMessage>}
+        {errors.restTime && <StyledErrorMessage $isVisible={!!errors.restTime}>{errors.restTime}</StyledErrorMessage>}
       </div>
       <div style={{ marginBottom: '18px' }}>
         <StyledLabel htmlFor="rir">RIR (Repeticiones en Reserva)</StyledLabel>
@@ -191,17 +182,17 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
           onChange={(e) => setCurrentRoutine({ ...currentRoutine, rir: Number(e.target.value) })}
           placeholder="Ej: 2"
         />
-        {errors.rir && <StyledErrorMessage>{errors.rir}</StyledErrorMessage>}
+        {errors.rir && <StyledErrorMessage $isVisible={!!errors.rir}>{errors.rir}</StyledErrorMessage>}
       </div>
       <div style={{ marginBottom: '18px' }}>
-        <StyledLabel htmlFor="warmUp">Calentamiento (descripción)</StyledLabel>
+        <StyledLabel htmlFor="warmUp">Entrada en calor</StyledLabel>
         <StyledTextArea
           id="warmUp"
           value={currentRoutine.warmUp}
           onChange={(e) => setCurrentRoutine({ ...currentRoutine, warmUp: e.target.value })}
           placeholder="Ej: 5 minutos de cardio ligero, movilidad articular."
         ></StyledTextArea>
-        {errors.warmUp && <StyledErrorMessage>{errors.warmUp}</StyledErrorMessage>}
+        {errors.warmUp && <StyledErrorMessage $isVisible={!!errors.warmUp}>{errors.warmUp}</StyledErrorMessage>}
       </div>
       <StyledButtonContainer>
         <StyledNavButton onClick={goToPreviousStage}>
@@ -215,28 +206,24 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
   );
 };
 
-// --- Stage 3: Añadir Ejercicios ---
 const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, goToPreviousStage, onClose }) => {
   const [exerciseSearchText, setExerciseSearchText] = useState('');
 
-  // Aseguramos que currentRoutine sea siempre un objeto y exercises un array
   const safeCurrentRoutine = currentRoutine || {};
   const exercisesInRoutine = safeCurrentRoutine.exercises || [];
 
-  // Add a useEffect to log currentRoutine changes
   useEffect(() => {
-    console.count("Stage3AddExercises Render"); // Contar cuántas veces se renderiza
+    console.count("Stage3AddExercises Render");
     console.log("[Stage3AddExercises] currentRoutine object:", JSON.stringify(safeCurrentRoutine, null, 2));
     console.log("[Stage3AddExercises] exercisesInRoutine derived:", JSON.stringify(exercisesInRoutine, null, 2));
-  }, [safeCurrentRoutine]); // Dependemos solo de safeCurrentRoutine
+  }, [safeCurrentRoutine]);
 
   const handleExerciseSelection = (exercise) => {
     console.log("[Stage3] handleExerciseSelection llamado para:", exercise.name, "ID:", exercise.id);
     console.log("[Stage3] Estado actual de safeCurrentRoutine (antes de setCurrentRoutine):", JSON.stringify(safeCurrentRoutine, null, 2));
     console.log("[Stage3] Estado actual de exercisesInRoutine (antes de setCurrentRoutine):", JSON.stringify(exercisesInRoutine, null, 2));
 
-    // Calculate the updated exercises array
-    const currentExercises = safeCurrentRoutine?.exercises || []; // Use safeCurrentRoutine here
+    const currentExercises = safeCurrentRoutine?.exercises || [];
     const isAlreadySelected = currentExercises.some(ex => ex.id === exercise.id);
     let updatedExercises;
 
@@ -257,28 +244,22 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
       updatedExercises = [...currentExercises, newExercise];
       console.log("[Stage3] Seleccionando. Nuevos ejercicios (después de push):", updatedExercises);
     }
-    // Re-asignar el orden para reflejar la posición actual después de añadir/eliminar
     const reorderedExercises = updatedExercises.map((ex, idx) => ({ ...ex, order: idx }));
     console.log("[Stage3] Ejercicios reordenados (antes de retornar):", reorderedExercises);
 
-    // Now, create the *full updated routine object* to pass to setCurrentRoutine
     const updatedRoutine = {
-      ...safeCurrentRoutine, // Spread the existing safeCurrentRoutine
-      exercises: reorderedExercises, // Update the exercises array
+      ...safeCurrentRoutine,
+      exercises: reorderedExercises,
     };
 
-    // Pass the fully updated routine object directly
     setCurrentRoutine(updatedRoutine);
   };
 
   const handleSetsChange = (exerciseId, value) => {
-    // Get the current routine state
     const currentRoutineCopy = { ...safeCurrentRoutine };
-    // Update the specific exercise's sets
     currentRoutineCopy.exercises = (currentRoutineCopy.exercises || []).map(ex =>
       ex.id === exerciseId ? { ...ex, sets: Number(value) || 0 } : ex
     );
-    // Pass the updated routine object
     setCurrentRoutine(currentRoutineCopy);
   };
 
@@ -303,7 +284,7 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
   };
 
   const handleDragOver = (e) => {
-    e.preventDefault(); // Permite el drop
+    e.preventDefault();
   };
 
   const handleDrop = (e, dropIndex) => {
@@ -311,19 +292,16 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
     const draggedExercise = exercisesInRoutine[dragIndex];
     const newExercises = [...exercisesInRoutine];
 
-    newExercises.splice(dragIndex, 1); // Elimina el elemento arrastrado
-    newExercises.splice(dropIndex, 0, draggedExercise); // Inserta en la nueva posición
+    newExercises.splice(dragIndex, 1);
+    newExercises.splice(dropIndex, 0, draggedExercise);
 
-    // Actualiza el orden para reflejar el nuevo índice
     const updatedExercises = newExercises.map((ex, idx) => ({ ...ex, order: idx }));
 
-    // Create the updated routine object
     const updatedRoutine = {
       ...safeCurrentRoutine,
       exercises: updatedExercises,
     };
 
-    // Pass the updated routine object directly
     setCurrentRoutine(updatedRoutine);
   };
 
@@ -347,7 +325,6 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
         Descanso: {safeCurrentRoutine.restTime}s | RIR: {safeCurrentRoutine.rir} | Calentamiento: {safeCurrentRoutine.warmUp}
       </StyledCurrentRoutineInfo>
       
-      {/* Sección para seleccionar ejercicios */}
       <StyledSubSectionTitle>Seleccionar Ejercicios:</StyledSubSectionTitle>
       <StyledInput
         type="text"
@@ -357,7 +334,6 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
         style={{ marginBottom: '15px' }}
       />
 
-      {/* Contenido de la lista de ejercicios seleccionables, sin el div contenedor */}
       {Object.keys(groupedExercises).length === 0 && exerciseSearchText ? (
         <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>No se encontraron ejercicios con esa búsqueda.</p>
       ) : Object.keys(groupedExercises).length === 0 && !exerciseSearchText ? (
@@ -367,7 +343,6 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
           <CollapsibleCard key={categoryName} title={categoryName} defaultOpen={false}>
             {groupedExercises[categoryName].map(exercise => {
               const isSelected = exercisesInRoutine.some(ex => ex.id === exercise.id);
-              // Aseguramos que currentSelectedExercise sea un objeto para acceder a sus propiedades de forma segura
               const currentSelectedExercise = exercisesInRoutine.find(ex => ex.id === exercise.id) || {};
               
               return (
@@ -394,40 +369,6 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
                       {exercise.name}
                     </StyledLabel>
                   </div>
-                  {isSelected && (
-                    <div style={{ display: 'flex', gap: '8px', marginLeft: '10px' }}>
-                      <StyledInput
-                        type="number"
-                        min="0"
-                        placeholder="Series"
-                        // Normalizamos el valor a string vacío si es 0, undefined o null
-                        value={currentSelectedExercise.sets === 0 || currentSelectedExercise.sets === undefined || currentSelectedExercise.sets === null ? '' : currentSelectedExercise.sets}
-                        onChange={(e) => handleSetsChange(exercise.id, e.target.value)}
-                        style={{ width: '50px', textAlign: 'center' }}
-                      />
-                      {exercise.type === 'timed' ? (
-                        <StyledInput
-                          type="number"
-                          min="0"
-                          placeholder="Tiempo (seg)"
-                          // Normalizamos el valor a string vacío si es 0, undefined o null
-                          value={currentSelectedExercise.time === 0 || currentSelectedExercise.time === undefined || currentSelectedExercise.time === null ? '' : currentSelectedExercise.time}
-                          onChange={(e) => handleTimeChange(exercise.id, e.target.value)}
-                          style={{ width: '80px', textAlign: 'center' }}
-                        />
-                      ) : (
-                        <StyledInput
-                          type="number"
-                          min="0"
-                          placeholder="Reps"
-                          // Normalizamos el valor a string vacío si es 0, undefined o null
-                          value={currentSelectedExercise.reps === 0 || currentSelectedExercise.reps === undefined || currentSelectedExercise.reps === null ? '' : currentSelectedExercise.reps}
-                          onChange={(e) => handleRepChange(exercise.id, e.target.value)}
-                          style={{ width: '50px', textAlign: 'center' }}
-                        />
-                      )}
-                    </div>
-                  )}
                 </div>
               );
             })}
@@ -435,14 +376,12 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
         ))
       )}
 
-      {/* Sección de ejercicios seleccionados y ordenables */}
       <StyledSubSectionTitle>Ejercicios en la Rutina:</StyledSubSectionTitle>
-      {/* Contenido de la lista de ejercicios seleccionados, sin el StyledExerciseListContainer */}
       {exercisesInRoutine.length === 0 ? (
         <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>Selecciona ejercicios de la lista de arriba.</p>
       ) : (
         exercisesInRoutine
-          .sort((a, b) => a.order - b.order) // Aseguramos el orden visual
+          .sort((a, b) => a.order - b.order)
           .map((exercise, index) => (
             <StyledExerciseItem
               key={exercise.id}
@@ -452,9 +391,9 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
               onDrop={(e) => handleDrop(e, index)}
             >
               <span>{index + 1}. {exercise.name}</span>
-              <StyledRemoveExerciseButton onClick={() => handleExerciseSelection(exercise)}> {/* Usamos la misma función para deseleccionar */}
+              <StyledRemoveExerciseButton onClick={() => handleExerciseSelection(exercise)}>
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </StyledRemoveExerciseButton>
             </StyledExerciseItem>
@@ -473,9 +412,7 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
   );
 };
 
-// --- Stage 4: Asignar Series y Repeticiones ---
-const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousStage, onSaveRoutineGroup, onAddAnotherRoutine, onClose }) => {
-  // Aseguramos que currentRoutine.exercises siempre sea un array
+const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousStage, onSaveRoutineGroup, onAddAnotherRoutine, onClose, isEditingIndividualRoutine }) => {
   const exercisesInRoutine = currentRoutine.exercises || [];
 
   const handleSetChange = (exerciseId, value) => {
@@ -555,20 +492,21 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousS
           <ChevronIcon direction="left" />
         </StyledNavButton>
         <StyledSaveButton onClick={onSaveRoutineGroup}>
-          Guardar Grupo de Rutinas
+          {isEditingIndividualRoutine ? 'Guardar Rutina' : 'Guardar Grupo'}
         </StyledSaveButton>
-        <StyledNavButton onClick={onAddAnotherRoutine} $primary>
-          <ChevronIcon direction="right" />
-        </StyledNavButton>
+        {!isEditingIndividualRoutine && ( // Solo mostrar "Añadir otra rutina" si no estamos editando una individual
+          <StyledNavButton onClick={onAddAnotherRoutine} $primary>
+            <ChevronIcon direction="right" />
+          </StyledNavButton>
+        )}
       </StyledButtonContainer>
     </StyledModalBody>
   );
 };
 
 
-// --- Componente Principal del Modal ---
-const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = null }) => {
-  const { user } = useAuth(); // Obtenemos el usuario del contexto de autenticación
+const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = null, editingRoutineData = null }) => {
+  const { user } = useAuth();
   const {
     stage,
     groupData,
@@ -584,42 +522,60 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
     loadDraft,
     isSaving,
     saveError,
-  } = useRoutineGroupForm(studentId, draftGroupId, user?.uid); // Pasamos user.uid al hook
+    setStage, // ¡NUEVO! Para controlar la etapa desde el modal
+    setRoutines, // ¡NUEVO! Para inicializar rutinas desde el modal
+    setCurrentRoutineIndex, // ¡NUEVO! Para inicializar el índice de rutina
+  } = useRoutineGroupForm(studentId, draftGroupId, user?.uid, editingRoutineData); // Pasamos editingRoutineData
+
+  // Determinar si estamos editando una rutina individual
+  const isEditingIndividualRoutine = !!editingRoutineData && !!editingRoutineData.id;
 
   // Log de currentRoutine justo después de obtenerlo del hook
   console.log("[RoutineGroupCreationModal] currentRoutine from hook:", JSON.stringify(currentRoutine, null, 2));
 
-
+  // Efecto para inicializar el formulario o cargar el borrador/rutina individual
   useEffect(() => {
-    if (isOpen && draftGroupId) {
+    if (!isOpen) {
+      // Si el modal se cierra, reseteamos el formulario completamente
+      resetForm();
+      return;
+    }
+
+    if (isEditingIndividualRoutine) {
+      // Si estamos editando una rutina individual, inicializamos el hook con esa rutina
+      // y la ponemos en la etapa 2 (Detalles de rutina)
+      console.log("[RoutineGroupCreationModal] Abriendo para editar rutina individual:", editingRoutineData);
+      setGroupData(prev => ({ ...prev, id: draftGroupId })); // Asegurar que el groupData.id esté presente
+      setRoutines([editingRoutineData]); // Establecer solo la rutina a editar
+      setCurrentRoutineIndex(0); // El índice siempre será 0 para la rutina que estamos editando
+      setStage(2); // Ir directamente a la etapa de detalles de rutina
+    } else if (draftGroupId) {
+      // Si hay un draftGroupId, cargar el borrador del grupo
+      console.log("[RoutineGroupCreationModal] Abriendo para editar grupo (borrador):", draftGroupId);
       loadDraft();
-    } else if (isOpen && !draftGroupId) {
+    } else {
+      // Si no hay draftGroupId ni editingRoutineData, es un nuevo grupo
+      console.log("[RoutineGroupCreationModal] Abriendo para crear nuevo grupo.");
       resetForm();
     }
-  }, [isOpen, draftGroupId, loadDraft, resetForm]);
+  }, [isOpen, draftGroupId, editingRoutineData, loadDraft, resetForm, setStage, setRoutines, setCurrentRoutineIndex, setGroupData]);
+
 
   useEffect(() => {
-    // ¡CAMBIO CLAVE AQUÍ! Solo intentar guardar el borrador si hay un usuario logueado
-    // y si hay datos para guardar (groupData.name o routines.length > 0)
-    // if (!isOpen && user && (groupData.name || routines.length > 0)) { // COMENTADO TEMPORALMENTE
-    //   saveDraft(true); // COMENTADO TEMPORALMENTE
-    // }
     const handleBeforeUnload = () => {
-      // ¡CAMBIO CLAVE AQUÍ! También verificar el usuario antes de guardar al cerrar la ventana
       if (user && (groupData.name || routines.length > 0)) {
-        // saveDraft(true); // COMENTADO TEMPORALMENTE
+        // saveDraft(true); // Comentado temporalmente para evitar guardar al cerrar la ventana
       }
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [isOpen, groupData, routines, saveDraft, user]); // Añadimos 'user' a las dependencias
+  }, [groupData, routines, saveDraft, user]);
 
   const handleCloseModal = () => {
-    // ¡CAMBIO CLAVE AQUÍ! Solo intentar guardar el borrador si hay un usuario logueado
     if (user) {
-      // saveDraft(true); // COMENTADO TEMPORALMENTE
+      // saveDraft(true); // Comentado temporalmente para evitar guardar al cerrar el modal
     }
     onClose();
   };
@@ -630,6 +586,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
       return;
     }
 
+    // Validaciones generales
     if (!groupData.name || !groupData.objective || !groupData.dueDate || !groupData.stage) {
       alert("Por favor, completa todos los detalles del grupo de rutinas.");
       return;
@@ -642,26 +599,13 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
       alert("La rutina actual no tiene ejercicios.");
       return;
     }
-    // Asegurarse de que todos los ejercicios tengan sets y reps/time > 0
-    // Y que los campos no sean undefined si se están guardando
-    const routinesToSave = routines.map(r => ({
-      ...r,
-      warmUp: r.warmUp || '', // Aseguramos que warmUp no sea undefined
-      exercises: (r.exercises || []).map(ex => ({
-        id: ex.id,
-        name: ex.name,
-        type: ex.type || 'reps_sets',
-        sets: ex.sets || 0, // Aseguramos que sets sea un número o 0
-        reps: ex.reps || 0, // Aseguramos que reps sea un número o 0
-        time: ex.time || 0, // Aseguramos que time sea un número o 0
-        kilos: ex.kilos === undefined ? 0 : ex.kilos, // Aseguramos que kilos sea un número o 0
-        completed: ex.completed === undefined ? false : ex.completed, // Aseguramos que completed sea un booleano o false
-        order: ex.order || 0, // Aseguramos que order sea un número o 0
-      }))
-    }));
+    if (currentRoutine && (!currentRoutine.warmUp || !currentRoutine.warmUp.trim())) {
+      alert("Por favor, agrega una descripción para el calentamiento de la rutina actual.");
+      return;
+    }
 
-    // Validación final antes de guardar
-    const hasInvalidExerciseData = routinesToSave.some(r =>
+    // Validación de ejercicios (sets, reps/time)
+    const hasInvalidExerciseData = routines.some(r =>
       (r.exercises || []).some(ex => {
         if (ex.sets <= 0) return true;
         if (ex.type === 'timed') {
@@ -677,60 +621,67 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
       return;
     }
 
-    if (currentRoutine && (!currentRoutine.warmUp || !currentRoutine.warmUp.trim())) {
-      alert("Por favor, agrega una descripción para el calentamiento de la rutina actual.");
-      return;
-    }
-
     try {
-      const routineGroupRef = doc(db, `artifacts/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/users/${studentId}/routineGroups`, groupData.id || 'new');
-      
-      // Construimos el objeto a guardar, asegurando que no haya 'undefined'
-      const dataToSave = {
-        ...groupData,
-        status: 'active',
-        createdAt: groupData.createdAt || new Date(),
-        updatedAt: new Date(),
-        assignedBy: user.uid, // user.uid debería estar definido aquí por el chequeo inicial
-        routines: routinesToSave // Usamos las rutinas ya saneadas
-      };
+      const groupDocRef = doc(db, `artifacts/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/users/${studentId}/routineGroups`, groupData.id);
 
-      // Limpieza final de propiedades undefined (aunque los pasos anteriores deberían evitarlo)
-      Object.keys(dataToSave).forEach(key => {
-        if (dataToSave[key] === undefined) {
-          delete dataToSave[key];
+      if (isEditingIndividualRoutine) {
+        // Lógica para guardar una rutina individual
+        const docSnap = await getDoc(groupDocRef);
+        if (!docSnap.exists()) {
+          alert("Error: El grupo de rutinas padre no existe.");
+          return;
         }
-      });
-      // Para las rutinas anidadas
-      dataToSave.routines = dataToSave.routines.map(r => {
-        const cleanedRoutine = { ...r };
-        Object.keys(cleanedRoutine).forEach(key => {
-          if (cleanedRoutine[key] === undefined) {
-            delete cleanedRoutine[key];
-          }
-        });
-        // Para los ejercicios anidados dentro de cada rutina
-        cleanedRoutine.exercises = cleanedRoutine.exercises.map(ex => {
-          const cleanedExercise = { ...ex };
-          Object.keys(cleanedExercise).forEach(key => {
-            if (cleanedExercise[key] === undefined) {
-              delete cleanedExercise[key];
-            }
-          });
-          return cleanedExercise;
-        });
-        return cleanedRoutine;
-      });
+        const existingGroupData = docSnap.data();
+        const updatedRoutinesArray = (existingGroupData.routines || []).map(r =>
+          r.id === currentRoutine.id ? currentRoutine : r // Reemplazar la rutina editada
+        );
 
+        const dataToUpdate = {
+          ...existingGroupData,
+          updatedAt: new Date(),
+          routines: updatedRoutinesArray,
+        };
+        const cleanedDataToUpdate = cleanObjectForFirestore(dataToUpdate);
+        await setDoc(groupDocRef, cleanedDataToUpdate, { merge: true });
+        alert('¡Rutina individual guardada exitosamente!');
 
-      await setDoc(routineGroupRef, dataToSave, { merge: true });
+      } else {
+        // Lógica para guardar un grupo completo (nueva creación o edición de borrador)
+        const dataToSave = {
+          ...groupData,
+          status: 'active', // Cambiar a 'active' al guardar
+          createdAt: groupData.createdAt || new Date(),
+          updatedAt: new Date(),
+          assignedBy: user.uid,
+          routines: routines.map(r => ({ // Aseguramos que los campos de rutina estén saneados
+            id: r.id,
+            name: r.name,
+            restTime: r.restTime || 0,
+            rir: r.rir || 0,
+            warmUp: r.warmUp || '',
+            exercises: (r.exercises || []).map(ex => ({
+              id: ex.id,
+              name: ex.name,
+              type: ex.type || 'reps_sets',
+              sets: ex.sets || 0,
+              reps: ex.reps || 0,
+              time: ex.time || 0,
+              kilos: ex.kilos === undefined ? 0 : ex.kilos,
+              completed: ex.completed === undefined ? false : ex.completed,
+              order: ex.order || 0,
+            }))
+          }))
+        };
+        const cleanedDataToSave = cleanObjectForFirestore(dataToSave);
+        await setDoc(groupDocRef, cleanedDataToSave, { merge: true });
+        alert('¡Grupo de rutinas guardado exitosamente!');
+      }
 
-      alert('¡Grupo de rutinas guardado exitosamente!');
       resetForm();
       onClose();
     } catch (error) {
-      console.error("Error al guardar el grupo de rutinas:", error);
-      alert("Error al guardar el grupo de rutinas: " + error.message);
+      console.error("Error al guardar el grupo/rutina:", error);
+      alert("Error al guardar el grupo/rutina: " + error.message);
     }
   };
 
@@ -745,57 +696,112 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
       <StyledModalContent>
         <StyledModalHeader>
           <StyledModalTitle>
-            {stage === 1 && "Nuevo grupo de rutinas"}
-            {stage === 2 && "Detalles de rutina"}
-            {stage === 3 && "Añadir Ejercicios"} {/* Cambiado de 'Añadir ejercicios' a 'Añadir Ejercicios' */}
-            {stage === 4 && "Series y Reps"}
+            {isEditingIndividualRoutine ? "Editar Rutina" : (
+              stage === 1 && "Nuevo grupo de rutinas" ||
+              stage === 2 && "Detalles de rutina" ||
+              stage === 3 && "Añadir Ejercicios" ||
+              stage === 4 && "Series y Reps"
+            )}
           </StyledModalTitle>
           <StyledCloseButton onClick={handleCloseModal}>
             X
           </StyledCloseButton>
         </StyledModalHeader>
 
-        <StyledErrorMessage $isVisible={!!saveError}>{saveError}</StyledErrorMessage>
+        {isSaving && (
+          <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(255, 255, 255, 0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', zIndex: 10 }}>
+            <p style={{ color: '#3498db', fontSize: '1.2rem', fontWeight: 'bold' }}>Guardando borrador...</p>
+          </div>
+        )}
+        {saveError && (
+          <StyledErrorMessage $isVisible={true}>{saveError}</StyledErrorMessage>
+        )}
 
-        {stage === 1 && (
-          <Stage1GroupDetails
-            groupData={groupData}
-            setGroupData={setGroupData}
-            goToNextStage={goToNextStage}
-            onClose={handleCloseModal}
-          />
-        )}
-        {stage === 2 && (
-          <Stage2RoutineDetails
-            currentRoutine={currentRoutine}
-            setCurrentRoutine={setCurrentRoutine}
-            goToNextStage={goToNextStage}
-            goToPreviousStage={goToPreviousStage}
-            onClose={handleCloseModal}
-          />
-        )}
-        {stage === 3 && (
-          <Stage3AddExercises
-            currentRoutine={currentRoutine}
-            setCurrentRoutine={setCurrentRoutine}
-            goToNextStage={goToNextStage}
-            goToPreviousStage={goToPreviousStage}
-            onClose={handleCloseModal}
-          />
-        )}
-        {stage === 4 && (
-          <Stage4AssignSetsReps
-            currentRoutine={currentRoutine}
-            setCurrentRoutine={setCurrentRoutine}
-            goToPreviousStage={goToPreviousStage}
-            onSaveRoutineGroup={handleSaveRoutineGroup}
-            onAddAnotherRoutine={handleAddAnotherRoutine}
-            onClose={handleCloseModal}
-          />
+        {/* Renderizado condicional basado en si estamos editando una rutina individual */}
+        {isEditingIndividualRoutine ? (
+          <>
+            {stage === 2 && (
+              <Stage2RoutineDetails
+                currentRoutine={currentRoutine}
+                setCurrentRoutine={setCurrentRoutine}
+                goToNextStage={goToNextStage}
+                goToPreviousStage={goToPreviousStage}
+                onClose={handleCloseModal}
+              />
+            )}
+            {stage === 3 && (
+              <Stage3AddExercises
+                currentRoutine={currentRoutine}
+                setCurrentRoutine={setCurrentRoutine}
+                goToNextStage={goToNextStage}
+                goToPreviousStage={goToPreviousStage}
+                onClose={handleCloseModal}
+              />
+            )}
+            {stage === 4 && (
+              <Stage4AssignSetsReps
+                currentRoutine={currentRoutine}
+                setCurrentRoutine={setCurrentRoutine}
+                goToPreviousStage={goToPreviousStage}
+                onSaveRoutineGroup={handleSaveRoutineGroup}
+                onAddAnotherRoutine={handleAddAnotherRoutine}
+                onClose={handleCloseModal}
+                isEditingIndividualRoutine={isEditingIndividualRoutine} // Pasar esta prop a Stage4
+              />
+            )}
+          </>
+        ) : (
+          <>
+            {stage === 1 && (
+              <Stage1GroupDetails
+                groupData={groupData}
+                setGroupData={setGroupData}
+                goToNextStage={goToNextStage}
+                onClose={handleCloseModal}
+              />
+            )}
+            {stage === 2 && (
+              <Stage2RoutineDetails
+                currentRoutine={currentRoutine}
+                setCurrentRoutine={setCurrentRoutine}
+                goToNextStage={goToNextStage}
+                goToPreviousStage={goToPreviousStage}
+                onClose={handleCloseModal}
+              />
+            )}
+            {stage === 3 && (
+              <Stage3AddExercises
+                currentRoutine={currentRoutine}
+                setCurrentRoutine={setCurrentRoutine}
+                goToNextStage={goToNextStage}
+                goToPreviousStage={goToPreviousStage}
+                onClose={handleCloseModal}
+              />
+            )}
+            {stage === 4 && (
+              <Stage4AssignSetsReps
+                currentRoutine={currentRoutine}
+                setCurrentRoutine={setCurrentRoutine}
+                goToPreviousStage={goToPreviousStage}
+                onSaveRoutineGroup={handleSaveRoutineGroup}
+                onAddAnotherRoutine={handleAddAnotherRoutine}
+                onClose={handleCloseModal}
+                isEditingIndividualRoutine={isEditingIndividualRoutine} // Pasar esta prop a Stage4
+              />
+            )}
+          </>
         )}
       </StyledModalContent>
     </StyledModalOverlay>
   );
+};
+
+RoutineGroupCreationModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  studentId: PropTypes.string.isRequired,
+  draftGroupId: PropTypes.string,
+  editingRoutineData: PropTypes.object, // ¡NUEVA PROP! Puede ser null o un objeto de rutina
 };
 
 export default RoutineGroupCreationModal;
