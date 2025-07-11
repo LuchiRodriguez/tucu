@@ -1,12 +1,12 @@
 // src/pages/StudentPage/StudentPage.jsx
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react'; // Añadido useCallback
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc, collection, onSnapshot, query, deleteDoc, updateDoc } from 'firebase/firestore'; // Importar updateDoc
+import { doc, getDoc, collection, onSnapshot, query, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import Card from '../../components/common/Card/Card';
 import Navbar from '../../components/common/Navbar/Navbar';
 import CollapsibleCard from '../../components/common/CollapsibleCard/CollapsibleCard';
-import RoutineGroupCreationModal from '../../components/specific/RoutineGroupModal/RoutineGroupCreationModal';
+import RoutineGroupCreationModal from '../../components/specific/RoutineGroupModal/RoutineGroupCreationModal'; // Mantener la importación
 import { useAuth } from '../../context/authContextBase';
 
 import {
@@ -47,8 +47,8 @@ function StudentPage() {
   const [routineGroupsError, setRoutineGroupsError] = useState(null);
 
   const [isRoutineGroupModalOpen, setIsRoutineGroupModalOpen] = useState(false);
-  const [editingDraftId, setEditingDraftId] = useState(null); // Para editar un grupo completo
-  const [editingRoutineData, setEditingRoutineData] = useState(null); // Para editar una rutina individual
+  const [editingDraftId, setEditingDraftId] = useState(null);
+  const [editingRoutineData, setEditingRoutineData] = useState(null);
 
   // Efecto para cargar la información del alumno
   useEffect(() => {
@@ -135,34 +135,34 @@ function StudentPage() {
     }, {});
   }, [routineGroups]);
 
-  const handleOpenCreateRoutineGroupModal = () => {
-    setEditingDraftId(null); // Asegurarse de que es una nueva creación de grupo
-    setEditingRoutineData(null); // Asegurarse de que no estamos editando una rutina individual
-    setIsRoutineGroupModalOpen(true);
-  };
 
-  const handleCloseRoutineGroupModal = () => {
+  // Utilizar useCallback para envolver los handlers
+  const handleOpenCreateRoutineGroupModal = useCallback(() => {
+    setEditingDraftId(null);
+    setEditingRoutineData(null);
+    setIsRoutineGroupModalOpen(true);
+  }, []);
+
+  const handleCloseRoutineGroupModal = useCallback(() => {
     setIsRoutineGroupModalOpen(false);
-    setEditingDraftId(null); // Resetear el ID del borrador al cerrar
-    setEditingRoutineData(null); // Resetear los datos de la rutina individual al cerrar
-  };
+    setEditingDraftId(null);
+    setEditingRoutineData(null);
+  }, []); // Dependencias vacías porque los setters de estado son estables
 
-  const handleEditRoutineGroup = (groupId) => {
-    setEditingDraftId(groupId); // Cargar este borrador específico
-    setEditingRoutineData(null); // Asegurarse de que no estamos editando una rutina individual
+  const handleEditRoutineGroup = useCallback((groupId) => {
+    setEditingDraftId(groupId);
+    setEditingRoutineData(null);
     setIsRoutineGroupModalOpen(true);
-  };
+  }, []);
 
-  // Función para editar una rutina individual dentro de un grupo
-  const handleEditIndividualRoutine = (groupId, routineToEdit) => {
+  const handleEditIndividualRoutine = useCallback((groupId, routineToEdit) => {
     console.log(`Editando rutina individual: ${routineToEdit.name} (ID: ${routineToEdit.id}) del grupo: ${groupId}`);
-    setEditingDraftId(groupId); // Necesitamos el ID del grupo padre
-    setEditingRoutineData(routineToEdit); // Pasamos la rutina completa a editar
+    setEditingDraftId(groupId);
+    setEditingRoutineData(routineToEdit);
     setIsRoutineGroupModalOpen(true);
-  };
+  }, []);
 
-  // ¡NUEVO! Función para eliminar una rutina individual dentro de un grupo
-  const handleDeleteIndividualRoutine = async (groupId, routineIdToDelete) => {
+  const handleDeleteIndividualRoutine = useCallback(async (groupId, routineIdToDelete) => {
     if (!user) {
       console.error("No hay usuario autenticado para eliminar la rutina.");
       return;
@@ -186,13 +186,11 @@ function StudentPage() {
         }
       } catch (err) {
         console.error("Error al eliminar la rutina individual:", err);
-        // Usar un modal personalizado en lugar de alert
-        // alert("Error al eliminar la rutina individual. Verifica los permisos.");
       }
     }
-  };
+  }, [user, studentId]); // Dependencias: user, studentId
 
-  const handleDeleteRoutineGroup = async (groupId) => {
+  const handleDeleteRoutineGroup = useCallback(async (groupId) => {
     if (!user) {
       console.error("No hay usuario autenticado.");
       return;
@@ -206,7 +204,7 @@ function StudentPage() {
         console.error("Error al eliminar el grupo de rutinas:", err);
       }
     }
-  };
+  }, [user, studentId]); // Dependencias: user, studentId
 
   const navbarType = 'studentRoutinesPage';
   const navbarStudentName = student?.name || student?.email?.split('@')[0] || 'Este Alumno';
@@ -234,6 +232,8 @@ function StudentPage() {
     );
   }
 
+  // Si hay error en los grupos de rutinas Y no hay ninguno para mostrar
+  // (evitamos mostrar el error si hay algunos grupos aunque la carga inicial falló parcialmente)
   if (routineGroupsError && routineGroups.length === 0) {
     return (
       <StyledCoachPageContainer>
@@ -309,7 +309,7 @@ function StudentPage() {
                       </h4>
                       
                       <p style={{margin: '0'}} className="text-gray-700 text-sm mb-1">Objetivo del grupo: {group.objective}</p>
-                      <p className="text-gray-700 text-sm mb-2">Vencimiento: {group.dueDate}</p>
+                      <p className="text-gray-700 text-sm mb-2">Vencimiento: {group.dueDate instanceof Date ? group.dueDate.toLocaleDateString() : (group.dueDate?.toDate ? group.dueDate.toDate().toLocaleDateString() : group.dueDate)}</p> {/* Mejorar formato de fecha */}
                       
                       <h4 className="font-semibold text-md mt-4 mb-2">Rutinas en este Grupo:</h4>
                       {group.routines && group.routines.length > 0 ? (
@@ -353,7 +353,7 @@ function StudentPage() {
                                     >
                                       Editar Rutina
                                     </StyledFormButton>
-                                    <StyledFormButton // ¡NUEVO BOTÓN!
+                                    <StyledFormButton
                                       type="button"
                                       onClick={() => handleDeleteIndividualRoutine(group.id, routine.id)}
                                       style={{ backgroundColor: '#e74c3c', padding: '8px 12px', fontSize: '0.85rem' }}
@@ -399,13 +399,16 @@ function StudentPage() {
         </button>
       </Card>
 
-      <RoutineGroupCreationModal
-        isOpen={isRoutineGroupModalOpen}
-        onClose={handleCloseRoutineGroupModal}
-        studentId={studentId}
-        draftGroupId={editingDraftId}
-        editingRoutineData={editingRoutineData}
-      />
+      {/* RENDERIZADO CONDICIONAL: El modal solo se renderiza si isOpen es true */}
+      {isRoutineGroupModalOpen && (
+        <RoutineGroupCreationModal
+          isOpen={isRoutineGroupModalOpen}
+          onClose={handleCloseRoutineGroupModal}
+          studentId={studentId}
+          draftGroupId={editingDraftId}
+          editingRoutineData={editingRoutineData}
+        />
+      )}
     </StyledCoachPageContainer>
   );
 }
