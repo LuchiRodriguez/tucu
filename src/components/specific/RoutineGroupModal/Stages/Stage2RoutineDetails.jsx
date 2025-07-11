@@ -1,14 +1,15 @@
 // src/components/specific/RoutineGroupModal/Stages/Stage2RoutineDetails.jsx
 import { useState } from 'react';
 import PropTypes from 'prop-types';
+import warmUpExercises from '../../../../data/warmUpExercises.json';
 import {
   StyledModalBody,
   StyledLabel,
   StyledInput,
-  StyledTextArea,
   StyledButtonContainer,
   StyledNavButton,
-  StyledErrorMessage
+  StyledErrorMessage,
+  StyledSelect,
 } from '../StyledRoutineGroupModal'; // Ajusta la ruta si 'StyledRoutineGroupModal' no está en el mismo nivel
 
 
@@ -90,15 +91,22 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
         />
         {errors.rir && <StyledErrorMessage $isVisible={!!errors.rir}>{errors.rir}</StyledErrorMessage>}
       </div>
-      <div style={{ marginBottom: '18px' }}>
-        <StyledLabel htmlFor="warmUp">Entrada en calor</StyledLabel>
-        <StyledTextArea
-          id="warmUp"
-          value={currentRoutine.warmUp}
-          onChange={(e) => setCurrentRoutine({ ...currentRoutine, warmUp: e.target.value })}
-          placeholder="Ej: 5 minutos de cardio ligero, movilidad articular."
-        ></StyledTextArea>
-        {errors.warmUp && <StyledErrorMessage $isVisible={!!errors.warmUp}>{errors.warmUp}</StyledErrorMessage>}
+      <div className="input-group"> {/* Puedes mantener este div si lo usas para agrupar */}
+        <StyledLabel htmlFor="warmUpSelect">Entrada en Calor:</StyledLabel> {/* Usamos StyledLabel */}
+        <StyledSelect // Usamos StyledSelect
+            id="warmUpSelect"
+            value={currentRoutine.warmUp} // El valor seleccionado será el nombre del ejercicio
+            onChange={(e) => setCurrentRoutine({ ...currentRoutine, warmUp: e.target.value })}
+          >
+          <option value="">Seleccionar entrada en calor</option>
+          {warmUpExercises
+              .filter(exercise => exercise.category === "Calentamiento")
+              .map(exercise => (
+                  <option key={exercise.id} value={exercise.name}>
+                      {exercise.name}
+                  </option>
+              ))}
+        </StyledSelect>
       </div>
       <StyledButtonContainer>
         <StyledNavButton onClick={goToPreviousStage}>
@@ -118,7 +126,6 @@ Stage2RoutineDetails.propTypes = {
   setCurrentRoutine: PropTypes.func.isRequired,
   goToNextStage: PropTypes.func.isRequired,
   goToPreviousStage: PropTypes.func.isRequired,
-  onClose: PropTypes.func.isRequired,
 };
 
 export default Stage2RoutineDetails;

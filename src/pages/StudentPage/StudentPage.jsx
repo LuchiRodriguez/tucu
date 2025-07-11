@@ -1,12 +1,12 @@
 // src/pages/StudentPage/StudentPage.jsx
-import { useState, useEffect, useMemo, useCallback } from 'react'; // Añadido useCallback
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, collection, onSnapshot, query, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import Card from '../../components/common/Card/Card';
 import Navbar from '../../components/common/Navbar/Navbar';
 import CollapsibleCard from '../../components/common/CollapsibleCard/CollapsibleCard';
-import RoutineGroupCreationModal from '../../components/specific/RoutineGroupModal/RoutineGroupCreationModal'; // Mantener la importación
+import RoutineGroupCreationModal from '../../components/specific/RoutineGroupModal/RoutineGroupCreationModal';
 import { useAuth } from '../../context/authContextBase';
 
 import {
@@ -48,7 +48,7 @@ function StudentPage() {
 
   const [isRoutineGroupModalOpen, setIsRoutineGroupModalOpen] = useState(false);
   const [editingDraftId, setEditingDraftId] = useState(null);
-  const [editingRoutineData, setEditingRoutineData] = useState(null);
+  const [editingRoutineData, setEditingRoutineData] = useState(null); // Esto es un objeto o null, nunca una función aquí
 
   // Efecto para cargar la información del alumno
   useEffect(() => {
@@ -139,26 +139,26 @@ function StudentPage() {
   // Utilizar useCallback para envolver los handlers
   const handleOpenCreateRoutineGroupModal = useCallback(() => {
     setEditingDraftId(null);
-    setEditingRoutineData(null);
+    setEditingRoutineData(null); // Aseguramos que sea null para una nueva creación
     setIsRoutineGroupModalOpen(true);
   }, []);
 
   const handleCloseRoutineGroupModal = useCallback(() => {
     setIsRoutineGroupModalOpen(false);
     setEditingDraftId(null);
-    setEditingRoutineData(null);
-  }, []); // Dependencias vacías porque los setters de estado son estables
+    setEditingRoutineData(null); // Limpiamos al cerrar
+  }, []);
 
   const handleEditRoutineGroup = useCallback((groupId) => {
     setEditingDraftId(groupId);
-    setEditingRoutineData(null);
+    setEditingRoutineData(null); // Cuando se edita un grupo, no hay rutina individual seleccionada
     setIsRoutineGroupModalOpen(true);
   }, []);
 
   const handleEditIndividualRoutine = useCallback((groupId, routineToEdit) => {
     console.log(`Editando rutina individual: ${routineToEdit.name} (ID: ${routineToEdit.id}) del grupo: ${groupId}`);
     setEditingDraftId(groupId);
-    setEditingRoutineData(routineToEdit);
+    setEditingRoutineData(routineToEdit); // Esto SÍ es un objeto (la rutina)
     setIsRoutineGroupModalOpen(true);
   }, []);
 
@@ -188,7 +188,7 @@ function StudentPage() {
         console.error("Error al eliminar la rutina individual:", err);
       }
     }
-  }, [user, studentId]); // Dependencias: user, studentId
+  }, [user, studentId]);
 
   const handleDeleteRoutineGroup = useCallback(async (groupId) => {
     if (!user) {
@@ -204,7 +204,7 @@ function StudentPage() {
         console.error("Error al eliminar el grupo de rutinas:", err);
       }
     }
-  }, [user, studentId]); // Dependencias: user, studentId
+  }, [user, studentId]);
 
   const navbarType = 'studentRoutinesPage';
   const navbarStudentName = student?.name || student?.email?.split('@')[0] || 'Este Alumno';
@@ -277,7 +277,7 @@ function StudentPage() {
 
         {Object.keys(groupedRoutineGroups).length === 0 ? (
           <StyledAppMessage style={{ marginTop: '0', fontSize: '0.9rem', color: '#555' }}>
-            Este alumno aún no tiene grupos de rutinas asignados.
+            Este alumno aún no tiene<br/>grupos de rutinas asignados.
           </StyledAppMessage>
         ) : (
           <div style={{ width: '100%' }}>
@@ -309,7 +309,7 @@ function StudentPage() {
                       </h4>
                       
                       <p style={{margin: '0'}} className="text-gray-700 text-sm mb-1">Objetivo del grupo: {group.objective}</p>
-                      <p className="text-gray-700 text-sm mb-2">Vencimiento: {group.dueDate instanceof Date ? group.dueDate.toLocaleDateString() : (group.dueDate?.toDate ? group.dueDate.toDate().toLocaleDateString() : group.dueDate)}</p> {/* Mejorar formato de fecha */}
+                      <p className="text-gray-700 text-sm mb-2">Vencimiento: {group.dueDate instanceof Date ? group.dueDate.toLocaleDateString() : (group.dueDate?.toDate ? group.dueDate.toDate().toLocaleDateString() : group.dueDate)}</p>
                       
                       <h4 className="font-semibold text-md mt-4 mb-2">Rutinas en este Grupo:</h4>
                       {group.routines && group.routines.length > 0 ? (
@@ -406,7 +406,7 @@ function StudentPage() {
           onClose={handleCloseRoutineGroupModal}
           studentId={studentId}
           draftGroupId={editingDraftId}
-          editingRoutineData={editingRoutineData}
+          editingRoutineData={editingRoutineData} // Aquí se pasa el estado, que debería ser un objeto o null
         />
       )}
     </StyledCoachPageContainer>

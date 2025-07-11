@@ -49,19 +49,15 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
   const [stage, setStage] = useState(1);
   const [groupData, setGroupData] = useState({ ...initialGroupDataTemplate, id: uuidv4(), createdAt: new Date() });
   
-  // INICIALIZACIÓN: Determinar el estado inicial de las rutinas
   const [routines, setRoutines] = useState(() => {
     if (initialRoutineData) {
-      // Si se pasa una rutina inicial para editar, comenzamos con ella
       return [{ ...initialRoutineData, id: initialRoutineData.id || uuidv4() }];
     }
-    // Si no, comenzamos con una rutina vacía por defecto
     return [{ ...initialRoutineDataTemplate, id: uuidv4() }];
   });
 
-  // INICIALIZACIÓN: Determinar el índice de la rutina actual
   const [currentRoutineIndex, setCurrentRoutineIndex] = useState(() => {
-    return initialRoutineData ? 0 : 0; // Si hay rutina inicial, siempre es la primera (índice 0)
+    return initialRoutineData ? 0 : 0;
   });
   
   const [isSaving, setIsSaving] = useState(false);
@@ -176,7 +172,7 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
   }, [studentId, initialDraftGroupId, coachId, resetForm, setGroupNameConflictError]);
 
 
-  const saveDraft = useCallback(async (forceSave = false) => {
+  const saveDraft = useCallback(async () => {
     if (!coachId || !studentId || !groupData.id) {
       console.log("[useRoutineGroupForm] saveDraft: Faltan coachId, studentId o groupData.id. No se guarda borrador.");
       return;
@@ -227,11 +223,11 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
     );
 
     const hasMeaningfulGroupData = 
-      groupData.name.trim() !== '' || 
-      groupData.objective.trim() !== '' || 
-      groupData.dueDate !== '';
+    groupData.name.trim() !== '' || 
+    groupData.objective.trim() !== '' || 
+    groupData.dueDate !== '';
 
-    if (!initialDraftGroupId && !hasMeaningfulGroupData && meaningfulRoutines.length === 0 && !forceSave) {
+    if (!initialDraftGroupId && !hasMeaningfulGroupData && meaningfulRoutines.length === 0) {
       console.log("[useRoutineGroupForm] saveDraft: Nuevo grupo y todo el contenido (grupo + rutinas) está vacío. Omitiendo guardado de borrador.");
       return;
     }
@@ -258,8 +254,8 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
             reps: ex.reps === undefined || ex.reps === null ? 0 : ex.reps,
             time: ex.time === undefined || ex.time === null ? 0 : ex.time,
             kilos: ex.kilos === undefined || ex.kilos === null ? 0 : ex.kilos,
-            completed: ex.completed === undefined || ex.completed === null ? false : ex.completed,
-            order: ex.order === undefined || ex.order === null ? 0 : ex.order,
+            completed: ex.completed === undefined ? false : ex.completed,
+            order: ex.order === undefined ? 0 : ex.order,
           }))
         }))
       };
@@ -279,10 +275,8 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
   }, [studentId, groupData, routines, coachId, initialDraftGroupId, setSaveError, setGroupNameConflictError]);
 
 
-  // Este useEffect solo se encarga de llamar loadDraft o resetForm UNA VEZ cuando las props iniciales cambian
   useEffect(() => {
-    // Si no estamos en modo edición de rutina individual, procedemos
-    if (!initialRoutineData) { // <-- Aquí se usa initialRoutineData
+    if (!initialRoutineData) {
       if (initialDraftGroupId) {
         console.log("[useRoutineGroupForm] initialDraftGroupId presente. Llamando loadDraft.");
         loadDraft();
@@ -291,7 +285,6 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
         resetForm();
       }
     }
-    // ¡Ahora sí, con la dependencia correcta!
   }, [initialDraftGroupId, loadDraft, resetForm, initialRoutineData]);
 
 
@@ -348,10 +341,10 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
   const goToPreviousStage = useCallback(() => {
     if (stage === 2) {
       const currentRoutineIsEmpty = !currentRoutine.name.trim() &&
-      (currentRoutine.restTime === '' || currentRoutine.restTime === 0) &&
-      (currentRoutine.rir === '' || currentRoutine.rir === 0) &&
-      !currentRoutine.warmUp.trim() &&
-      currentRoutine.exercises.length === 0;
+                                   (currentRoutine.restTime === '' || currentRoutine.restTime === 0) &&
+                                   (currentRoutine.rir === '' || currentRoutine.rir === 0) &&
+                                   !currentRoutine.warmUp.trim() &&
+                                   currentRoutine.exercises.length === 0;
       
       if (currentRoutineIsEmpty && routines.length > 1 && !initialRoutineData) {
         setRoutines(prev => prev.slice(0, -1));

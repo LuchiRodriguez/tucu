@@ -57,7 +57,6 @@ export const StyledCloseButton = styled.button`
 
 export const StyledModalBody = styled.div`
   flex-grow: 1;
-  gap: 10px;
   padding-top: 15px;
   display: flex;
   flex-direction: column;
@@ -348,4 +347,22 @@ export const StyledSummaryListItem = styled.li`
   font-size: 0.95rem;
   color: #555;
   margin-bottom: 5px;
+`;
+
+export const StyledStageCard = styled.div`
+  padding: 15px;
+  border: 2px solid ${props => props.$isSelected ? '#3498db' : '#bdc3c7'}; /* Borde azul si está seleccionada */
+  border-radius: 8px;
+  background-color: ${props => props.$isSelected ? '#e8f6fd' : '#ecf0f1'}; /* Fondo más claro si seleccionada */
+  color: #333;
+  font-weight: ${props => props.$isSelected ? 'bold' : 'normal'};
+  cursor: pointer;
+  margin-bottom: 10px; /* Espacio entre las tarjetas */
+  transition: all 0.2s ease-in-out;
+  box-shadow: ${props => props.$isSelected ? '0 4px 10px rgba(52, 152, 219, 0.2)' : '0 2px 5px rgba(0, 0, 0, 0.05)'};
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
 `;
