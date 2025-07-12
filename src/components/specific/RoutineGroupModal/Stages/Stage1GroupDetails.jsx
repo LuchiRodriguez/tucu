@@ -1,8 +1,6 @@
 // src/components/specific/RoutineGroupModal/Stages/Stage1GroupDetails.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react'; // Importado useMemo
 import PropTypes from 'prop-types';
-// Ya no necesitamos CollapsibleCard aquí para esta estructura de etapa
-// import CollapsibleCard from '../../../common/CollapsibleCard/CollapsibleCard'; 
 import {
   StyledModalBody,
   StyledLabel,
@@ -10,8 +8,8 @@ import {
   StyledButtonContainer,
   StyledNavButton,
   StyledErrorMessage,
-  StyledSelect, // <--- StyledSelect se mantiene
-  StyledTextArea, // <--- StyledTextArea se mantiene para el objetivo
+  StyledSelect,
+  StyledTextArea,
 } from '../StyledRoutineGroupModal';
 import { getDocs, collection, query, where } from 'firebase/firestore';
 import { db } from '../../../../config/firebase';
@@ -38,12 +36,23 @@ ChevronIcon.propTypes = {
 
 // --- Stage 1: Detalles del Grupo de Rutinas ---
 const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, isEditingIndividualRoutine, setGroupNameConflictError, groupNameConflictError }) => {
-  const [errors, setErrors] = useState({}); // <--- Estado de errores como objeto
+  const [errors, setErrors] = useState({}); // Estado de errores como objeto
+
+  // Calcula si el formulario está completo en tiempo real
+  const isFormComplete = useMemo(() => {
+    return (
+      !!groupData?.stage?.trim() &&
+      !!groupData?.name?.trim() &&
+      !!groupData?.objective?.trim() &&
+      !!groupData?.dueDate
+    );
+  }, [groupData]);
 
   // Efecto para validar el nombre del grupo y la etapa
   useEffect(() => {
     let debounceCheck;
-    if (groupData?.name?.trim() && groupData?.stage?.trim() && !isEditingIndividualRoutine) {
+    // Solo validar si los campos están completos y no estamos en modo edición de rutina individual
+    if (isFormComplete && !isEditingIndividualRoutine) { // Usamos isFormComplete aquí
       debounceCheck = setTimeout(async () => {
         try {
           const routineGroupsCollectionRef = collection(db, `artifacts/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/users/${groupData.studentId}/routineGroups`);
@@ -65,7 +74,7 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, isEditingI
           if (foundDuplicate) {
             setGroupNameConflictError("Ya existe un grupo de rutinas activo con la misma etapa y nombre. Por favor, elige otro nombre o etapa.");
           } else {
-            setGroupNameConflictError(null);
+            setGroupNameConflictError(null); // Limpiar error si no hay conflicto
           }
         } catch (error) {
           console.error("Error al verificar duplicado de grupo:", error);
@@ -73,11 +82,12 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, isEditingI
         }
       }, 500);
     } else {
-      setGroupNameConflictError(null);
+      setGroupNameConflictError(null); // Limpiar error si los campos no están completos o si estamos editando una rutina individual
     }
 
     return () => clearTimeout(debounceCheck);
   }, [
+    isFormComplete, // Dependencia clave: el efecto se ejecuta cuando el formulario está completo
     groupData?.name,
     groupData?.stage,
     groupData?.id,
@@ -90,17 +100,19 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, isEditingI
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setGroupData(prev => ({ ...prev, [name]: value }));
-    setErrors(prev => ({ ...prev, [name]: null })); // Limpiar error específico al cambiar
+    setErrors(prev => ({ ...prev, [name]: null }));
+    setGroupNameConflictError(null);
   };
 
   const handleDateChange = (e) => {
     setGroupData(prev => ({ ...prev, dueDate: e.target.value }));
-    setErrors(prev => ({ ...prev, dueDate: null })); // Limpiar error específico al cambiar
+    setErrors(prev => ({ ...prev, dueDate: null }));
   };
 
-  const handleStageChange = (e) => { // Vuelve a recibir el evento
+  const handleStageChange = (e) => {
     setGroupData(prev => ({ ...prev, stage: e.target.value }));
-    setErrors(prev => ({ ...prev, stage: null })); // Limpiar error específico al cambiar
+    setErrors(prev => ({ ...prev, stage: null }));
+    setGroupNameConflictError(null);
   };
 
   const handleNext = () => {
@@ -119,31 +131,29 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, isEditingI
       newErrors.dueDate = "La fecha de vencimiento es obligatoria.";
     }
 
-    setErrors(newErrors); // Actualizar todos los errores
+    setErrors(newErrors);
 
-    // Si hay errores locales o un conflicto de nombre, no avanzar
     if (Object.keys(newErrors).length > 0 || groupNameConflictError) {
       return;
     }
     goToNextStage();
   };
 
-  // Ajuste de las etapas a un array simple de strings para el select
   const stages = ["Adaptación", "Volumen", "Definición", "Fuerza", "Mantenimiento"];
 
   return (
     <StyledModalBody>
-      {/* --- Etapa de Entrenamiento (StyledSelect) - AJUSTADO SEGÚN TU EJEMPLO --- */}
+      {/* --- Etapa de Entrenamiento (StyledSelect) --- */}
       <div style={{ marginBottom: '18px' }}>
         <StyledLabel htmlFor="stage">Etapa de Entrenamiento</StyledLabel>
         <StyledSelect
           id="stage"
-          value={groupData?.stage || ''} // Usar optional chaining y fallback
+          value={groupData?.stage || ''}
           onChange={handleStageChange}
         >
           <option value="">Selecciona una etapa</option>
           {stages.map(s => (
-            <option key={s} value={s.toLowerCase()}>{s}</option> // Convertir a minúsculas para el valor
+            <option key={s} value={s.toLowerCase()}>{s}</option>
           ))}
         </StyledSelect>
         {errors.stage && <StyledErrorMessage $isVisible={!!errors.stage}>{errors.stage}</StyledErrorMessage>}
@@ -161,7 +171,7 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, isEditingI
           placeholder="Ej: Fase 1 - Adaptación"
         />
         {errors.name && <StyledErrorMessage $isVisible={!!errors.name}>{errors.name}</StyledErrorMessage>}
-        {groupNameConflictError && <StyledErrorMessage $isVisible={true}>{groupNameConflictError}</StyledErrorMessage>} {/* Mostrar error de conflicto */}
+        {groupNameConflictError && <StyledErrorMessage $isVisible={true}>{groupNameConflictError}</StyledErrorMessage>}
       </div>
 
       <div style={{ marginBottom: '18px' }}>
@@ -189,7 +199,11 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, isEditingI
       </div>
 
       <StyledButtonContainer style={{ justifyContent: 'flex-end' }}>
-        <StyledNavButton onClick={handleNext} $primary disabled={Object.keys(errors).length > 0 || !!groupNameConflictError}>
+        <StyledNavButton
+          onClick={handleNext}
+          $primary
+          disabled={!isFormComplete || !!groupNameConflictError} // <--- Condición de deshabilitado actualizada
+        >
           <ChevronIcon direction="right" />
         </StyledNavButton>
       </StyledButtonContainer>

@@ -14,7 +14,7 @@ function StudentItem({ student, onSelectStudent, isSelected = false }) {
 
   return (
     <StyledStudentItemContainer onClick={() => onSelectStudent(id)} $isSelected={isSelected}>
-      <div> {/* Contenedor para nombre y email */}
+      <div style={{width: '210px'}}>
         <StyledStudentName>{name}</StyledStudentName>
         {email && <StyledStudentEmail>{email}</StyledStudentEmail>} {/* Mostrar email si existe */}
       </div>
