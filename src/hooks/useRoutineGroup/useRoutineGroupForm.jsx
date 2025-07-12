@@ -50,13 +50,15 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
   const [groupData, setGroupData] = useState({ ...initialGroupDataTemplate, id: uuidv4(), createdAt: new Date() });
   
   const [routines, setRoutines] = useState(() => {
+    console.log("[useRoutineGroupForm] Inicializando routines. initialRoutineData:", initialRoutineData);
     if (initialRoutineData) {
       return [{ ...initialRoutineData, id: initialRoutineData.id || uuidv4() }];
     }
     return [{ ...initialRoutineDataTemplate, id: uuidv4() }];
   });
 
-  const [currentRoutineIndex, setCurrentRoutineIndex] = useState(() => {
+  const [selectedRoutineIndex, setSelectedRoutineIndex] = useState(() => {
+    console.log("[useRoutineGroupForm] Inicializando selectedRoutineIndex. initialRoutineData:", initialRoutineData);
     return initialRoutineData ? 0 : 0;
   });
   
@@ -65,35 +67,56 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
 
   const debounceTimeoutRef = useRef(null);
 
-  const currentRoutine = useMemo(() => {
-    if (Array.isArray(routines) && routines.length > 0 && routines[currentRoutineIndex]) {
-      return routines[currentRoutineIndex];
+  // --- Lógica de selectedRoutine más robusta (antes currentRoutine) ---
+  const selectedRoutine = useMemo(() => {
+    console.log("[useRoutineGroupForm] Calculando selectedRoutine. routines:", routines, "selectedRoutineIndex:", selectedRoutineIndex);
+    if (!Array.isArray(routines) || routines.length === 0) {
+      console.warn("[useRoutineGroupForm] routines es inválido o vacío. Devolviendo template.");
+      return { ...initialRoutineDataTemplate, id: uuidv4() };
     }
-    return { ...initialRoutineDataTemplate, id: uuidv4() };
-  }, [routines, currentRoutineIndex]);
+    if (selectedRoutineIndex < 0 || selectedRoutineIndex >= routines.length) {
+      console.warn("[useRoutineGroupForm] selectedRoutineIndex fuera de límites. Devolviendo primer rutina o template.");
+      return routines[0] || { ...initialRoutineDataTemplate, id: uuidv4() };
+    }
+    const routine = routines[selectedRoutineIndex];
+    if (!routine || typeof routine !== 'object' || Array.isArray(routine)) {
+      console.error("[useRoutineGroupForm] La rutina en el índice es inválida. Devolviendo template.", routine);
+      return { ...initialRoutineDataTemplate, id: uuidv4() };
+    }
+    return routine;
+  }, [routines, selectedRoutineIndex]);
 
 
-  const setCurrentRoutine = useCallback((newRoutine) => {
+  const isEditingIndividualRoutine = useMemo(() => {
+    return !!initialRoutineData;
+  }, [initialRoutineData]);
+
+  const isEditingExistingGroup = useMemo(() => {
+    return !!initialDraftGroupId && !isEditingIndividualRoutine;
+  }, [initialDraftGroupId, isEditingIndividualRoutine]);
+
+
+  const setSelectedRoutine = useCallback((newRoutine) => {
     setRoutines(prevRoutines => {
       const updatedRoutines = Array.isArray(prevRoutines) ? [...prevRoutines] : [];
       
-      if (currentRoutineIndex >= 0 && currentRoutineIndex < updatedRoutines.length) {
-        updatedRoutines[currentRoutineIndex] = newRoutine;
+      if (selectedRoutineIndex >= 0 && selectedRoutineIndex < updatedRoutines.length) {
+        updatedRoutines[selectedRoutineIndex] = newRoutine;
       } else {
-        console.warn("[useRoutineGroupForm] setCurrentRoutine: currentRoutineIndex fuera de límites o nueva rutina. Agregando al final.");
+        console.warn("[useRoutineGroupForm] setSelectedRoutine: selectedRoutineIndex fuera de límites o nueva rutina. Agregando al final.");
         updatedRoutines.push(newRoutine);
-        setCurrentRoutineIndex(updatedRoutines.length - 1);
+        setSelectedRoutineIndex(updatedRoutines.length - 1);
       }
       return updatedRoutines;
     });
-  }, [currentRoutineIndex]);
+  }, [selectedRoutineIndex]);
 
 
   const resetForm = useCallback(() => {
     setStage(1);
     setGroupData({ ...initialGroupDataTemplate, id: uuidv4(), createdAt: new Date() });
     setRoutines([{ ...initialRoutineDataTemplate, id: uuidv4() }]);
-    setCurrentRoutineIndex(0);
+    setSelectedRoutineIndex(0);
     setSaveError(null);
     if (setGroupNameConflictError) setGroupNameConflictError(null);
     console.log("[useRoutineGroupForm] Formulario reseteado.");
@@ -151,7 +174,7 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
           }));
 
           setRoutines(loadedRoutines.length > 0 ? loadedRoutines : [{ ...initialRoutineDataTemplate, id: uuidv4() }]);
-          setCurrentRoutineIndex(0);
+          setSelectedRoutineIndex(0);
           setStage(1);
           console.log("[useRoutineGroupForm] Borrador/Grupo activo cargado en estados.");
         } else {
@@ -223,9 +246,9 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
     );
 
     const hasMeaningfulGroupData = 
-    groupData.name.trim() !== '' || 
-    groupData.objective.trim() !== '' || 
-    groupData.dueDate !== '';
+      groupData.name.trim() !== '' || 
+      groupData.objective.trim() !== '' || 
+      groupData.dueDate !== '';
 
     if (!initialDraftGroupId && !hasMeaningfulGroupData && meaningfulRoutines.length === 0) {
       console.log("[useRoutineGroupForm] saveDraft: Nuevo grupo y todo el contenido (grupo + rutinas) está vacío. Omitiendo guardado de borrador.");
@@ -315,41 +338,43 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
     if (stage === 1) {
       setStage(2);
     } else if (stage === 2) {
+      // Anteriormente, aquí se insertó la lógica para guardar selectedRoutine en routines
+      // Ahora se elimina para volver al estado anterior
       setStage(3);
     } else if (stage === 3) {
       setStage(4);
     } else if (stage === 4) {
       setRoutines(prev => {
         const updatedRoutines = [...prev];
-        const existingIndex = updatedRoutines.findIndex(r => r.id === currentRoutine.id);
+        const existingIndex = updatedRoutines.findIndex(r => r.id === selectedRoutine.id);
         if (existingIndex === -1) {
-          updatedRoutines.push(currentRoutine);
+          updatedRoutines.push(selectedRoutine);
         } else {
-          updatedRoutines[existingIndex] = currentRoutine;
+          updatedRoutines[existingIndex] = selectedRoutine;
         }
         return updatedRoutines;
       });
 
-      setCurrentRoutine({ ...initialRoutineDataTemplate, id: uuidv4() });
-      setCurrentRoutineIndex(routines.length);
+      setSelectedRoutine({ ...initialRoutineDataTemplate, id: uuidv4() });
+      setSelectedRoutineIndex(routines.length);
       setStage(2);
     }
     console.log("[useRoutineGroupForm] Avanzando a la siguiente etapa:", stage + 1);
-  }, [stage, setStage, setRoutines, setCurrentRoutine, setCurrentRoutineIndex, currentRoutine, routines.length]);
+  }, [stage, setStage, setRoutines, setSelectedRoutine, setSelectedRoutineIndex, selectedRoutine, routines.length]);
 
 
   const goToPreviousStage = useCallback(() => {
     if (stage === 2) {
-      const currentRoutineIsEmpty = !currentRoutine.name.trim() &&
-                                   (currentRoutine.restTime === '' || currentRoutine.restTime === 0) &&
-                                   (currentRoutine.rir === '' || currentRoutine.rir === 0) &&
-                                   !currentRoutine.warmUp.trim() &&
-                                   currentRoutine.exercises.length === 0;
+      const selectedRoutineIsEmpty = !selectedRoutine.name.trim() &&
+                                   (selectedRoutine.restTime === '' || selectedRoutine.restTime === 0) &&
+                                   (selectedRoutine.rir === '' || selectedRoutine.rir === 0) &&
+                                   !selectedRoutine.warmUp.trim() &&
+                                   selectedRoutine.exercises.length === 0;
       
-      if (currentRoutineIsEmpty && routines.length > 1 && !initialRoutineData) {
+      if (selectedRoutineIsEmpty && routines.length > 1 && !initialRoutineData) {
         setRoutines(prev => prev.slice(0, -1));
-        setCurrentRoutineIndex(routines.length - 2);
-      } else if (currentRoutineIsEmpty && routines.length === 1 && !initialRoutineData) {
+        setSelectedRoutineIndex(routines.length - 2);
+      } else if (selectedRoutineIsEmpty && routines.length === 1 && !initialRoutineData) {
         // No hacer nada especial aquí si es la única rutina y está vacía
       }
       setStage(1);
@@ -359,8 +384,14 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
       setStage(3);
     }
     console.log("[useRoutineGroupForm] Volviendo a la etapa anterior:", stage - 1);
-  }, [stage, currentRoutine, routines.length, initialRoutineData, setStage, setRoutines, setCurrentRoutineIndex]);
+  }, [stage, selectedRoutine, routines.length, initialRoutineData, setStage, setRoutines, setSelectedRoutineIndex]);
 
+  // --- LOGS DE DEPURACIÓN CRÍTICOS ANTES DEL RETURN ---
+  console.log("DEBUG useRoutineGroupForm final return values:");
+  console.log("  selectedRoutine:", selectedRoutine, "Type:", typeof selectedRoutine);
+  console.log("  setSelectedRoutine:", setSelectedRoutine, "Type:", typeof setSelectedRoutine);
+  console.log("  routines:", routines);
+  console.log("  selectedRoutineIndex:", selectedRoutineIndex);
 
   return {
     stage,
@@ -369,10 +400,10 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
     setGroupData,
     routines,
     setRoutines,
-    currentRoutineIndex,
-    setCurrentRoutineIndex,
-    currentRoutine,
-    setCurrentRoutine,
+    selectedRoutineIndex,
+    setSelectedRoutineIndex,
+    currentRoutine: selectedRoutine,
+    setCurrentRoutine: setSelectedRoutine,
     goToNextStage,
     goToPreviousStage,
     resetForm,
@@ -380,6 +411,8 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
     loadDraft,
     isSaving,
     saveError,
+    isEditingIndividualRoutine,
+    isEditingExistingGroup,
   };
 };
 

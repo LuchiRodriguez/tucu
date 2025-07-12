@@ -1,5 +1,5 @@
 // src/components/specific/RoutineGroupModal/RoutineGroupCreationModal.jsx
-import { useState, useEffect, useCallback } from 'react'; // Eliminado useMemo
+import { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { db } from '../../../config/firebase';
 import { doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
@@ -20,11 +20,10 @@ import {
   StyledModalHeader,
   StyledCloseButton,
   StyledModalTitle,
-  StyledErrorMessage, // Asegúrate de que esta importación esté presente
+  StyledErrorMessage,
 } from './StyledRoutineGroupModal';
 
 // --- Función auxiliar para limpiar objetos de 'undefined' para Firestore ---
-// Firestore no permite valores 'undefined'. Esta función los elimina recursivamente.
 const cleanObjectForFirestore = (obj) => {
   const newObj = {};
   for (const key in obj) {
@@ -52,16 +51,14 @@ const cleanObjectForFirestore = (obj) => {
 // --- Componente Principal del Modal ---
 const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = null, editingRoutineData = null }) => {
   const { user } = useAuth();
-  // Estado para el error de conflicto de nombre de grupo
   const [groupNameConflictError, setGroupNameConflictError] = useState(null);
-  const [localErrors, setLocalErrors] = useState(null); // Ahora se usa para mostrar errores
+  const [localErrors, setLocalErrors] = useState(null);
 
   const {
     stage,
     groupData,
     setGroupData,
     routines,
-    // currentRoutineIndex, // Eliminado de la desestructuración, ya no se usa directamente aquí
     currentRoutine,
     setCurrentRoutine,
     goToNextStage,
@@ -69,14 +66,18 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
     resetForm,
     saveDraft,
     loadDraft,
-    isSaving, // Ahora se usa para el indicador de guardado
-    saveError, // Ahora se usa para mostrar errores
+    isSaving,
+    saveError,
     setStage,
     setRoutines,
-    setCurrentRoutineIndex, // Aún se necesita para pasarlo al hook
+    setCurrentRoutineIndex,
     isEditingIndividualRoutine,
     isEditingExistingGroup,
   } = useRoutineGroupForm(studentId, draftGroupId, user?.uid, editingRoutineData, setGroupNameConflictError);
+
+  // --- LOG DE DEPURACIÓN CRÍTICO ---
+  console.log("DEBUG RGCModal - After useRoutineGroupForm destructuring: currentRoutine:", currentRoutine, "Type:", typeof currentRoutine);
+  console.log("DEBUG RGCModal - After useRoutineGroupForm destructuring: setCurrentRoutine:", setCurrentRoutine, "Type:", typeof setCurrentRoutine);
 
 
   // Efecto para inicializar el modal al abrirlo o cambiar de modo
@@ -267,6 +268,11 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
     const isEditingIndividualRoutineSafe = typeof isEditingIndividualRoutine === 'boolean' ? isEditingIndividualRoutine : false;
     const isEditingExistingGroupSafe = typeof isEditingExistingGroup === 'boolean' ? isEditingExistingGroup : false;
 
+    // --- LOG DE DEPURACIÓN CRÍTICO ---
+    console.log("DEBUG RGCModal - getStageComponent: currentRoutine:", currentRoutine, "Type:", typeof currentRoutine);
+    console.log("DEBUG RGCModal - getStageComponent: setCurrentRoutine:", setCurrentRoutine, "Type:", typeof setCurrentRoutine);
+
+
     switch (stage) {
       case 1:
         return (
@@ -291,6 +297,11 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
           />
         );
       case 3:
+        // Añadir una comprobación defensiva para currentRoutine
+        if (!currentRoutine || typeof currentRoutine !== 'object' || Array.isArray(currentRoutine)) {
+          console.warn("[RoutineGroupCreationModal] currentRoutine no es un objeto válido para Stage3AddExercises:", currentRoutine);
+          return <p style={{ textAlign: 'center', margin: '20px', color: '#e74c3c' }}>Cargando detalles de la rutina...</p>;
+        }
         return (
           <Stage3AddExercises
             currentRoutine={currentRoutine}
@@ -335,18 +346,16 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
       <StyledModalContent>
         <StyledModalHeader>
           <StyledModalTitle>
-            {isEditingIndividualRoutine ? "Editar Rutina Individual" : (isEditingExistingGroup ? "Editar grupo de rutinas" : "Nuevo grupo de rutinas")}
+            {isEditingIndividualRoutine ? "Editar Rutina Individual" : (isEditingExistingGroup ? "Editar Grupo de Rutinas" : "Crear Nuevo Grupo de Rutinas")}
           </StyledModalTitle>
           <StyledCloseButton onClick={handleCloseModal}>&times;</StyledCloseButton>
         </StyledModalHeader>
 
-        {/* Indicador de guardado */}
         {isSaving && (
           <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(255, 255, 255, 0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', zIndex: 10 }}>
             <p style={{ color: '#3498db', fontSize: '1.2rem', fontWeight: 'bold' }}>Guardando borrador...</p>
           </div>
         )}
-        {/* Mensajes de error */}
         {(saveError || localErrors || groupNameConflictError) && (
           <StyledErrorMessage $isVisible={true}>{saveError || localErrors || groupNameConflictError}</StyledErrorMessage>
         )}

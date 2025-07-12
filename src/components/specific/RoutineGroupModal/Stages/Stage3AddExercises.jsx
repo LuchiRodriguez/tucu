@@ -1,5 +1,5 @@
 // src/components/specific/RoutineGroupModal/Stages/Stage3AddExercises.jsx
-import { useState, useEffect, useMemo } from 'react'; // Importamos useMemo
+import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import localExercisesData from '../../../../data/exercises.json';
 import CollapsibleCard from '../../../common/CollapsibleCard/CollapsibleCard';
@@ -17,7 +17,7 @@ import {
 } from '../StyledRoutineGroupModal';
 
 
-// Helper component para el icono de chevron (idealmente, mover a common/Icons)
+// Helper component para el icono de chevron
 const ChevronIcon = ({ direction }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -41,54 +41,46 @@ ChevronIcon.propTypes = {
 const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, goToPreviousStage, editingRoutineData }) => {
   const [exerciseSearchText, setExerciseSearchText] = useState('');
 
-  // Usamos useMemo para memoizar safeCurrentRoutine y exercisesInRoutine
-  // para que no cambien en cada render si sus dependencias no cambian.
   const safeCurrentRoutine = useMemo(() => currentRoutine || {}, [currentRoutine]);
   const exercisesInRoutine = useMemo(() => safeCurrentRoutine.exercises || [], [safeCurrentRoutine.exercises]);
 
   useEffect(() => {
-    // Estos logs son útiles para depurar el estado de currentRoutine
-    // Considera eliminarlos o comentarlos una vez que el flujo esté estable.
     console.count("Stage3AddExercises Render");
     console.log("[Stage3AddExercises] currentRoutine object:", JSON.stringify(safeCurrentRoutine, null, 2));
     console.log("[Stage3AddExercises] exercisesInRoutine derived:", JSON.stringify(exercisesInRoutine, null, 2));
   }, [safeCurrentRoutine, exercisesInRoutine]);
 
   const handleExerciseSelection = (exercise) => {
-    setCurrentRoutine(prev => {
-      const currentExercises = prev?.exercises || [];
-      const isAlreadySelected = currentExercises.some(ex => ex.id === exercise.id);
-      let updatedExercises;
+    // Construimos el nuevo array de ejercicios
+    const currentExercises = safeCurrentRoutine.exercises || []; // Usar safeCurrentRoutine
+    const isAlreadySelected = currentExercises.some(ex => ex.id === exercise.id);
+    let updatedExercises;
 
-      if (isAlreadySelected) {
-        updatedExercises = currentExercises.filter(ex => ex.id !== exercise.id);
-      } else {
-        const existingExerciseInInitialEditData = (editingRoutineData?.exercises || []).find(ex => ex.id === exercise.id);
+    if (isAlreadySelected) {
+      updatedExercises = currentExercises.filter(ex => ex.id !== exercise.id);
+    } else {
+      const existingExerciseInInitialEditData = (editingRoutineData?.exercises || []).find(ex => ex.id === exercise.id);
 
-        const newExercise = {
-          id: exercise.id,
-          name: exercise.name,
-          type: exercise.type || 'reps_sets',
-          sets: existingExerciseInInitialEditData?.sets !== undefined ? existingExerciseInInitialEditData.sets : 0,
-          reps: existingExerciseInInitialEditData?.reps !== undefined ? existingExerciseInInitialEditData.reps : 0,
-          time: existingExerciseInInitialEditData?.time !== undefined ? existingExerciseInInitialEditData.time : 0,
-          kilos: existingExerciseInInitialEditData?.kilos !== undefined ? existingExerciseInInitialEditData.kilos : 0,
-          completed: existingExerciseInInitialEditData?.completed !== undefined ? existingExerciseInInitialEditData.completed : false,
-        };
-        updatedExercises = [...currentExercises, newExercise];
-      }
-      const reorderedExercises = updatedExercises.map((ex, idx) => ({ ...ex, order: idx }));
-
-      return {
-        ...prev,
-        exercises: reorderedExercises,
+      const newExercise = {
+        id: exercise.id,
+        name: exercise.name,
+        type: exercise.type || 'reps_sets',
+        sets: existingExerciseInInitialEditData?.sets !== undefined ? existingExerciseInInitialEditData.sets : 0,
+        reps: existingExerciseInInitialEditData?.reps !== undefined ? existingExerciseInInitialEditData.reps : 0,
+        time: existingExerciseInInitialEditData?.time !== undefined ? existingExerciseInInitialEditData.time : 0,
+        kilos: existingExerciseInInitialEditData?.kilos !== undefined ? existingExerciseInInitialEditData.kilos : 0,
+        completed: existingExerciseInInitialEditData?.completed !== undefined ? existingExerciseInInitialEditData.completed : false,
       };
+      updatedExercises = [...currentExercises, newExercise];
+    }
+    const reorderedExercises = updatedExercises.map((ex, idx) => ({ ...ex, order: idx }));
+
+    // Pasamos el objeto de rutina COMPLETO y ACTUALIZADO a setCurrentRoutine
+    setCurrentRoutine({
+      ...safeCurrentRoutine, // Copiamos todas las demás propiedades de la rutina
+      exercises: reorderedExercises, // Actualizamos solo la propiedad exercises
     });
   };
-
-  // --- Funciones handleSetsChange, handleRepChange, handleTimeChange removidas ---
-  // Estas funciones no se usan en Stage3AddExercises (solo se seleccionan ejercicios aquí).
-  // Deberían estar en Stage4AssignSetsReps donde se asignan sets/reps/tiempo/kilos.
 
   const handleDragStart = (e, index) => {
     e.dataTransfer.setData("exerciseIndex", index);
@@ -113,7 +105,7 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
       exercises: updatedExercises,
     };
 
-    setCurrentRoutine(updatedRoutine);
+    setCurrentRoutine(updatedRoutine); // Esto ya estaba bien
   };
 
   const filteredExercises = localExercisesData.filter(exercise =>
