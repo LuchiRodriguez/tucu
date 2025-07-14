@@ -56,8 +56,8 @@ const RoutineList = ({
 
   return (
     <section className="RoutineList-container" style={{ width: '100%' }}>
-      <h3 style={{ marginBottom: '15px', textAlign: 'center' }}>Tus Rutinas Asignadas:</h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <h3 style={{ margin: '0 0 15px', textAlign: 'center' }}>Tus Rutinas Asignadas:</h3>
+      <div style={{ margin: '0', display: 'flex', flexDirection: 'column', gap: '10px', border: '1px solid #eee', borderRadius: '12px'}}>
         {routines.map(routine => {
           // ¡NUEVA LÓGICA! Calcular el porcentaje de completado de la rutina
           const totalExercises = routine.exercises ? routine.exercises.length : 0;
@@ -88,7 +88,7 @@ const RoutineList = ({
                 <h5 style={{ marginBottom: '10px', color: '#2c3e50' }}>Ejercicios de la rutina:</h5>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {routine.exercises.map(ex => (
-                    <Card key={ex.id} style={{ padding: '10px 15px', border: '1px solid #eee', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <Card key={ex.id} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                         <h6 style={{ margin: 0, color: '#333', fontSize: '1rem' }}>{ex.name}</h6>
                         <input

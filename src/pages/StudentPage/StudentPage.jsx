@@ -271,7 +271,7 @@ function StudentPage() {
     <StyledCoachPageContainer>
       <Navbar loading={false} type={navbarType} studentName={navbarStudentName} isCoachDashboard={false} userName={coachName} />
       <Card style={{ width: '100%', marginTop: '20px', padding: '0 0 20px', boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)' }}>
-        <h2 style={{ textAlign: 'center', color: '#2c3e50', margin: '0' }}>
+        <h2 style={{ textAlign: 'center', margin: '0' }}>
           <p className="text-gray-600 text-sm mt-2">Objetivo: {student?.objective || 'No definido'}</p>
         </h2>
 
