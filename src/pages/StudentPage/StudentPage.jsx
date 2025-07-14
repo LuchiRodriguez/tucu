@@ -14,8 +14,8 @@ import {
   StyledAppMessage,
   StyledFormButton,
 } from '../CoachPage/StyledCoachPage';
-import editImage from '../../assets/png/edit.png';
-import deleteImage from '../../assets/png/delete.png';
+import editImage from '../../assets/edit.png';
+import deleteImage from '../../assets/delete.png';
 
 // Función auxiliar para formatear segundos a minutos y segundos (MM:SS)
 const formatTime = (totalSeconds) => {

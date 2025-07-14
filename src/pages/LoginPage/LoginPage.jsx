@@ -20,7 +20,7 @@ import {
   StyledLogo, // ¡IMPORTAMOS EL COMPONENTE ESTILIZADO DEL LOGO!
 } from './StyledLoginPage';
 
-import logoImage from '../../assets/png/logo.jpg'; // ¡CAMBIO CLAVE AQUÍ: IMPORTAMOS LA IMAGEN!
+import logoImage from '../../assets/logo.jpg'; // ¡CAMBIO CLAVE AQUÍ: IMPORTAMOS LA IMAGEN!
 
 function LoginPage() {
   const navigate = useNavigate(); // Inicializamos useNavigate

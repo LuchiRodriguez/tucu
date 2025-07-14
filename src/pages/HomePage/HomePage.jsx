@@ -12,7 +12,7 @@ import {
   StyledWhatsappImageButton
 } from './StyledHomePage';
 
-import whatsappLogo from '../../assets/png/whatsapp.webp';
+import whatsappLogo from '../../assets/whatsapp.webp';
 
 function HomePage() {
   const { user, loading: authLoading } = useAuth();

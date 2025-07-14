@@ -6,10 +6,11 @@ import CoachPage from './pages/CoachPage/CoachPage';
 import StudentPage from './pages/StudentPage/StudentPage';
 import RegisterPage from './pages/RegisterPage/RegisterPage';
 import LoginPage from './pages/LoginPage/LoginPage';
-import ProfilePage from './pages/ProfilePage/ProfilePage'; // ¡IMPORTADO!
+import ProfilePage from './pages/ProfilePage/ProfilePage';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/authContextBase';
 import ProtectedRoute from './components/common/ProtectedRoute/ProtectedRoute';
+import loadingGif from './assets/loading.gif';
 
 // Componente para manejar la redirección inicial en la raíz
 function InitialRouteHandler() {
@@ -36,8 +37,8 @@ function InitialRouteHandler() {
   // o un spinner si quieres
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontSize: '1.5rem' }}>
-        Cargando aplicación...
+      <div className="flex justify-center items-center h-screen bg-gray-100">
+        <img src={loadingGif} alt="Cargando..." className="w-32 h-32" /> {/* Mostrar el GIF */}
       </div>
     );
   }

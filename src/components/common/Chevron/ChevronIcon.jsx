@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
-import collapse from '../../../assets/png/collapse.png'
-import expand from '../../../assets/png/expand.png'
+import collapse from '../../../assets/collapse.png'
+import expand from '../../../assets/expand.png'
 
 const ChevronIcon = ({onShow}) => {
   return (

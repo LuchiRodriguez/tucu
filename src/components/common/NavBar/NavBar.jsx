@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/authContextBase';
-import logoImage from '../../../assets/png/logo.jpg';
-import userIconImage from '../../../assets/png/user.png';
+import logoImage from '../../../assets/logo.jpg';
+import userIconImage from '../../../assets/user.png';
 
 import {
   StyledNavbarContainer,

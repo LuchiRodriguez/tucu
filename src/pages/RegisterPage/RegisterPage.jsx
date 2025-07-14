@@ -5,7 +5,6 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../config/firebase';
 
-// Importamos los componentes estilizados
 import {
   StyledRegisterContainer,
   StyledRegisterFormWrapper,
@@ -18,10 +17,10 @@ import {
   StyledErrorMessage,
   StyledSuccessMessage,
   StyledLink,
-  StyledLogo, // Importamos el StyledLogo
+  StyledLogo,
 } from './StyledRegisterPage';
 
-import logoImage from '../../assets/png/logo.jpg'; // ¡IMPORTAMOS LA IMAGEN DEL LOGO!
+import logoImage from '../../assets/logo.jpg'; // ¡IMPORTAMOS LA IMAGEN DEL LOGO!
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -93,14 +92,12 @@ function RegisterPage() {
   return (
     <StyledRegisterContainer>
       <StyledRegisterFormWrapper>
-        {/* ¡USAMOS LA IMAGEN IMPORTADA AQUÍ! Los estilos de tamaño y margen ahora vienen de StyledRegisterPage */}
         <StyledLogo
           src={logoImage}
           alt="Logo Prof Angel San Roman"
           onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/150x150/CCCCCC/000000?text=Error" }}
         />
 
-        {/* ¡CAMBIO CLAVE AQUÍ! Título y subtítulo dentro de un div, sin span en el título */}
         <div>
           <StyledRegisterTitle>Registrate</StyledRegisterTitle>
           <StyledRegisterSubtitle>Creá tu cuenta de alumno para empezar.</StyledRegisterSubtitle>
