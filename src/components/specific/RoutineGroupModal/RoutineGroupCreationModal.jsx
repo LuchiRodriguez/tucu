@@ -65,12 +65,11 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
     goToPreviousStage,
     resetForm,
     saveDraft,
-    loadDraft,
+    // loadDraft, // Eliminado: ya no se usa directamente aquí
     isSaving,
     saveError,
     setStage,
-    setRoutines,
-    setCurrentRoutineIndex,
+    // setSelectedRoutineIndex, // Eliminado: ya no se usa directamente aquí
     isEditingIndividualRoutine,
     isEditingExistingGroup,
   } = useRoutineGroupForm(studentId, draftGroupId, user?.uid, editingRoutineData, setGroupNameConflictError);
@@ -89,20 +88,20 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
       return;
     }
 
+    // La lógica de inicialización ahora está principalmente en el hook useRoutineGroupForm
+    // Este useEffect solo se asegura de que el hook se inicialice correctamente
+    // según si es una edición individual, un borrador existente o una nueva creación.
+    // El hook useRoutineGroupForm ya tiene su propio useEffect para llamar a loadDraft/resetForm
+    // basado en initialDraftGroupId y initialRoutineData.
+    // Aquí solo necesitamos asegurarnos de que el modal se abra en la etapa correcta
+    // si estamos editando una rutina individual.
     if (isEditingIndividualRoutine) {
-      console.log("[RoutineGroupCreationModal] Abriendo para editar rutina individual:", editingRoutineData);
-      setGroupData(prev => ({ ...prev, id: draftGroupId }));
-      setRoutines([editingRoutineData]);
-      setCurrentRoutineIndex(0);
-      setStage(2);
-    } else if (draftGroupId) {
-      console.log("[RoutineGroupCreationModal] Abriendo para editar grupo (borrador):", draftGroupId);
-      loadDraft();
+      setStage(2); // Forzar a la etapa 2 para edición de rutina individual
     } else {
-      console.log("[RoutineGroupCreationModal] Abriendo para crear nuevo grupo.");
-      resetForm();
+      setStage(1); // Para creación o edición de grupo, empezar en etapa 1
     }
-  }, [isOpen, draftGroupId, editingRoutineData, loadDraft, resetForm, setStage, setRoutines, setCurrentRoutineIndex, setGroupData, isEditingIndividualRoutine, setGroupNameConflictError, setLocalErrors]);
+
+  }, [isOpen, isEditingIndividualRoutine, setStage, resetForm, setGroupNameConflictError, setLocalErrors]);
 
 
   // Efecto para guardar borrador antes de que el usuario cierre la pestaña/navegador
@@ -154,8 +153,8 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
         
         if (ex.type === 'timed') {
           return ex.time <= 0 || isNaN(ex.time);
-        } else {
-          return ex.reps < 0 || isNaN(ex.reps);
+        } else { // reps_sets o cualquier otro por defecto
+          return ex.reps < 0 || isNaN(ex.reps); // Reps pueden ser 0 para RIR muy bajo o solo sets
         }
       })
     );
@@ -178,7 +177,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
           routineGroupsCollectionRef,
           where('stage', '==', groupData.stage),
           where('name', '==', groupData.name),
-          where('status', '==', 'active')
+          where('assignedBy', '==', user.uid) // Asegurar que el conflicto sea del mismo coach
         );
         const querySnapshot = await getDocs(q);
 
@@ -207,7 +206,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
         }
         const existingGroupData = docSnap.data();
         const updatedRoutinesArray = (existingGroupData.routines || []).map(r =>
-          r.id === currentRoutine.id ? currentRoutine : r
+          r.id === currentRoutine.id ? cleanObjectForFirestore(currentRoutine) : cleanObjectForFirestore(r)
         );
 
         const dataToUpdate = {
@@ -225,24 +224,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
           createdAt: groupData.createdAt || new Date(),
           updatedAt: new Date(),
           assignedBy: user.uid,
-          routines: routines.map(r => ({
-            id: r.id,
-            name: r.name || '',
-            restTime: r.restTime || 0,
-            rir: r.rir === undefined ? 0 : r.rir,
-            warmUp: r.warmUp || '',
-            exercises: (r.exercises || []).map(ex => ({
-              id: ex.id,
-              name: ex.name,
-              type: ex.type || 'reps_sets',
-              sets: ex.sets || 0,
-              reps: ex.reps === undefined ? 0 : ex.reps,
-              time: ex.time || 0,
-              kilos: ex.kilos === undefined ? 0 : ex.kilos,
-              completed: ex.completed === undefined ? false : ex.completed,
-              order: ex.order === undefined ? 0 : ex.order,
-            }))
-          }))
+          routines: routines.map(r => cleanObjectForFirestore(r))
         };
         const cleanedDataToSave = cleanObjectForFirestore(dataToSave);
         await setDoc(routineGroupRef, cleanedDataToSave, { merge: true });
@@ -293,7 +275,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
             setCurrentRoutine={setCurrentRoutine}
             goToNextStage={goToNextStage}
             goToPreviousStage={goToPreviousStage}
-            editingRoutineData={editingRoutineData}
+            // editingRoutineData={editingRoutineData} // Ya no es necesario aquí, se maneja en el hook
           />
         );
       case 3:
@@ -308,7 +290,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
             setCurrentRoutine={setCurrentRoutine}
             goToNextStage={goToNextStage}
             goToPreviousStage={goToPreviousStage}
-            editingRoutineData={editingRoutineData}
+            // editingRoutineData={editingRoutineData} // Ya no es necesario aquí
           />
         );
       case 4:
@@ -341,9 +323,15 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
     }
   };
 
+  // La clave (key) del modal cambia cuando se abre o se cambia el modo (crear/editar),
+  // forzando a React a desmontar y volver a montar el componente y sus hooks.
+  const modalKey = isOpen 
+    ? (isEditingIndividualRoutine ? `edit-routine-${draftGroupId}-${editingRoutineData?.id}` : `edit-group-${draftGroupId}`)
+    : 'new-group';
+
   return (
     <StyledModalOverlay $isOpen={isOpen}>
-      <StyledModalContent>
+      <StyledModalContent key={modalKey}> {/* Añadimos la key aquí */}
         <StyledModalHeader>
           <StyledModalTitle>
             {isEditingIndividualRoutine ? "Editar Rutina Individual" : (isEditingExistingGroup ? "Editar Grupo de Rutinas" : "Crear Nuevo Grupo de Rutinas")}

@@ -1,24 +1,25 @@
 // src/components/specific/RoutineGroupModal/Stages/Stage4AssignSetsReps.jsx
-import { useState, useMemo } from 'react'; // Importamos useMemo si es necesario para optimización
+import { useMemo } from 'react';
 import PropTypes from 'prop-types';
+import CollapsibleCard from '../../../common/CollapsibleCard/CollapsibleCard';
 import {
   StyledModalBody,
   StyledLabel,
   StyledInput,
   StyledButtonContainer,
   StyledNavButton,
-  StyledSaveButton,
-  StyledExerciseItem,
-  StyledExerciseListContainer,
   StyledSectionTitle,
   StyledSubSectionTitle,
   StyledCurrentRoutineInfo,
   StyledExerciseInputGroup,
-  StyledErrorMessage // Añadimos StyledErrorMessage para mostrar errores de validación
+  StyledCheckboxContainer,
+  StyledCheckboxLabel,
+  StyledCheckboxInput,
+  StyledSaveButton,
+  StyledAddAnotherRoutineButton, // <--- Aquí es donde se importa
 } from '../StyledRoutineGroupModal';
 
-
-// Helper component para el icono de chevron (idealmente, mover a common/Icons)
+// Helper component para el icono de chevron
 const ChevronIcon = ({ direction }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -30,7 +31,7 @@ const ChevronIcon = ({ direction }) => (
       transform: direction === 'left' ? 'rotate(180deg)' : 'none',
     }}
   >
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+    <path strokeLinecap="round" strokeWidth={2} d="M9 5l7 7-7 7" />
   </svg>
 );
 
@@ -38,192 +39,163 @@ ChevronIcon.propTypes = {
   direction: PropTypes.oneOf(['left', 'right']).isRequired,
 };
 
-// --- Stage 4: Asignar Series y Repeticiones ---
+// --- Stage 4: Asignar Series, Repeticiones, Tiempo, Kilos ---
 const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousStage, onSaveRoutineGroup, onAddAnotherRoutine, isEditingIndividualRoutine }) => {
-  // Usamos useMemo para memoizar exercisesInRoutine si currentRoutine puede cambiar con frecuencia
-  // y exercisesInRoutine no debería recalcularse si solo cambia otra prop de currentRoutine.
-  const exercisesInRoutine = useMemo(() => currentRoutine.exercises || [], [currentRoutine.exercises]);
-  const [errors, setErrors] = useState({}); // Estado para manejar errores de validación local
+  const safeCurrentRoutine = useMemo(() => currentRoutine || {}, [currentRoutine]);
+  const exercisesInRoutine = useMemo(() => safeCurrentRoutine.exercises || [], [safeCurrentRoutine.exercises]);
 
-  // Handlers para actualizar los valores de los ejercicios
-  const handleSetChange = (exerciseId, value) => {
-    setCurrentRoutine(prev => ({
-      ...prev,
-      exercises: (prev.exercises || []).map(ex =>
-        ex.id === exerciseId ? { ...ex, sets: Number(value) || 0 } : ex
-      )
-    }));
+  // Handler genérico para cambios en los ejercicios
+  const handleExerciseDetailChange = (exerciseId, field, value) => {
+    const updatedExercises = exercisesInRoutine.map(ex => {
+      if (ex.id === exerciseId) {
+        // Asegurarse de que los valores numéricos se guarden como números o string vacío
+        const parsedValue = (field === 'sets' || field === 'reps' || field === 'time' || field === 'kilos') && value !== '' ? Number(value) : value;
+        return { ...ex, [field]: parsedValue };
+      }
+      return ex;
+    });
+
+    // Pasa el objeto de rutina COMPLETO y ACTUALIZADO
+    setCurrentRoutine({
+      ...safeCurrentRoutine,
+      exercises: updatedExercises,
+    });
   };
 
-  const handleRepChange = (exerciseId, value) => {
-    setCurrentRoutine(prev => ({
-      ...prev,
-      exercises: (prev.exercises || []).map(ex =>
-        ex.id === exerciseId ? { ...ex, reps: Number(value) || 0 } : ex
-      )
-    }));
+  const handleCheckboxChange = (exerciseId, isChecked) => {
+    const updatedExercises = exercisesInRoutine.map(ex => {
+      if (ex.id === exerciseId) {
+        return { ...ex, completed: isChecked };
+      }
+      return ex;
+    });
+    // Pasa el objeto de rutina COMPLETO y ACTUALIZADO
+    setCurrentRoutine({
+      ...safeCurrentRoutine,
+      exercises: updatedExercises,
+    });
   };
 
-  const handleTimeChange = (exerciseId, value) => {
-    setCurrentRoutine(prev => ({
-      ...prev,
-      exercises: (prev.exercises || []).map(ex =>
-        ex.id === exerciseId ? { ...ex, time: Number(value) || 0 } : ex
-      )
-    }));
-  };
-
-  // Agregamos handleKilosChange si los kilos se configuran en esta etapa
-  const handleKilosChange = (exerciseId, value) => {
-    setCurrentRoutine(prev => ({
-      ...prev,
-      exercises: (prev.exercises || []).map(ex =>
-        ex.id === exerciseId ? { ...ex, kilos: Number(value) || 0 } : ex
-      )
-    }));
-  };
-
-
-  // Función de validación para esta etapa
-  const validate = () => {
-    const newErrors = {};
-    let hasErrors = false;
-
-    if (exercisesInRoutine.length === 0) {
-      newErrors.general = 'Debes añadir al menos un ejercicio a la rutina.';
-      hasErrors = true;
-    } else {
-      exercisesInRoutine.forEach(ex => {
-        // Validación básica: cada ejercicio debe tener al menos 1 serie y un valor para repeticiones/tiempo
-        if (ex.sets === 0 || isNaN(ex.sets) || ex.sets < 0) {
-          newErrors[`sets-${ex.id}`] = 'Las series deben ser un número positivo.';
-          hasErrors = true;
-        }
-
-        if (ex.type === 'timed') {
-          if (ex.time === 0 || isNaN(ex.time) || ex.time < 0) {
-            newErrors[`time-${ex.id}`] = 'El tiempo debe ser un número positivo.';
-            hasErrors = true;
-          }
-        } else { // reps_sets o por defecto
-          if (ex.reps === 0 || isNaN(ex.reps) || ex.reps < 0) {
-            newErrors[`reps-${ex.id}`] = 'Las repeticiones deben ser un número positivo o cero.';
-            hasErrors = true;
-          }
-        }
-        // Puedes añadir validación para kilos si es un campo obligatorio
-        // if (ex.kilos === 0 || isNaN(ex.kilos) || ex.kilos < 0) {
-        //   newErrors[`kilos-${ex.id}`] = 'Los kilos deben ser un número positivo.';
-        //   hasErrors = true;
-        // }
-      });
+  // Validación para habilitar los botones de guardado/siguiente
+  const canSave = useMemo(() => {
+    // La rutina debe tener calentamiento y al menos un ejercicio
+    if (!safeCurrentRoutine.warmUp?.trim() || exercisesInRoutine.length === 0) {
+      return false;
     }
 
-    setErrors(newErrors);
-    return !hasErrors;
-  };
-
-  const handleSave = () => {
-    if (validate()) {
-      onSaveRoutineGroup();
+    // Todos los ejercicios deben tener sets > 0
+    const allExercisesHaveValidSets = exercisesInRoutine.every(ex => ex.sets > 0 && !isNaN(ex.sets));
+    if (!allExercisesHaveValidSets) {
+      return false;
     }
-  };
 
-  const handleAddAnother = () => {
-    if (validate()) {
-      onAddAnotherRoutine();
-    }
-  };
+    // Validar reps o time según el tipo de ejercicio
+    const allExercisesHaveValidRepsOrTime = exercisesInRoutine.every(ex => {
+      if (ex.type === 'timed') {
+        return ex.time > 0 && !isNaN(ex.time);
+      } else { // reps_sets o cualquier otro por defecto
+        return ex.reps >= 0 && !isNaN(ex.reps); // Reps pueden ser 0 para RIR muy bajo o solo sets
+      }
+    });
+
+    return allExercisesHaveValidRepsOrTime;
+  }, [safeCurrentRoutine.warmUp, exercisesInRoutine]);
 
 
   return (
     <StyledModalBody>
-      <StyledSectionTitle>Series y Repeticiones: {currentRoutine.name || 'Nueva Rutina'}</StyledSectionTitle>
+      <StyledSectionTitle>{safeCurrentRoutine.name || 'Nueva Rutina'}</StyledSectionTitle>
       <StyledCurrentRoutineInfo>
-        Descanso: {currentRoutine.restTime || 0}s | RIR: {currentRoutine.rir || 0} | Calentamiento: {currentRoutine.warmUp || 'N/A'}
+        Descanso: {safeCurrentRoutine.restTime || 0}s | RIR: {safeCurrentRoutine.rir || 0} | Calentamiento: {safeCurrentRoutine.warmUp || 'N/A'}
       </StyledCurrentRoutineInfo>
 
-      {errors.general && <StyledErrorMessage $isVisible={true}>{errors.general}</StyledErrorMessage>}
-
-      <StyledExerciseListContainer style={{ border: 'none', padding: '0', backgroundColor: 'transparent' }}>
-        {exercisesInRoutine.length === 0 ? (
-          <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>No hay ejercicios para configurar. Vuelve a la etapa anterior para añadir.</p>
-        ) : (
-          exercisesInRoutine
-            .sort((a, b) => a.order - b.order)
-            .map((exercise, index) => (
-              <StyledExerciseItem key={exercise.id} style={{ flexDirection: 'column', alignItems: 'flex-start', cursor: 'default' }}>
-                <StyledSubSectionTitle style={{ marginTop: '0', marginBottom: '10px' }}>{index + 1}. {exercise.name}</StyledSubSectionTitle>
-                
-                {/* Input para Series */}
+      <StyledSubSectionTitle>Asignar Detalles de Ejercicios:</StyledSubSectionTitle>
+      {exercisesInRoutine.length === 0 ? (
+        <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>No hay ejercicios seleccionados para esta rutina.</p>
+      ) : (
+        exercisesInRoutine
+          .sort((a, b) => a.order - b.order)
+          .map((exercise, index) => (
+            <CollapsibleCard key={exercise.id} title={`${index + 1}. ${exercise.name}`} defaultOpen={true}>
+              <div style={{ padding: '10px 0' }}>
                 <StyledExerciseInputGroup>
-                  <StyledLabel htmlFor={`sets-${exercise.id}`} style={{ marginBottom: '0' }}>Series:</StyledLabel>
+                  <StyledLabel htmlFor={`sets-${exercise.id}`}>Series:</StyledLabel>
                   <StyledInput
                     type="number"
-                    min="0"
                     id={`sets-${exercise.id}`}
-                    value={exercise.sets === 0 ? '' : exercise.sets}
-                    onChange={(e) => handleSetChange(exercise.id, e.target.value)}
+                    value={exercise.sets === 0 ? 0 : exercise.sets || ''} // Mostrar 0 si es 0, o vacío si es null/undefined
+                    onChange={(e) => handleExerciseDetailChange(exercise.id, 'sets', e.target.value)}
+                    min="0"
                     placeholder="Ej: 3"
                   />
                 </StyledExerciseInputGroup>
-                {errors[`sets-${exercise.id}`] && <StyledErrorMessage $isVisible={true}>{errors[`sets-${exercise.id}`]}</StyledErrorMessage>}
 
-                {/* Input para Repeticiones o Tiempo */}
-                <StyledExerciseInputGroup style={{ marginTop: '10px' }}>
-                  <StyledLabel htmlFor={`value-${exercise.id}`} style={{ marginBottom: '0' }}>
-                    {exercise.type === 'timed' ? 'Tiempo (seg):' : 'Repeticiones:'}
-                  </StyledLabel>
-                  <StyledInput
-                    type="number"
-                    min="0"
-                    id={`value-${exercise.id}`}
-                    value={
-                      exercise.type === 'timed'
-                        ? (exercise.time === 0 ? '' : exercise.time)
-                        : (exercise.reps === 0 ? '' : exercise.reps)
-                    }
-                    onChange={(e) => exercise.type === 'timed' ? handleTimeChange(exercise.id, e.target.value) : handleRepChange(exercise.id, e.target.value)}
-                    placeholder={exercise.type === 'timed' ? 'Ej: 45' : 'Ej: 8-12'}
-                  />
-                </StyledExerciseInputGroup>
                 {exercise.type === 'timed' ? (
-                  errors[`time-${exercise.id}`] && <StyledErrorMessage $isVisible={true}>{errors[`time-${exercise.id}`]}</StyledErrorMessage>
+                  <StyledExerciseInputGroup>
+                    <StyledLabel htmlFor={`time-${exercise.id}`}>Tiempo (segundos):</StyledLabel>
+                    <StyledInput
+                      type="number"
+                      id={`time-${exercise.id}`}
+                      value={exercise.time === 0 ? 0 : exercise.time || ''}
+                      onChange={(e) => handleExerciseDetailChange(exercise.id, 'time', e.target.value)}
+                      min="0"
+                      placeholder="Ej: 45"
+                    />
+                  </StyledExerciseInputGroup>
                 ) : (
-                  errors[`reps-${exercise.id}`] && <StyledErrorMessage $isVisible={true}>{errors[`reps-${exercise.id}`]}</StyledErrorMessage>
+                  <StyledExerciseInputGroup>
+                    <StyledLabel htmlFor={`reps-${exercise.id}`}>Repeticiones:</StyledLabel>
+                    <StyledInput
+                      type="number"
+                      id={`reps-${exercise.id}`}
+                      value={exercise.reps === 0 ? 0 : exercise.reps || ''}
+                      onChange={(e) => handleExerciseDetailChange(exercise.id, 'reps', e.target.value)}
+                      min="0"
+                      placeholder="Ej: 10"
+                    />
+                  </StyledExerciseInputGroup>
                 )}
 
-                {/* Input para Kilos (opcional, si se usa) */}
-                <StyledExerciseInputGroup style={{ marginTop: '10px' }}>
-                  <StyledLabel htmlFor={`kilos-${exercise.id}`} style={{ marginBottom: '0' }}>Kilos (Opcional):</StyledLabel>
+                <StyledExerciseInputGroup>
+                  <StyledLabel htmlFor={`kilos-${exercise.id}`}>Kilos:</StyledLabel>
                   <StyledInput
                     type="number"
-                    min="0"
-                    step="0.5" // Permite valores decimales para kilos
                     id={`kilos-${exercise.id}`}
-                    value={exercise.kilos === 0 ? '' : exercise.kilos}
-                    onChange={(e) => handleKilosChange(exercise.id, e.target.value)}
-                    placeholder="Ej: 10"
+                    value={exercise.kilos === 0 ? 0 : exercise.kilos || ''}
+                    onChange={(e) => handleExerciseDetailChange(exercise.id, 'kilos', e.target.value)}
+                    min="0"
+                    placeholder="Ej: 50"
                   />
                 </StyledExerciseInputGroup>
-                {/* {errors[`kilos-${exercise.id}`] && <StyledErrorMessage $isVisible={true}>{errors[`kilos-${exercise.id}`]}</StyledErrorMessage>} */}
-              </StyledExerciseItem>
-            ))
-        )}
-      </StyledExerciseListContainer>
+
+                <StyledCheckboxContainer>
+                  <StyledCheckboxInput
+                    type="checkbox"
+                    id={`completed-${exercise.id}`}
+                    checked={exercise.completed}
+                    onChange={(e) => handleCheckboxChange(exercise.id, e.target.checked)}
+                  />
+                  <StyledCheckboxLabel htmlFor={`completed-${exercise.id}`}>Completado</StyledCheckboxLabel>
+                </StyledCheckboxContainer>
+              </div>
+            </CollapsibleCard>
+          ))
+      )}
 
       <StyledButtonContainer>
         <StyledNavButton onClick={goToPreviousStage}>
           <ChevronIcon direction="left" />
         </StyledNavButton>
-        <StyledSaveButton onClick={handleSave} disabled={Object.keys(errors).length > 0}>
-          {isEditingIndividualRoutine ? 'Guardar Rutina' : 'Guardar Grupo'}
-        </StyledSaveButton>
+
+        {/* Botones de guardado y añadir otra rutina */}
         {!isEditingIndividualRoutine && (
-          <StyledNavButton onClick={handleAddAnother} $primary disabled={Object.keys(errors).length > 0}>
-            <ChevronIcon direction="right" />
-          </StyledNavButton>
+          <StyledAddAnotherRoutineButton onClick={onAddAnotherRoutine} disabled={!canSave}>
+            Añadir otra rutina
+          </StyledAddAnotherRoutineButton>
         )}
+        <StyledSaveButton onClick={onSaveRoutineGroup} $primary disabled={!canSave}>
+          {isEditingIndividualRoutine ? 'Guardar Rutina' : 'Guardar y Publicar Grupo'}
+        </StyledSaveButton>
       </StyledButtonContainer>
     </StyledModalBody>
   );

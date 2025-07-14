@@ -199,6 +199,38 @@ export const StyledSaveButton = styled.button`
   }
 `;
 
+export const StyledCheckboxContainer = styled.div`
+  display: flex;
+  align-items: center;
+  margin-top: 15px;
+  margin-bottom: 15px;
+`;
+
+export const StyledCheckboxInput = styled.input`
+  margin-right: 10px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #007bff; /* Color del checkbox */
+`;
+
+export const StyledCheckboxLabel = styled.label`
+  font-size: 1rem;
+  color: #333;
+  cursor: pointer;
+  font-weight: normal;
+`;
+
+export const StyledAddAnotherRoutineButton = styled(StyledNavButton)`
+  background-color: #28a745; /* Un color verde para "Añadir otra" */
+  color: #fff;
+  flex-grow: 1;
+
+  &:hover:not(:disabled) {
+    background-color: #218838;
+  }
+`;
+
 export const StyledAddExerciseButton = styled.button`
   background-color: #2ecc71; /* Verde para añadir */
   color: white;
