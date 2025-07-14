@@ -1,6 +1,6 @@
 // src/components/common/Card/Card.jsx
 import PropTypes from 'prop-types';
-import { StyledCardContainer } from './StyledCard';
+import { StyledCardContainer } from './StyledCard'; // Importamos el contenedor estilizado
 
 // ¡CAMBIO CLAVE AQUÍ! Aceptamos la prop 'flexDirection'
 function Card({ children, flexDirection, ...props }) {

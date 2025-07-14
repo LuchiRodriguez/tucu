@@ -1,12 +1,17 @@
+// src/components/common/Modal/Modal.jsx
 import ReactDOM from 'react-dom'; // Importamos ReactDOM para usar createPortal
 import PropTypes from 'prop-types';
+import { StyledModalOverlay, StyledModalContent } from './StyledModal'; // Importamos los estilos desde su archivo
 
-// Importamos los estilos desde su archivo
-import { StyledModalBackground, StyledModalContainer } from './StyledModal';
-
+/**
+ * Componente Modal genérico para mostrar contenido en una ventana emergente.
+ * Utiliza ReactDOM.createPortal para renderizar el modal fuera del árbol DOM normal.
+ *
+ * @param {object} props - Propiedades del componente.
+ * @param {React.ReactNode} props.children - Contenido del modal.
+ */
 function Modal({ children }) {
   // Verificamos si el 'modal-root' existe antes de intentar renderizar
-  // Esto es bueno para evitar errores en ciertos entornos de prueba o durante el desarrollo inicial.
   const modalRoot = document.getElementById('modal-root');
 
   if (!modalRoot) {
@@ -17,11 +22,11 @@ function Modal({ children }) {
   // Usamos ReactDOM.createPortal para renderizar el children del modal
   // en el 'div' con id 'modal-root' en tu public/index.html
   return ReactDOM.createPortal(
-    <StyledModalBackground>
-      <StyledModalContainer>
+    <StyledModalOverlay>
+      <StyledModalContent>
         {children}
-      </StyledModalContainer>
-    </StyledModalBackground>,
+      </StyledModalContent>
+    </StyledModalOverlay>,
     modalRoot // Este es el elemento DOM donde se montará el modal
   );
 }

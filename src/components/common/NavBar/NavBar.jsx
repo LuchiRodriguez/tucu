@@ -1,19 +1,21 @@
+// src/components/common/Navbar/Navbar.jsx
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/authContextBase';
+
+// Importamos los componentes common atomizados
+import NavbarContainer from '../NavbarContainer/NavbarContainer';
+import NavbarContent from '../NavbarContent/NavbarContent';
+import Logo from '../Logo/Logo'; // Usamos el componente Logo común
+import ProfileButton from '../ProfileButton/ProfileButton'; // Usamos el componente ProfileButton común
+import HeaderGreeting from '../HeaderGreeting/HeaderGreeting'; // Usamos el componente HeaderGreeting común
+import RoutineCounter from '../RoutineCounter/RoutineCounter'; // Usamos el componente RoutineCounter común
+import NavbarTitle from '../NavbarTitle/NavbarTitle'; // Usamos el componente NavbarTitle común
+import NavbarSearch from '../NavbarSearch/NavbarSearch'; // Usamos el componente NavbarSearch común
+
+// Importamos las imágenes (estas siguen siendo importaciones directas de assets)
 import logoImage from '../../../assets/logo.jpg';
 import userIconImage from '../../../assets/user.png';
-
-import {
-  StyledNavbarContainer,
-  StyledNavbarLogo,
-  StyledProfileButton,
-  StyledNavbarContent,
-  StyledHeaderGreeting,
-  StyledRoutineCounter,
-  StyledNavbarTitle,
-  StyledNavbarSearch,
-} from './StyledNavbar';
 
 function Navbar({
   type = 'student',
@@ -24,13 +26,12 @@ function Navbar({
   setSearchValue = () => {},
   studentName = '',
   isCoachDashboard = false,
-  totalStudentsCount = 0, // Esta prop no se usa en la lógica actual de contenido del Navbar
+  // Eliminamos totalStudentsCount ya que no se utiliza
 }) {
   const { user, role, userName: authUserName } = useAuth();
   const navigate = useNavigate();
 
-  // ¡NUEVO! Agregamos este console.log para depurar la prop 'type'
-  console.log("Navbar props: type=", type, "isCoachDashboard=", isCoachDashboard, "role=", role);
+  // console.log("Navbar props: type=", type, "isCoachDashboard=", isCoachDashboard, "role=", role);
 
   const handleGoToProfile = () => {
     navigate('/profile');
@@ -50,8 +51,8 @@ function Navbar({
   if (type === 'coach' && isCoachDashboard) {
     navbarCenterContent = (
       <>
-        <StyledNavbarTitle>Panel del Profe</StyledNavbarTitle>
-        <StyledNavbarSearch
+        <NavbarTitle>Panel del Profe</NavbarTitle>
+        <NavbarSearch
           placeholder="Buscar alumnos..."
           value={searchValue}
           onChange={(event) => setSearchValue(event.target.value)}
@@ -60,44 +61,44 @@ function Navbar({
     );
   } else if (type === 'coach') { // Si es coach, pero NO es el dashboard principal (ej. perfil del coach)
     navbarCenterContent = (
-      <StyledNavbarTitle>
+      <NavbarTitle>
         Panel del Profe
-      </StyledNavbarTitle>
+      </NavbarTitle>
     );
   } else if (type === 'studentRoutinesPage') {
     navbarCenterContent = (
       <>
-        <StyledNavbarTitle>Panel del Profe</StyledNavbarTitle>
-        <StyledHeaderGreeting style={{ fontSize: '0.8rem', marginTop: '5px' }}>
+        <NavbarTitle>Panel del Profe</NavbarTitle>
+        <HeaderGreeting style={{ fontSize: '0.8rem', marginTop: '5px' }}>
           Rutinas de <span>{studentName}</span>
-        </StyledHeaderGreeting>
+        </HeaderGreeting>
       </>
     );
   } else { // type === 'student' (HomePage) o para el ProfilePage de un estudiante
     navbarCenterContent = (
       <>
-        <StyledHeaderGreeting>
+        <HeaderGreeting>
           ¡Hola, <span>{currentUserName}</span>!
-        </StyledHeaderGreeting>
+        </HeaderGreeting>
         {totalActivedRoutines > 0 ? (
-          <StyledRoutineCounter
+          <RoutineCounter
             $totalActivedRoutines={totalActivedRoutines}
             $completedActivedRoutines={completedActivedRoutines}
           >
             Has completado <span>{completedActivedRoutines}</span> de <span>{totalActivedRoutines}</span> rutinas.
-          </StyledRoutineCounter>
+          </RoutineCounter>
         ) : (
-          <StyledRoutineCounter style={{ color: '#bdc3c7' }}>
+          <RoutineCounter style={{ color: '#bdc3c7' }}> {/* Usamos el color gris neutro directamente si no hay rutinas */}
             Aún no tienes rutinas asignadas.
-          </StyledRoutineCounter>
+          </RoutineCounter>
         )}
       </>
     );
   }
 
   return (
-    <StyledNavbarContainer $loading={loading}>
-      <StyledNavbarLogo
+    <NavbarContainer $loading={loading}>
+      <Logo
         src={logoImage}
         alt="Logo Prof Angel San Roman"
         onClick={handleClickLogo}
@@ -105,19 +106,18 @@ function Navbar({
         onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/90x90/CCCCCC/000000?text=Logo" }}
       />
 
-      <StyledNavbarContent>
+      <NavbarContent>
         {navbarCenterContent}
-      </StyledNavbarContent>
+      </NavbarContent>
 
-      <StyledProfileButton onClick={handleGoToProfile} style={{ cursor: 'pointer' }}>
-        <img
-          src={userIconImage}
-          alt="Ícono de Perfil"
-          style={{ width: '40px', height: 'auto' }}
-          onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/24x24/CCCCCC/000000?text=👤" }}
-        />
-      </StyledProfileButton>
-    </StyledNavbarContainer>
+      <ProfileButton
+        src={userIconImage}
+        alt="Ícono de Perfil"
+        onClick={handleGoToProfile}
+        style={{ cursor: 'pointer' }}
+        onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/24x24/CCCCCC/000000?text=👤" }}
+      />
+    </NavbarContainer>
   );
 }
 
@@ -129,8 +129,7 @@ Navbar.propTypes = {
   searchValue: PropTypes.string,
   setSearchValue: PropTypes.func,
   studentName: PropTypes.string,
-  isCoachDashboard: PropTypes.bool,
-  totalStudentsCount: PropTypes.number,
+  isCoachDashboard: PropTypes.bool
 };
 
 export default Navbar;

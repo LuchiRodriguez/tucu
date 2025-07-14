@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import { auth, db } from '../config/firebase';
 
 import { AuthContext } from './authContextBase';
-
+import loadingGif from '../assets/loading.gif'; // Importamos el GIF de carga
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setLoading(true);
+      setLoading(true); // Siempre empezamos cargando al verificar el estado de autenticación
       setError(null);
       setUserNameFromFirestore(null);
 
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => {
         setRole(null);
         setUserNameFromFirestore(null);
       }
-      setLoading(false);
+      setLoading(false); // Terminamos de cargar una vez que el estado se ha resuelto
     });
 
     return () => unsubscribe();
@@ -83,12 +83,12 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
       {loading && (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontSize: '1.5rem' }}>
-          Cargando sesión...
+        <div className="flex justify-center items-center h-screen bg-gray-100">
+          <img src={loadingGif} alt="Cargando sesión..." className="w-32 h-32" /> {/* Mostrar el GIF */}
         </div>
       )}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
