@@ -1,6 +1,6 @@
 // src/components/common/Buttons/SaveButton/SaveButton.jsx
 import PropTypes from 'prop-types';
-import { StyledSaveButton as BaseStyledSaveButton } from '../SaveButton/StyledSaveButton'; // Importa tu StyledSaveButton existente
+import { StyledSaveButton as BaseStyledSaveButton } from './StyledSaveButton'; // Importa tu StyledSaveButton existente
 
 /**
  * Componente de botón para guardar.
@@ -35,5 +35,4 @@ SaveButton.propTypes = {
   className: PropTypes.string,
 };
 
-// ¡Esta es la exportación por defecto que faltaba!
 export default SaveButton;

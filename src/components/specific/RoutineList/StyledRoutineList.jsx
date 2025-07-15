@@ -1,7 +1,6 @@
 // src/components/specific/RoutineList/StyledRoutineList.js
 import styled from 'styled-components';
 import { StyledInputBase } from '../../common/Forms/Input/StyledInput'; // Para estilos anidados
-import { StyledLabelBase } from '../../common/Forms/Label/StyledLabel'; // Para estilos anidados
 
 export const StyledRoutineListContainer = styled.section`
   width: 100%;
@@ -92,13 +91,6 @@ export const StyledKilosInputGroup = styled.div`
   align-items: center;
   gap: 10px;
   margin-top: 5px;
-
-  ${StyledLabelBase} { /* Usamos el StyledLabelBase importado */
-    margin: 0;
-    font-weight: normal;
-    font-size: 0.9rem;
-    color: #202020; /* Gris Oscuro */
-  }
 
   ${StyledInputBase} { /* Usamos el StyledInputBase importado */
     width: 70px; /* Ancho fijo para el input de kilos */

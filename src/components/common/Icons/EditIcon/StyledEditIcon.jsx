@@ -1,7 +1,9 @@
-// src/components/common/EditIcon/StyledEditIcon.js
+// src/components/common/Icons/EditIcon/StyledEditIcon.js
 import styled from 'styled-components';
 
-export const StyledEditIconBase = styled.button`
+export const StyledEditIconBase = styled.button.withConfig({
+  shouldForwardProp: (prop) => !['ariaLabel'].includes(prop), // ¡CAMBIO CLAVE AQUÍ! Filtra 'ariaLabel'
+})`
   background: none;
   border: none;
   padding: 5px;

@@ -7,10 +7,11 @@ export const StyledFormWrapperBase = styled.div`
   border-radius: 12px;
   box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
   width: 100%;
+  height: 100%;
   max-width: 380px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  justify-content: space-around;
   text-align: center;
 
   @media (min-width: 768px) {

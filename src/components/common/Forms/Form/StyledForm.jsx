@@ -4,9 +4,6 @@ import styled from 'styled-components';
 export const StyledFormBase = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
 
-  @media (min-width: 768px) {
-    gap: 18px;
-  }
 `;

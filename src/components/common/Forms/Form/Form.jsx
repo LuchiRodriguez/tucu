@@ -1,6 +1,6 @@
 // src/components/common/Forms/Form/Form.jsx
 import PropTypes from 'prop-types';
-import styled from 'styled-components';
+import { StyledFormBase } from './StyledForm';
 
 /**
  * Componente de formulario genérico con estilos base.
@@ -12,17 +12,11 @@ import styled from 'styled-components';
  * @param {object} [props.style] - Estilos en línea adicionales.
  * @param {string} [props.className] - Clases CSS adicionales.
  */
-const StyledForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 15px; /* Espacio entre elementos del formulario */
-  width: 100%;
-  margin-top: 20px;
-`;
+
 
 function Form({ children, onSubmit, ariaLabel, style, className, ...rest }) { // ¡CAMBIO AQUÍ! Aceptamos ariaLabel
   return (
-    <StyledForm
+    <StyledFormBase
       onSubmit={onSubmit}
       aria-label={ariaLabel} // ¡CAMBIO CLAVE AQUÍ! Pasamos como aria-label
       style={style}
@@ -30,7 +24,7 @@ function Form({ children, onSubmit, ariaLabel, style, className, ...rest }) { //
       {...rest}
     >
       {children}
-    </StyledForm>
+    </StyledFormBase>
   );
 }
 

@@ -1,25 +1,23 @@
 // src/pages/RegisterPage/RegisterPage.jsx
-import { useState } from 'react'; // Solo necesitamos useState
-import { useNavigate, Link as RouterLink } from 'react-router-dom'; // Renombramos Link para evitar conflicto
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../config/firebase';
 
 // Importamos los componentes common atomizados
-import PageContainer from '../../components/layout/PageContainer/PageContainer'; // Contenedor de página
-import FormWrapper from '../../components/common/Forms/FormWrapper/FormWrapper'; // Wrapper para el formulario
-import Title from '../../components/common/Messages/Title/Title'; // Título común
-import Subtitle from '../../components/common/Messages/Subtitle/Subtitle'; // Subtítulo común
-import Form from '../../components/common/Forms/Form/Form'; // Formulario común
-import Label from '../../components/common/Forms/Label/Label'; // Label común
-import Input from '../../components/common/Forms/Input/Input'; // Input común
-import Button from '../../components/common/Buttons/Button/Button'; // Button común
-import ErrorMessage from '../../components/common/Messages/ErrorMessage/ErrorMessage'; // ErrorMessage común
-import SuccessMessage from '../../components/common/Messages/SuccessMessage/SuccessMessage'; // SuccessMessage común
-import Link from '../../components/common/Navigation/Link/Link'; // Link común
-import Logo from '../../components/common/Utilities/Logo/Logo'; // Logo común
+import PageContainer from '../../components/layout/PageContainer/PageContainer';
+import FormWrapper from '../../components/common/Forms/FormWrapper/FormWrapper';
+import Title from '../../components/common/Messages/Title/Title';
+import Form from '../../components/common/Forms/Form/Form';
+import Input from '../../components/common/Forms/Input/Input';
+import Button from '../../components/common/Buttons/Button/Button';
+import ErrorMessage from '../../components/common/Messages/ErrorMessage/ErrorMessage';
+import SuccessMessage from '../../components/common/Messages/SuccessMessage/SuccessMessage';
+import Link from '../../components/common/Navigation/Link/Link';
+import Logo from '../../components/common/Utilities/Logo/Logo';
 
-import logoImage from '../../assets/logo.jpg'; // Importamos la imagen del logo
+import logoImage from '../../assets/logo.jpg';
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -89,56 +87,51 @@ function RegisterPage() {
   };
 
   return (
-    <PageContainer style={{ justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}> {/* Centra el contenido verticalmente */}
-      <FormWrapper> {/* Usamos el FormWrapper común */}
+    <PageContainer style={{ justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+      <FormWrapper>
         <Logo
           src={logoImage}
           alt="Logo Prof Angel San Roman"
-          style={{ width: '150px', height: 'auto', marginBottom: '10px' }} // Ajusta el tamaño del logo
           onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/150x150/CCCCCC/000000?text=Error" }}
+          style={{ width: '150px', height: 'auto', marginBottom: '10px' }}
         />
 
         <div>
-          <Title as="h2" style={{ textAlign: 'center', marginBottom: '5px' }}>Registrate</Title> {/* Usamos Title común */}
-          <Subtitle style={{ textAlign: 'center', color: '#7f8c8d' }}>Creá tu cuenta de alumno para empezar.</Subtitle> {/* Usamos Subtitle común */}
+          <Title as="h2" style={{ textAlign: 'center', marginBottom: '5px' }}>Registrate</Title>
         </div>
 
-        <Form onSubmit={handleRegister} ariaLabel="Formulario de registro"> {/* Usamos Form común */}
-          <Label htmlFor="name">Nombre Completo</Label>
+        <Form onSubmit={handleRegister} ariaLabel="Formulario de registro">
           <Input
             id="name"
             type="text"
-            placeholder="Ej. Sofía Giménez"
+            placeholder="Nombre completo"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
           />
 
-          <Label htmlFor="email">Email</Label>
           <Input
             id="email"
             type="email"
-            placeholder="ejemplo@mail.com"
+            placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
 
-          <Label htmlFor="password">Contraseña</Label>
           <Input
             id="password"
             type="password"
-            placeholder="••••••••"
+            placeholder="Contraseña"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
 
-          <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
           <Input
             id="confirmPassword"
             type="password"
-            placeholder="••••••••"
+            placeholder="Confirmar contraseña"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
@@ -152,8 +145,8 @@ function RegisterPage() {
           </Button>
         </Form>
 
-        <Link>
-          ¿Ya tenés una cuenta? <RouterLink to="/login">Iniciá sesión aquí</RouterLink>
+        <Link to="/login" style={{ textAlign: 'center', marginTop: '15px', display: 'block' }}>
+          ¿Ya tienes cuenta? Inicia sesión aquí
         </Link>
       </FormWrapper>
     </PageContainer>

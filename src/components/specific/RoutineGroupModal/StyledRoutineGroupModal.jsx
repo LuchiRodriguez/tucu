@@ -1,9 +1,6 @@
 // src/components/specific/RoutineGroupModal/StyledRoutineGroupModal.jsx
 import styled from 'styled-components';
-// Importamos StyledInput y StyledLabel para usarlos en selectores anidados si es necesario
 import { StyledInputBase } from '../../common/Forms/Input/StyledInput';
-import { StyledLabelBase } from '../../common/Forms/Label/StyledLabel';
-// Ya no necesitamos importar Button aquí para extender otros botones, ya se hace en sus propios StyledComponents
 
 // --- Contenedores específicos del Modal de Grupo de Rutinas ---
 // NOTA: StyledModalOverlay, StyledModalContent, StyledModalHeader, StyledModalTitle, StyledCloseButton
@@ -85,13 +82,6 @@ export const StyledExerciseInputGroup = styled.div`
   display: flex;
   flex-direction: column;
   margin-bottom: 15px;
-
-  ${StyledLabelBase} { /* Usamos el StyledLabelBase importado */
-    margin-bottom: 5px;
-    font-size: 0.9rem;
-    font-weight: normal;
-    color: #202020; /* Gris Oscuro */
-  }
 
   ${StyledInputBase} { /* Usamos el StyledInputBase importado */
     padding: 8px;

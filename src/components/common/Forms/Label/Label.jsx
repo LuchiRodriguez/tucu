@@ -1,7 +1,6 @@
-// src/components/common/Label/Label.jsx
+// src/components/common/Forms/Label/Label.jsx
 import PropTypes from 'prop-types';
-import { StyledLabelBase } from './StyledLabel';
-
+import { StyledLabelBase, StyledLabelText } from './StyledLabel.jsx'; // Importamos StyledLabelText desde su propio archivo
 /**
  * Componente Label genérico para toda la aplicación.
  *
@@ -11,17 +10,19 @@ import { StyledLabelBase } from './StyledLabel';
  * @param {object} [props.style] - Estilos en línea adicionales.
  * @param {string} [props.className] - Clases CSS adicionales.
  */
-const Label = ({ children, htmlFor, style, className, ...rest }) => {
+function Label({ children, htmlFor, style, className, ...rest }) {
   return (
-    <StyledLabelBase htmlFor={htmlFor} style={style} className={className} {...rest}>
-      {children}
+    <StyledLabelBase htmlFor={htmlFor} className={className} style={style} {...rest}>
+      <StyledLabelText>
+        {children}
+      </StyledLabelText>
     </StyledLabelBase>
   );
-};
+}
 
 Label.propTypes = {
   children: PropTypes.node.isRequired,
-  htmlFor: PropTypes.string,
+  htmlFor: PropTypes.string, // htmlFor ahora es opcional
   style: PropTypes.object,
   className: PropTypes.string,
 };

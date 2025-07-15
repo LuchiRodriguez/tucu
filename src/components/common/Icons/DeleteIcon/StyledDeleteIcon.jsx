@@ -1,7 +1,9 @@
-// src/components/common/DeleteIcon/StyledDeleteIcon.js
+// src/components/common/Icons/DeleteIcon/StyledDeleteIcon.js
 import styled from 'styled-components';
 
-export const StyledDeleteIconBase = styled.button`
+export const StyledDeleteIconBase = styled.button.withConfig({
+  shouldForwardProp: (prop) => !['ariaLabel'].includes(prop), // ¡CAMBIO CLAVE AQUÍ! Filtra 'ariaLabel'
+})`
   background: none;
   border: none;
   padding: 5px;
