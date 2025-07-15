@@ -4,8 +4,8 @@ import PropTypes from 'prop-types';
 import { useExercisesApi } from '../../../hooks/useExercisesApi/useExercisesApi';
 
 // Importamos los componentes common atomizados
-import Card from '../../common/Card/Card';
-import ErrorMessage from '../../common/ErrorMessage/ErrorMessage'; // Usamos el ErrorMessage común
+import Card from '../../common/Utilities/Card/Card';
+import ErrorMessage from '../../common/Messages/ErrorMessage/ErrorMessage'; // Usamos el ErrorMessage común
 
 // Importamos los estilos específicos para ExerciseList
 import {

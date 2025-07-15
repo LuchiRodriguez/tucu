@@ -3,13 +3,13 @@ import { useRoutines } from '../../hooks/useRoutines/useRoutines';
 import { useAuth } from '../../context/authContextBase';
 
 // Importamos los componentes common atomizados
-import Navbar from '../../components/common/Navbar/Navbar';
+import Navbar from '../../components/common/Navigation/Navbar/Navbar';
 import RoutineList from '../../components/specific/RoutineList/RoutineList'; // RoutineList ya refactorizado
-import PageContainer from '../../components/common/PageContainer/PageContainer'; // Contenedor de página
-import ContentSection from '../../components/common/ContentSection/ContentSection'; // Sección de contenido
-import Subtitle from '../../components/common/Subtitle/Subtitle'; // Para mensajes generales
-import ErrorMessage from '../../components/common/ErrorMessage/ErrorMessage'; // Para mensajes de error
-import WhatsappButton from '../../components/common/WhatsAppButton/WhatsAppButton'; // Nuevo: Botón de WhatsApp
+import PageContainer from '../../components/layout/PageContainer/PageContainer'; // Contenedor de página
+import ContentSection from '../../components/layout/ContentSection/ContentSection'; // Sección de contenido
+import Subtitle from '../../components/common/Messages/Subtitle/Subtitle'; // Para mensajes generales
+import ErrorMessage from '../../components/common/Messages/ErrorMessage/ErrorMessage'; // Para mensajes de error
+import WhatsappButton from '../../components/common/Buttons/WhatsAppButton/WhatsAppButton'; // Nuevo: Botón de WhatsApp
 
 import whatsappLogo from '../../assets/whatsapp.webp';
 

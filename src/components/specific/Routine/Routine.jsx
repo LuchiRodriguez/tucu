@@ -1,6 +1,6 @@
 // src/components/specific/Routine/Routine.jsx
 import PropTypes from 'prop-types';
-import Card from '../../common/Card/Card'; // Asegurate de que la ruta sea correcta hacia tu componente Card
+import Card from '../../common/Utilities/Card/Card'; // Asegurate de que la ruta sea correcta hacia tu componente Card
 import {
   StyledRoutineItem,
   StyledRoutineDetails,

@@ -1,8 +1,8 @@
 // src/components/specific/RoutineGroupModal/StyledRoutineGroupModal.jsx
 import styled from 'styled-components';
 // Importamos StyledInput y StyledLabel para usarlos en selectores anidados si es necesario
-import { StyledInputBase } from '../../common/Input/StyledInput';
-import { StyledLabelBase } from '../../common/Label/StyledLabel';
+import { StyledInputBase } from '../../common/Forms/Input/StyledInput';
+import { StyledLabelBase } from '../../common/Forms/Label/StyledLabel';
 // Ya no necesitamos importar Button aquí para extender otros botones, ya se hace en sus propios StyledComponents
 
 // --- Contenedores específicos del Modal de Grupo de Rutinas ---

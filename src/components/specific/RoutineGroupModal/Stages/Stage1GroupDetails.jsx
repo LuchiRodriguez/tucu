@@ -3,12 +3,12 @@ import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 
 // Importamos los componentes common atomizados
-import Label from '../../common/Label/Label';
-import Input from '../../common/Input/Input'; // Usamos Input para el objetivo también
-import Select from '../../common/Select/Select'; // Nuevo componente Select
-import NavButton from '../../common/NavButton/NavButton'; // Nuevo componente NavButton
-import ErrorMessage from '../../common/ErrorMessage/ErrorMessage'; // Componente ErrorMessage común
-import ChevronIcon from '../../common/ChevronIcon/ChevronIcon'; // Componente ChevronIcon común
+import Label from '../../../common/Forms/Label/Label';
+import Input from '../../../common/Forms/Input/Input'; // Usamos Input para el objetivo también
+import Select from '../../../common/Forms/Select/Select'; // Nuevo componente Select
+import NavButton from '../../../common/Navigation/Navbar/NavButton/NavButton'; // Nuevo componente NavButton
+import ErrorMessage from '../../../common/Messages/ErrorMessage/ErrorMessage'; // Componente ErrorMessage común
+import ChevronIcon from '../../../common/Icons/ChevronIcon/ChevronIcon'; // Componente ChevronIcon común
 
 // Importamos solo los estilos específicos que quedan en StyledRoutineGroupModal
 import {

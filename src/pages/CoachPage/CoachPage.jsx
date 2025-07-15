@@ -5,19 +5,19 @@ import { useStudents } from '../../hooks/useStudents/useStudents';
 import { useAuth } from '../../context/authContextBase';
 
 // Importamos los componentes common atomizados
-import Navbar from '../../components/common/Navbar/Navbar';
+import Navbar from '../../components/common/Navigation/Navbar/Navbar';
 import StudentList from '../../components/specific/StudentList/StudentList'; // StudentList ya refactorizado
-import PageContainer from '../../components/common/PageContainer/PageContainer'; // Nuevo: Contenedor de página
-import ContentSection from '../../components/common/ContentSection/ContentSection'; // Nuevo: Sección de contenido
-import FloatingActionButton from '../../components/common/FloatingActionButton/FloatingActionButton'; // Nuevo: Botón flotante
-import Modal from '../../components/common/Modal/Modal'; // Modal ya refactorizado
-import Form from '../../components/common/Form/Form'; // Nuevo: Componente Form
-import Label from '../../components/common/Label/Label'; // Label común
-import Input from '../../components/common/Input/Input'; // Input común
-import Button from '../../components/common/Button/Button'; // Button común
-import ButtonRow from '../../components/common/ButtonRow/ButtonRow'; // Nuevo: Contenedor de botones en fila
-import Title from '../../components/common/Title/Title'; // Título común
-import ErrorMessage from '../../components/common/ErrorMessage/ErrorMessage'; // ErrorMessage común
+import PageContainer from '../../components/layout/PageContainer/PageContainer'; // Nuevo: Contenedor de página
+import ContentSection from '../../components/layout/ContentSection/ContentSection'; // Nuevo: Sección de contenido
+import FloatingActionButton from '../../components/common/Buttons/FloatingActionButton/FloatingActionButton'; // Nuevo: Botón flotante
+import Modal from '../../components/common/Utilities/Modal/Modal'; // Modal ya refactorizado
+import Form from '../../components/common/Forms/Form/Form'; // Nuevo: Componente Form
+import Label from '../../components/common/Forms/Label/Label'; // Label común
+import Input from '../../components/common/Forms/Input/Input'; // Input común
+import Button from '../../components/common/Buttons/Button/Button'; // Button común
+import ButtonRow from '../../components/common/Buttons/ButtonRow/ButtonRow'; // Nuevo: Contenedor de botones en fila
+import Title from '../../components/common/Messages/Title/Title'; // Título común
+import ErrorMessage from '../../components/common/Messages/ErrorMessage/ErrorMessage'; // ErrorMessage común
 
 // No necesitamos importar StyledCoachPage ni StyledLoginPage para estilos aquí
 // import { StyledAppMessage } from '../../../pages/HomePage/StyledHomePage'; // Ya no se necesita aquí

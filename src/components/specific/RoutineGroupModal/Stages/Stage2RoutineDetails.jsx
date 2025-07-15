@@ -4,12 +4,12 @@ import PropTypes from 'prop-types';
 import warmUpExercises from '../../../../data/warmUpExercises.json';
 
 // Importamos los componentes common atomizados
-import Label from '../../common/Label/Label';
-import Input from '../../common/Input/Input';
-import Select from '../../common/Select/Select';
-import NavButton from '../../common/NavButton/NavButton'; // Importamos el NavButton común
-import ErrorMessage from '../../common/ErrorMessage/ErrorMessage'; // Importamos el ErrorMessage común
-import ChevronIcon from '../../common/ChevronIcon/ChevronIcon'; // Importamos el ChevronIcon común
+import Label from '../../../common/Forms/Label/Label';
+import Input from '../../../common/Forms/Input/Input';
+import Select from '../../../common/Forms/Select/Select';
+import NavButton from '../../../common/Navigation/Navbar/NavButton/NavButton'; // Importamos el NavButton común
+import ErrorMessage from '../../../common/Messages/ErrorMessage/ErrorMessage'; // Importamos el ErrorMessage común
+import ChevronIcon from '../../../common/Icons/ChevronIcon/ChevronIcon'; // Importamos el ChevronIcon común
 
 // Importamos solo los estilos específicos que quedan en StyledRoutineGroupModal
 import {

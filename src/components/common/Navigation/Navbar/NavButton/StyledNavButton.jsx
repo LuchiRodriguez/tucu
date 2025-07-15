@@ -1,6 +1,6 @@
 // src/components/common/NavButton/StyledNavButton.js
 import styled from 'styled-components';
-import Button from '../Button/Button'; // Importamos el componente Button genérico
+import Button from '../../../Buttons/Button/Button'; // Importamos el componente Button genérico
 
 export const StyledNavButtonBase = styled(Button).withConfig({
   shouldForwardProp: (prop) => !['primary'].includes(prop),

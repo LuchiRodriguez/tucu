@@ -1,38 +1,46 @@
-// src/components/common/Modal/Modal.jsx
-import ReactDOM from 'react-dom'; // Importamos ReactDOM para usar createPortal
+// src/components/common/Utilities/Modal/Modal.jsx
 import PropTypes from 'prop-types';
-import { StyledModalOverlay, StyledModalContent } from './StyledModal'; // Importamos los estilos desde su archivo
+// Importamos los Styled Components que ya tenés para el modal
+import {
+  StyledModalOverlay,
+  StyledModalContent,
+  StyledModalHeader,
+  StyledCloseButton,
+  StyledModalTitle,
+} from '../Modal/StyledModal'; // Asegúrate de que esta ruta sea correcta según tu estructura
 
 /**
- * Componente Modal genérico para mostrar contenido en una ventana emergente.
- * Utiliza ReactDOM.createPortal para renderizar el modal fuera del árbol DOM normal.
+ * Componente Modal genérico para mostrar contenido en una ventana flotante.
  *
  * @param {object} props - Propiedades del componente.
- * @param {React.ReactNode} props.children - Contenido del modal.
+ * @param {boolean} props.isOpen - Indica si el modal está abierto o cerrado.
+ * @param {function} props.onClose - Función a llamar cuando se solicita cerrar el modal.
+ * @param {string} props.title - Título del modal.
+ * @param {React.ReactNode} props.children - Contenido a mostrar dentro del modal.
  */
-function Modal({ children }) {
-  // Verificamos si el 'modal-root' existe antes de intentar renderizar
-  const modalRoot = document.getElementById('modal-root');
-
-  if (!modalRoot) {
-    console.error("El elemento con id 'modal-root' no se encontró en el DOM. Asegurate de agregarlo a public/index.html");
-    return null; // No renderizamos nada si no hay dónde montarlo
+function Modal({ isOpen, onClose, title, children }) {
+  if (!isOpen) {
+    return null; // No renderizar nada si el modal no está abierto
   }
 
-  // Usamos ReactDOM.createPortal para renderizar el children del modal
-  // en el 'div' con id 'modal-root' en tu public/index.html
-  return ReactDOM.createPortal(
+  return (
     <StyledModalOverlay>
       <StyledModalContent>
+        <StyledModalHeader>
+          <StyledModalTitle>{title}</StyledModalTitle>
+          <StyledCloseButton onClick={onClose}>&times;</StyledCloseButton>
+        </StyledModalHeader>
         {children}
       </StyledModalContent>
-    </StyledModalOverlay>,
-    modalRoot // Este es el elemento DOM donde se montará el modal
+    </StyledModalOverlay>
   );
 }
 
 Modal.propTypes = {
-  children: PropTypes.node.isRequired,
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  title: PropTypes.string.isRequired,
+  children: PropTypes.node,
 };
 
-export { Modal };
+export default Modal;

@@ -4,15 +4,15 @@ import PropTypes from 'prop-types';
 import localExercisesData from '../../../../data/exercises.json';
 
 // Importamos los componentes common atomizados
-import CollapsibleCard from '../../common/CollapsibleCard/CollapsibleCard';
-import Input from '../../common/Input/Input';
-import NavButton from '../../common/NavButton/NavButton';
-import RemoveExerciseButton from '../../common/RemoveExerciseButton/RemoveExerciseButton'; // Nuevo componente
-import ChevronIcon from '../../common/ChevronIcon/ChevronIcon';
-import SectionTitle from '../../common/SectionTitle/SectionTitle'; // Componente SectionTitle común
-import SubSectionTitle from '../../common/SubSectionTitle/SubSectionTitle'; // Componente SubSectionTitle común
-import Checkbox from '../../common/Checkbox/Checkbox'; // Componente Checkbox común
-import Subtitle from '../../common/Subtitle/Subtitle'; // Para mensajes de lista vacía
+import CollapsibleCard from '../../../common/Utilities/CollapsibleCard/CollapsibleCard';
+import Input from '../../../common/Forms/Input/Input';
+import NavButton from '../../../common/Navigation/Navbar/NavButton/NavButton';
+import RemoveExerciseButton from '../../../common/Buttons/RemoveExerciseButton/RemoveExerciseButton'; // Nuevo componente
+import ChevronIcon from '../../../common/Icons/ChevronIcon/ChevronIcon';
+import SectionTitle from '../../../common/Messages/SectionTitle/SectionTitle'; // Componente SectionTitle común
+import SubSectionTitle from '../../../common/Messages/SubSectionTitle/SubSectionTitle'; // Componente SubSectionTitle común
+import Checkbox from '../../../common/Utilities/Checkbox/Checkbox'; // Componente Checkbox común
+import Subtitle from '../../../common/Messages/Subtitle/Subtitle'; // Para mensajes de lista vacía
 
 // Importamos solo los estilos específicos que quedan en StyledRoutineGroupModal
 import {

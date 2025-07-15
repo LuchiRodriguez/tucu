@@ -3,17 +3,17 @@ import { useMemo } from 'react';
 import PropTypes from 'prop-types';
 
 // Importamos los componentes common atomizados
-import CollapsibleCard from '../../common/CollapsibleCard/CollapsibleCard';
-import Label from '../../common/Label/Label';
-import Input from '../../common/Input/Input';
-import NavButton from '../../common/NavButton/NavButton';
-import SectionTitle from '../../common/SectionTitle/SectionTitle';
-import SubSectionTitle from '../../common/SubSectionTitle/SubSectionTitle';
-import Checkbox from '../../common/Checkbox/Checkbox'; // Componente Checkbox común
-import SaveButton from '../../common/SaveButton/SaveButton'; // Componente SaveButton común
-import AddAnotherRoutineButton from '../../common/AddAnotherRoutineButton/AddAnotherRoutineButton'; // Componente AddAnotherRoutineButton común
-import ChevronIcon from '../../common/ChevronIcon/ChevronIcon'; // Componente ChevronIcon común
-import Subtitle from '../../common/Subtitle/Subtitle'; // Para mensajes de lista vacía
+import CollapsibleCard from '../../../common/Utilities/CollapsibleCard/CollapsibleCard';
+import Label from '../../../common/Forms/Label/Label';
+import Input from '../../../common/Forms/Input/Input';
+import NavButton from '../../../common/Navigation/Navbar/NavButton/NavButton';
+import SectionTitle from '../../../common/Messages/SectionTitle/SectionTitle';
+import SubSectionTitle from '../../../common/Messages/SubSectionTitle/SubSectionTitle';
+import Checkbox from '../../../common/Utilities/Checkbox/Checkbox'; // Componente Checkbox común
+import SaveButton from '../../../common/Buttons/SaveButton/SaveButton'; // Componente SaveButton común
+import AddAnotherRoutineButton from '../../../common/Buttons/AddAnotherRoutineButton/AddAnotherRoutineButton'; // Componente AddAnotherRoutineButton común
+import ChevronIcon from '../../../common/Icons/ChevronIcon/ChevronIcon'; // Componente ChevronIcon común
+import Subtitle from '../../../common/Messages/Subtitle/Subtitle'; // Para mensajes de lista vacía
 
 // Importamos solo los estilos específicos que quedan en StyledRoutineGroupModal
 import {

@@ -1,10 +1,10 @@
 // src/components/common/Card/StyledCard.jsx
 import styled from 'styled-components';
 import { StyledCardBase } from './StyledCardBase'; // Importamos la base de la tarjeta
-import Button from '../Button/Button'; // Importamos el componente Button
-import Input from '../Input/Input'; // Importamos el componente Input
+import Button from '../../Buttons/Button/Button'; // Importamos el componente Button
+import Input from '../../Forms/Input/Input'; // Importamos el componente Input
 // Importamos el nuevo ChevronIcon común
-import ChevronIcon from '../ChevronIcon/ChevronIcon'; 
+import ChevronIcon from '../../Icons/ChevronIcon/ChevronIcon'; 
 
 // 1. Componente div estilizado para el contenedor de la Card
 // Extiende StyledCardBase y añade estilos específicos de flexbox

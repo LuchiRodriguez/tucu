@@ -1,6 +1,6 @@
 // src/components/common/NavbarTitle/StyledNavbarTitle.js
 import styled from 'styled-components';
-import Title from '../Title/Title'; // Importamos el componente Title genérico
+import Title from '../../../Messages/Title/Title'; // Importamos el componente Title genérico
 
 export const StyledNavbarTitleBase = styled(Title)`
   font-size: 1.3rem; /* Tamaño de fuente específico para el título de la Navbar */

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import Card from '../Card/Card'; // Importamos el componente Card
-import ChevronIcon from '../ChevronIcon/ChevronIcon'; // Importamos el componente ChevronIcon
+import ChevronIcon from '../../Icons/ChevronIcon/ChevronIcon'; // Importamos el componente ChevronIcon
 import { StyledCardTitle, StyledChevronButton } from '../Card/StyledCard'; // Importamos los estilos del Card para el título y el botón del chevron
 import { StyledCollapsibleHeader, StyledCollapsibleContent } from './StyledCollapsibleCard'; // Importamos los estilos específicos
 

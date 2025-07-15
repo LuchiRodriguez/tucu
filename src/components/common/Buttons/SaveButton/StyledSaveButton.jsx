@@ -2,7 +2,7 @@
 import styled from 'styled-components';
 import Button from '../Button/Button'; // Importamos el componente Button genérico
 
-export const StyledSaveButtonBase = styled(Button)`
+export const StyledSaveButton = styled(Button)`
   background-color: #5DD62C; /* Verde Vibrante de la paleta */
   color: #FFFFFF; /* Blanco Puro */
   border: none;

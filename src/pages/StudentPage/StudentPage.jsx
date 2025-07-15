@@ -5,17 +5,17 @@ import { doc, getDoc, collection, onSnapshot, query, deleteDoc, updateDoc } from
 import { db } from '../../config/firebase';
 
 // Importamos componentes common atomizados
-import Navbar from '../../components/common/Navbar/Navbar';
-import CollapsibleCard from '../../components/common/CollapsibleCard/CollapsibleCard';
+import Navbar from '../../components/common/Navigation/Navbar/Navbar';
+import CollapsibleCard from '../../components/common/Utilities/CollapsibleCard/CollapsibleCard';
 import RoutineGroupCreationModal from '../../components/specific/RoutineGroupModal/RoutineGroupCreationModal'; // Modal de creación/edición de rutinas
-import PageContainer from '../../components/common/PageContainer/PageContainer'; // Contenedor de página
-import ContentSection from '../../components/common/ContentSection/ContentSection'; // Sección de contenido
-import Title from '../../components/common/Title/Title'; // Título común
-import Subtitle from '../../components/common/Subtitle/Subtitle'; // Subtítulo común (para mensajes)
-import Button from '../../components/common/Button/Button'; // Botón común
-import ErrorMessage from '../../components/common/ErrorMessage/ErrorMessage'; // Mensaje de error común
-import EditIcon from '../../components/common/EditIcon/EditIcon'; // Icono de edición común
-import DeleteIcon from '../../components/common/DeleteIcon/DeleteIcon'; // Icono de eliminación común
+import PageContainer from '../../components/layout/PageContainer/PageContainer'; // Contenedor de página
+import ContentSection from '../../components/layout/ContentSection/ContentSection'; // Sección de contenido
+import Title from '../../components/common/Messages/Title/Title'; // Título común
+import Subtitle from '../../components/common/Messages/Subtitle/Subtitle'; // Subtítulo común (para mensajes)
+import Button from '../../components/common/Buttons/Button/Button'; // Botón común
+import ErrorMessage from '../../components/common/Messages/ErrorMessage/ErrorMessage'; // Mensaje de error común
+import EditIcon from '../../components/common/Icons/EditIcon/EditIcon'; // Icono de edición común
+import DeleteIcon from '../../components/common/Icons/DeleteIcon/DeleteIcon'; // Icono de eliminación común
 
 import { useAuth } from '../../context/authContextBase';
 

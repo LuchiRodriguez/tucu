@@ -1,7 +1,7 @@
 // src/pages/StudentPage/StyledStudentPage.js
 import styled from 'styled-components';
-import { StyledSubtitleBase } from '../../components/common/Subtitle/StyledSubtitle'; // Para anidar estilos de Subtitle
-import { StyledTitleBase } from '../../components/common/Title/StyledTitle'; // Para anidar estilos de Title
+import { StyledSubtitleBase } from '../../components/common/Messages/Subtitle/StyledSubtitle'; // Para anidar estilos de Subtitle
+import { StyledTitleBase } from '../../components/common/Messages/Title/StyledTitle'; // Para anidar estilos de Title
 
 // NOTA: StyledCoachPageContainer fue reemplazado por common/PageContainer
 // NOTA: StyledAppMessage fue reemplazado por common/Subtitle o common/ErrorMessage

@@ -1,21 +1,21 @@
 // src/components/common/Navbar/Navbar.jsx
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../context/authContextBase';
+import { useAuth } from '../../../../context/authContextBase';
 
 // Importamos los componentes common atomizados
-import NavbarContainer from './NavBarContainer/NavbarContainer';
+import NavbarContainer from './NavBarContainer/NavBarContainer';
 import NavbarContent from './NavBarContent/NavbarContent';
-import Logo from '../Logo/Logo'; // Usamos el componente Logo común
-import ProfileButton from '../ProfileButton/ProfileButton'; // Usamos el componente ProfileButton común
-import HeaderGreeting from '../HeaderGreeting/HeaderGreeting'; // Usamos el componente HeaderGreeting común
-import RoutineCounter from '../RoutineCounter/RoutineCounter'; // Usamos el componente RoutineCounter común
-import NavbarTitle from '../NavbarTitle/NavbarTitle'; // Usamos el componente NavbarTitle común
-import NavbarSearch from '../NavbarSearch/NavbarSearch'; // Usamos el componente NavbarSearch común
+import Logo from '../../Utilities/Logo/Logo'; // Usamos el componente Logo común
+import ProfileButton from './ProfileButton/ProfileButton'; // Usamos el componente ProfileButton común
+import HeaderGreeting from './HeaderGreeting/HeaderGreeting'; // Usamos el componente HeaderGreeting común
+import RoutineCounter from './RoutineCounter/RoutineCounter'; // Usamos el componente RoutineCounter común
+import NavbarTitle from './NavbarTitle/NavbarTitle'; // Usamos el componente NavbarTitle común
+import NavbarSearch from './NavbarSearch/NavbarSearch'; // Usamos el componente NavbarSearch común
 
 // Importamos las imágenes (estas siguen siendo importaciones directas de assets)
-import logoImage from '../../../assets/logo.jpg';
-import userIconImage from '../../../assets/user.png';
+import logoImage from '../../../../assets/logo.jpg';
+import userIconImage from '../../../../assets/user.png';
 
 function Navbar({
   type = 'student',

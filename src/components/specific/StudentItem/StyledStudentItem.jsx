@@ -1,6 +1,6 @@
 // src/components/specific/StudentItem/StyledStudentItem.js
 import styled from 'styled-components';
-import Button from '../../common/Button/Button'; // Importamos el componente Button común
+import Button from '../../common/Buttons/Button/Button'; // Importamos el componente Button común
 
 export const StyledStudentItemContainer = styled.li`
   display: flex;

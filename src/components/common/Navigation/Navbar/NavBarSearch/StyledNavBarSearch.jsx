@@ -1,6 +1,6 @@
 // src/components/common/NavbarSearch/StyledNavbarSearch.js
 import styled from 'styled-components';
-import Input from '../Input/Input'; // Importamos el componente Input genérico
+import Input from '../../../Forms/Input/Input'; // Importamos el componente Input genérico
 
 export const StyledNavbarSearchBase = styled(Input)`
   width: 100%;

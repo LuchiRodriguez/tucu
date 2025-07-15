@@ -1,6 +1,6 @@
 // src/components/common/HeaderGreeting/StyledHeaderGreeting.js
 import styled from 'styled-components';
-import Subtitle from '../Subtitle/Subtitle'; // Importamos el componente Subtitle genérico
+import Subtitle from '../../../Messages/Subtitle/Subtitle'; // Importamos el componente Subtitle genérico
 
 export const StyledHeaderGreetingBase = styled(Subtitle)`
   font-size: 1.1rem; /* Tamaño de fuente para el saludo */

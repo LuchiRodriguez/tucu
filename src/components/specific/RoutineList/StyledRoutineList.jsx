@@ -1,7 +1,7 @@
 // src/components/specific/RoutineList/StyledRoutineList.js
 import styled from 'styled-components';
-import { StyledInputBase } from '../../common/Input/StyledInput'; // Para estilos anidados
-import { StyledLabelBase } from '../../common/Label/StyledLabel'; // Para estilos anidados
+import { StyledInputBase } from '../../common/Forms/Input/StyledInput'; // Para estilos anidados
+import { StyledLabelBase } from '../../common/Forms/Label/StyledLabel'; // Para estilos anidados
 
 export const StyledRoutineListContainer = styled.section`
   width: 100%;

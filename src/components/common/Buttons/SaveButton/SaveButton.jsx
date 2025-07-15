@@ -1,47 +1,39 @@
-// src/components/common/NavButton/StyledNavButton.js
-import styled from 'styled-components';
-import Button from '../Button/Button'; // Importamos el componente Button genérico
+// src/components/common/Buttons/SaveButton/SaveButton.jsx
+import PropTypes from 'prop-types';
+import { StyledSaveButton as BaseStyledSaveButton } from '../SaveButton/StyledSaveButton'; // Importa tu StyledSaveButton existente
 
-export const StyledNavButtonBase = styled(Button).withConfig({
-  shouldForwardProp: (prop) => !['primary'].includes(prop),
-})`
-  background-color: ${props => props.$primary ? '#5DD62C' : '#BDC3C7'}; /* Verde Vibrante o Gris Neutro */
-  color: #FFFFFF; /* Blanco Puro */
-  border: none;
-  border-radius: 50%; /* Botones redondos */
-  width: 50px;
-  height: 50px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.5rem; /* Tamaño del icono/texto */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease-in-out;
-  flex-shrink: 0; /* Evita que se encoja en flexbox */
+/**
+ * Componente de botón para guardar.
+ * Utiliza el estilo base de StyledSaveButton.
+ *
+ * @param {object} props - Propiedades del componente.
+ * @param {function} props.onClick - Función a ejecutar al hacer clic en el botón.
+ * @param {boolean} [props.disabled=false] - Si el botón está deshabilitado.
+ * @param {string} [props.children='Guardar'] - Contenido del botón.
+ * @param {object} [props.style] - Estilos en línea adicionales.
+ * @param {string} [props.className] - Clases CSS adicionales.
+ */
+function SaveButton({ onClick, disabled = false, children = 'Guardar', style, className, ...rest }) {
+  return (
+    <BaseStyledSaveButton
+      onClick={onClick}
+      disabled={disabled}
+      style={style}
+      className={className}
+      {...rest}
+    >
+      {children}
+    </BaseStyledSaveButton>
+  );
+}
 
-  &:hover:not(:disabled) {
-    background-color: ${props => props.$primary ? '#337418' : '#95A5A6'}; /* Verde Oscuro o Gris más oscuro */
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-  }
+SaveButton.propTypes = {
+  onClick: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
+  children: PropTypes.node,
+  style: PropTypes.object,
+  className: PropTypes.string,
+};
 
-  &:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-
-  &:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-    opacity: 0.7;
-    box-shadow: none;
-  }
-
-  svg {
-    width: 24px; /* Tamaño del icono SVG */
-    height: 24px;
-    fill: none;
-    stroke: currentColor; /* Hereda el color del botón */
-    stroke-width: 2;
-  }
-`;
+// ¡Esta es la exportación por defecto que faltaba!
+export default SaveButton;

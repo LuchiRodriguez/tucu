@@ -1,6 +1,6 @@
 // src/components/common/RoutineCounter/StyledRoutineCounter.js
 import styled from 'styled-components';
-import Subtitle from '../Subtitle/Subtitle'; // Importamos el componente Subtitle genérico
+import Subtitle from '../../../Messages/Subtitle/Subtitle'; // Importamos el componente Subtitle genérico
 
 export const StyledRoutineCounterBase = styled(Subtitle).withConfig({
   shouldForwardProp: (prop) => !['$totalActivedRoutines', '$completedActivedRoutines'].includes(prop),

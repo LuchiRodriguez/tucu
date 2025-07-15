@@ -3,15 +3,15 @@ import { useState } from 'react'; // Solo necesitamos useState
 import PropTypes from 'prop-types';
 
 // Importamos componentes common atomizados
-import CollapsibleCard from '../../common/CollapsibleCard/CollapsibleCard';
-import Card from '../../common/Card/Card';
-import Checkbox from '../../common/Checkbox/Checkbox'; // Componente Checkbox común
-import Input from '../../common/Input/Input'; // Componente Input común
-import Label from '../../common/Label/Label'; // Componente Label común
-import SectionTitle from '../../common/SectionTitle/SectionTitle'; // Componente SectionTitle común
-import SubSectionTitle from '../../common/SubSectionTitle/SubSectionTitle'; // Componente SubSectionTitle común
-import Subtitle from '../../common/Subtitle/Subtitle'; // Para mensajes y texto general
-import ErrorMessage from '../../common/ErrorMessage/ErrorMessage'; // Para mensajes de error
+import CollapsibleCard from '../../common/Utilities/CollapsibleCard/CollapsibleCard';
+import Card from '../../common/Utilities/Card/Card';
+import Checkbox from '../../common/Utilities/Checkbox/Checkbox'; // Componente Checkbox común
+import Input from '../../common/Forms/Input/Input'; // Componente Input común
+import Label from '../../common/Forms/Label/Label'; // Componente Label común
+import SectionTitle from '../../common/Messages/SectionTitle/SectionTitle'; // Componente SectionTitle común
+import SubSectionTitle from '../../common/Messages/SubSectionTitle/SubSectionTitle'; // Componente SubSectionTitle común
+import Subtitle from '../../common/Messages/Subtitle/Subtitle'; // Para mensajes y texto general
+import ErrorMessage from '../../common/Messages/ErrorMessage/ErrorMessage'; // Para mensajes de error
 
 // Importamos los estilos específicos para RoutineList
 import {

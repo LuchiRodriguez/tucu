@@ -1,6 +1,6 @@
 // src/components/common/Modal/StyledModal.js
 import styled from 'styled-components';
-import Button from '../Button/Button'; // Importamos el componente Button genérico
+import Button from '../../Buttons/Button/Button'; // Importamos el componente Button genérico
 
 // --- Contenedores y Estructura del Modal ---
 export const StyledModalOverlay = styled.div`

@@ -1,14 +1,14 @@
 // src/pages/ProfilePage/ProfilePage.jsx
-import Navbar from '../../components/common/Navbar/Navbar';
-import LogoutButton from '../../components/common/LogoutButton/LogoutButton';
+import Navbar from '../../components/common/Navigation/Navbar/Navbar';
+import LogoutButton from '../../components/common/Buttons/LogoutButton/LogoutButton';
 import { useAuth } from '../../context/authContextBase';
 import { useStudents } from '../../hooks/useStudents/useStudents';
 
 // Importamos los componentes common atomizados
-import PageContainer from '../../components/common/PageContainer/PageContainer'; // Contenedor de página
-import ContentSection from '../../components/common/ContentSection/ContentSection'; // Sección de contenido (reemplaza Card para contenido principal)
-import Title from '../../components/common/Title/Title'; // Título común
-import Subtitle from '../../components/common/Subtitle/Subtitle'; // Subtítulo común (para mensajes)
+import PageContainer from '../../components/layout/PageContainer/PageContainer'; // Contenedor de página
+import ContentSection from '../../components/layout/ContentSection/ContentSection'; // Sección de contenido (reemplaza Card para contenido principal)
+import Title from '../../components/common/Messages/Title/Title'; // Título común
+import Subtitle from '../../components/common/Messages/Subtitle/Subtitle'; // Subtítulo común (para mensajes)
 
 // Importamos los estilos específicos para ProfilePage
 import {

@@ -1,6 +1,6 @@
 // src/components/common/ProfileButton/StyledProfileButton.js
 import styled from 'styled-components';
-import Button from '../Button/Button'; // Importamos el componente Button genérico
+import Button from '../../../Buttons/Button/Button'; // Importamos el componente Button genérico
 
 export const StyledProfileButtonBase = styled(Button)`
   background: none; /* Sin fondo */

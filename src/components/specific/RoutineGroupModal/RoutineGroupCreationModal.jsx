@@ -12,20 +12,19 @@ import Stage1GroupDetails from './Stages/Stage1GroupDetails';
 import Stage2RoutineDetails from './Stages/Stage2RoutineDetails';
 import Stage3AddExercises from './Stages/Stage3AddExercises';
 import Stage4AssignSetsReps from './Stages/Stage4AssignSetsReps';
-// import Stage5ReviewSummary from './Stages/Stage5ReviewSummary'; // Descomentar si tienes esta etapa
 
 // Importamos el componente Modal común
-import { Modal } from '../../common/Modal/Modal';
+import Modal from '../../common/Utilities/Modal/Modal';
 // Importamos los Styled Components específicos del Modal (Header, Title, CloseButton)
 // NOTA: StyledModalOverlay y StyledModalContent son manejados INTERNAMENTE por el componente Modal
 import {
   StyledModalHeader,
   StyledCloseButton,
   StyledModalTitle,
-} from '../../common/Modal/StyledModal'; // <--- CAMBIO CLAVE AQUÍ: Importamos desde common/Modal/StyledModal
+} from '../../common/Utilities/Modal/StyledModal';
 
 // Importamos ErrorMessage común
-import ErrorMessage from '../../common/ErrorMessage/ErrorMessage'; // <--- CAMBIO CLAVE AQUÍ: Importamos desde common/ErrorMessage/ErrorMessage
+import ErrorMessage from '../../common/Messages/ErrorMessage/ErrorMessage';
 
 // --- Función auxiliar para limpiar objetos de 'undefined' para Firestore ---
 const cleanObjectForFirestore = (obj) => {

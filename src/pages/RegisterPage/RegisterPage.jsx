@@ -6,18 +6,18 @@ import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../config/firebase';
 
 // Importamos los componentes common atomizados
-import PageContainer from '../../components/common/PageContainer/PageContainer'; // Contenedor de página
-import FormWrapper from '../../components/common/FormWrapper/FormWrapper'; // Wrapper para el formulario
-import Title from '../../components/common/Title/Title'; // Título común
-import Subtitle from '../../components/common/Subtitle/Subtitle'; // Subtítulo común
-import Form from '../../components/common/Form/Form'; // Formulario común
-import Label from '../../components/common/Label/Label'; // Label común
-import Input from '../../components/common/Input/Input'; // Input común
-import Button from '../../components/common/Button/Button'; // Button común
-import ErrorMessage from '../../components/common/ErrorMessage/ErrorMessage'; // ErrorMessage común
-import SuccessMessage from '../../components/common/SuccessMessage/SuccessMessage'; // SuccessMessage común
-import Link from '../../components/common/Link/Link'; // Link común
-import Logo from '../../components/common/Logo/Logo'; // Logo común
+import PageContainer from '../../components/layout/PageContainer/PageContainer'; // Contenedor de página
+import FormWrapper from '../../components/common/Forms/FormWrapper/FormWrapper'; // Wrapper para el formulario
+import Title from '../../components/common/Messages/Title/Title'; // Título común
+import Subtitle from '../../components/common/Messages/Subtitle/Subtitle'; // Subtítulo común
+import Form from '../../components/common/Forms/Form/Form'; // Formulario común
+import Label from '../../components/common/Forms/Label/Label'; // Label común
+import Input from '../../components/common/Forms/Input/Input'; // Input común
+import Button from '../../components/common/Buttons/Button/Button'; // Button común
+import ErrorMessage from '../../components/common/Messages/ErrorMessage/ErrorMessage'; // ErrorMessage común
+import SuccessMessage from '../../components/common/Messages/SuccessMessage/SuccessMessage'; // SuccessMessage común
+import Link from '../../components/common/Navigation/Link/Link'; // Link común
+import Logo from '../../components/common/Utilities/Logo/Logo'; // Logo común
 
 import logoImage from '../../assets/logo.jpg'; // Importamos la imagen del logo
 

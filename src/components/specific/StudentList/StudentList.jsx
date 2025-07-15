@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import StudentItem from '../StudentItem/StudentItem'; // Importamos el componente de cada ítem de alumno
 
 // Importamos los componentes common atomizados
-import Button from '../../common/Button/Button'; // Para el botón de reintentar
-import Subtitle from '../../common/Subtitle/Subtitle'; // Para mensajes generales
-import ErrorMessage from '../../common/ErrorMessage/ErrorMessage'; // Para mensajes de error
+import Button from '../../common/Buttons/Button/Button'; // Para el botón de reintentar
+import Subtitle from '../../common/Messages/Subtitle/Subtitle'; // Para mensajes generales
+import ErrorMessage from '../../common/Messages/ErrorMessage/ErrorMessage'; // Para mensajes de error
 
 // Importamos los estilos específicos para StudentList
 import {

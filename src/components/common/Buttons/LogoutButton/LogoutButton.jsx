@@ -1,6 +1,6 @@
 // src/components/common/LogoutButton/LogoutButton.jsx
 import PropTypes from 'prop-types';
-import { useAuth } from '../../../context/authContextBase'; // Ajusta la ruta si es necesario
+import { useAuth } from '../../../../context/authContextBase'; // Ajusta la ruta si es necesario
 import { StyledLogoutButtonBase } from './StyledLogoutButton';
 
 /**
