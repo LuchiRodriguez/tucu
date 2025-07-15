@@ -1,7 +1,7 @@
 // src/components/common/ProtectedRoute/ProtectedRoute.jsx
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../context/authContextBase'; // Importamos nuestro hook de autenticación
+import { useAuth } from '../../../../context/authContextBase'; // Importamos nuestro hook de autenticación
 import PropTypes from 'prop-types';
 
 // Usamos parámetros por defecto directamente en la firma de la función
