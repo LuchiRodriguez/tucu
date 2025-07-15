@@ -6,12 +6,14 @@ export const StyledPageContainerBase = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  background-color: #F8F8F8; /* Gris Muy Claro de la paleta */
+  gap: 15px;
+  background-color: #F8F8F8;
   padding: 15px;
+  padding-top: 80px; /* <= Ajuste para evitar que el contenido se esconda bajo el navbar */
   box-sizing: border-box;
 
   @media (min-width: 768px) {
     padding: 20px;
+    padding-top: 90px; /* También mayor en pantallas grandes si lo necesitás */
   }
 `;

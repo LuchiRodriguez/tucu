@@ -1,4 +1,5 @@
 // src/components/common/NavbarContainer/NavbarContainer.jsx
+import React from 'react';
 import PropTypes from 'prop-types';
 import { StyledNavbarContainerBase } from './StyledNavbarContainer';
 
@@ -11,13 +12,13 @@ import { StyledNavbarContainerBase } from './StyledNavbarContainer';
  * @param {object} [props.style] - Estilos en línea adicionales.
  * @param {string} [props.className] - Clases CSS adicionales.
  */
-const NavbarContainer = ({ children, $loading, style, className, ...rest }) => {
+function NavbarContainer({ children, $loading = false, style, className, ...rest }) {
   return (
     <StyledNavbarContainerBase $loading={$loading} style={style} className={className} {...rest}>
       {children}
     </StyledNavbarContainerBase>
   );
-};
+}
 
 NavbarContainer.propTypes = {
   children: PropTypes.node.isRequired,
@@ -26,4 +27,7 @@ NavbarContainer.propTypes = {
   className: PropTypes.string,
 };
 
-export default NavbarContainer;
+const MemoizedNavbarContainer = React.memo(NavbarContainer);
+MemoizedNavbarContainer.displayName = 'NavbarContainer';
+
+export default MemoizedNavbarContainer;

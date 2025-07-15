@@ -102,7 +102,7 @@ function Navbar({
         src={logoImage}
         alt="Logo Prof Angel San Roman"
         onClick={handleClickLogo}
-        style={{ cursor: 'pointer' }}
+        style={{ cursor: 'pointer', width: '50px', height: '50px' }}
         onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/90x90/CCCCCC/000000?text=Logo" }}
       />
 
