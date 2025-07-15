@@ -53,10 +53,10 @@ export function useRoutines() {
     setError(null); // Limpiar errores anteriores al iniciar la carga
 
     // La ruta de la colección de rutinas para el usuario autenticado
-    // Asumimos que las rutinas del alumno están en users/{userId}/routines
+    // Asumimos que las rutinas del alumno están en users/{userId}
     // Si las rutinas están bajo artifacts/{appId}/users/{userId}/routineGroups, la ruta debería ser ajustada.
-    // Basado en el código original, parece que están directamente en users/{user.uid}/routines.
-    const routinesCollectionRef = collection(db, `users/${user.uid}/routines`);
+    // Basado en el código original, parece que están directamente en users/{user.uid}
+    const routinesCollectionRef = collection(db, `users/${user.uid}`);
     const q = query(routinesCollectionRef);
 
     // Suscripción en tiempo real a las rutinas del usuario
@@ -110,8 +110,8 @@ export function useRoutines() {
       return;
     }
     try {
-      // Ruta de la rutina: asumiendo que es users/{userId}/routines/{routineId}
-      const routineDocRef = doc(db, `users/${user.uid}/routines`, routineId);
+      // Ruta de la rutina: asumiendo que es users/{userId}/{routineId}
+      const routineDocRef = doc(db, `users/${user.uid}`, routineId);
       
       const routineSnap = await getDoc(routineDocRef);
       if (!routineSnap.exists()) {

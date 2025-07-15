@@ -1,12 +1,10 @@
-// src/pages/RegisterPage/RegisterPage.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../../config/firebase';
 import { useAuth } from '../../context/authContextBase';
 
-// Componentes comunes
 import PageContainer from '../../components/layout/PageContainer/PageContainer';
 import FormWrapper from '../../components/common/Forms/FormWrapper/FormWrapper';
 import Title from '../../components/common/Messages/Title/Title';
@@ -24,30 +22,45 @@ function RegisterPage() {
   const navigate = useNavigate();
   const { user, role, loading: authLoading } = useAuth();
 
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Redirección automática después de registrarse
   useEffect(() => {
     if (!authLoading && user) {
       navigate(role === 'coach' ? '/coach' : '/home', { replace: true });
     }
   }, [user, role, authLoading, navigate]);
 
-  const handleRegister = async (event) => {
-    event.preventDefault();
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const handleRegister = useCallback(async (e) => {
+    e.preventDefault();
     setError('');
     setSuccess('');
+
+    const { name, email, password, confirmPassword } = formData;
+
+    if (!name || !email || !password || !confirmPassword) {
+      setError('Completá todos los campos.');
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError('Las contraseñas no coinciden.');
       return;
     }
+
     if (password.length < 6) {
       setError('La contraseña debe tener al menos 6 caracteres.');
       return;
@@ -56,19 +69,17 @@ function RegisterPage() {
     setLoading(true);
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const { user } = await createUserWithEmailAndPassword(auth, email, password);
 
-      await setDoc(doc(db, "users", user.uid), {
+      await setDoc(doc(db, 'users', user.uid), {
         uid: user.uid,
-        name: name,
-        email: email,
-        role: 'student', // Rol por defecto
-        createdAt: new Date(),
+        name,
+        email,
+        role: 'student',
+        createdAt: serverTimestamp(),
       });
 
       setSuccess('¡Registro exitoso! Redirigiendo...');
-      // Redirección ocurre en useEffect
     } catch (firebaseError) {
       let errorMessage = 'Error al registrarse. Por favor, intentá de nuevo.';
       switch (firebaseError.code) {
@@ -76,7 +87,7 @@ function RegisterPage() {
           errorMessage = 'Este email ya está registrado. ¿Ya tenés una cuenta?';
           break;
         case 'auth/weak-password':
-          errorMessage = 'La contraseña es demasiado débil. Elegí una más segura.';
+          errorMessage = 'La contraseña es demasiado débil.';
           break;
         case 'auth/invalid-email':
           errorMessage = 'El formato del email no es válido.';
@@ -89,7 +100,7 @@ function RegisterPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [formData]);
 
   return (
     <PageContainer style={{ justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
@@ -97,53 +108,51 @@ function RegisterPage() {
         <Logo
           src={logoImage}
           alt="Logo Prof Angel San Roman"
-          onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/150x150/CCCCCC/000000?text=Error" }}
+          onError={({ currentTarget }) => {
+            currentTarget.onerror = null;
+            currentTarget.src = "https://placehold.co/150x150/CCCCCC/000000?text=Error";
+          }}
           style={{ width: '150px', height: 'auto', marginBottom: '10px' }}
         />
 
-        <div>
-          <Title as="h2" style={{ textAlign: 'center', marginBottom: '5px' }}>Registrate</Title>
-        </div>
+        <Title as="h2" style={{ textAlign: 'center', marginBottom: '5px' }}>Registrate</Title>
 
         <Form onSubmit={handleRegister} ariaLabel="Formulario de registro">
           <Input
             id="name"
             type="text"
             placeholder="Nombre completo"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={formData.name}
+            onChange={handleChange}
             required
           />
-
           <Input
             id="email"
             type="email"
             placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={formData.email}
+            onChange={handleChange}
             required
           />
-
           <Input
             id="password"
             type="password"
             placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={formData.password}
+            onChange={handleChange}
             required
           />
-
           <Input
             id="confirmPassword"
             type="password"
             placeholder="Confirmar contraseña"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            value={formData.confirmPassword}
+            onChange={handleChange}
             required
           />
 
-          {error && <ErrorMessage isVisible={true}>{error}</ErrorMessage>}
-          {success && <SuccessMessage isVisible={true}>{success}</SuccessMessage>}
+          {error && <ErrorMessage>{error}</ErrorMessage>}
+          {success && <SuccessMessage>{success}</SuccessMessage>}
 
           <Button type="submit" primary disabled={loading}>
             {loading ? 'Registrando...' : 'Registrarme'}

@@ -51,7 +51,7 @@ function CoachPage() {
 
   const handleSelectStudent = (studentId) => {
     selectStudent(studentId);
-    navigate(`/coach/students/${studentId}/routines`);
+    navigate(`/coach/students/${studentId}`);
   };
 
   const handleCreateStudentSubmit = async (event) => {

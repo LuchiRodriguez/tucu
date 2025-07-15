@@ -1,94 +1,87 @@
 // src/context/AuthContext.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import PropTypes from 'prop-types';
-import { auth, db } from '../config/firebase';
 
+import { auth, db } from '../config/firebase';
 import { AuthContext } from './authContextBase';
-import loadingGif from '../assets/loading.gif'; // Importamos el GIF de carga
+import LoadingGif from '../components/common/Utilities/LoadingGif/LoadingGif';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
+  const [userName, setUserName] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [userNameFromFirestore, setUserNameFromFirestore] = useState(null);
+
+  const fetchUserData = useCallback(async (firebaseUser) => {
+    try {
+      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        setRole(data.role || 'student');
+        setUserName(data.name || firebaseUser.email?.split('@')[0] || 'Usuario');
+      } else {
+        console.warn('Usuario no encontrado en Firestore:', firebaseUser.uid);
+        setRole('unknown');
+        setUserName(firebaseUser.email?.split('@')[0] || 'Usuario');
+      }
+      setUser(firebaseUser);
+    } catch (err) {
+      console.error('Error al obtener datos del usuario:', err);
+      setError('Error al cargar la información del usuario.');
+      setUser(firebaseUser);
+      setRole(null);
+      setUserName(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setLoading(true); // Siempre empezamos cargando al verificar el estado de autenticación
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setLoading(true);
       setError(null);
-      setUserNameFromFirestore(null);
-
       if (currentUser) {
-        try {
-          const userDocRef = doc(db, "users", currentUser.uid);
-          const userDocSnap = await getDoc(userDocRef);
-
-          if (userDocSnap.exists()) {
-            const userData = userDocSnap.data();
-            setUser(currentUser);
-            setRole(userData.role || 'student');
-            
-            // ¡CAMBIO CLAVE AQUÍ! Almacenamos el nombre completo de Firestore
-            if (userData.name) {
-              setUserNameFromFirestore(userData.name); // Guardamos el nombre completo
-            } else {
-              setUserNameFromFirestore(currentUser.email ? currentUser.email.split('@')[0] : 'Usuario');
-            }
-
-          } else {
-            console.warn("Documento de usuario no encontrado en Firestore para UID:", currentUser.uid);
-            setUser(currentUser);
-            setRole('unknown');
-            setUserNameFromFirestore(currentUser.email ? currentUser.email.split('@')[0] : 'Usuario');
-          }
-        } catch (fetchError) {
-          console.error("Error al obtener el rol o nombre del usuario desde Firestore:", fetchError);
-          setError("Error al cargar la información del usuario.");
-          setUser(currentUser);
-          setRole(null);
-          setUserNameFromFirestore(null);
-        }
+        fetchUserData(currentUser);
       } else {
         setUser(null);
         setRole(null);
-        setUserNameFromFirestore(null);
+        setUserName(null);
+        setLoading(false);
       }
-      setLoading(false); // Terminamos de cargar una vez que el estado se ha resuelto
     });
 
-    return () => unsubscribe();
-  }, []);
+    return unsubscribe;
+  }, [fetchUserData]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     setError(null);
     try {
       await signOut(auth);
-    } catch (logoutError) {
-      console.error("Error al cerrar sesión:", logoutError);
-      setError("Error al cerrar sesión.");
+    } catch (err) {
+      console.error('Error al cerrar sesión:', err);
+      setError('Error al cerrar sesión.');
     }
-  };
+  }, []);
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     role,
+    userName,
     loading,
     error,
     logout,
-    userName: userNameFromFirestore,
-  };
+  }), [user, role, userName, loading, error, logout]);
 
   return (
     <AuthContext.Provider value={value}>
-      {loading && (
-        <div className="flex justify-center items-center h-screen bg-gray-100">
-          <img src={loadingGif} alt="Cargando sesión..." className="w-32 h-32" /> {/* Mostrar el GIF */}
-        </div>
+      {loading ? (
+        <LoadingGif/>
+      ) : (
+        children
       )}
-      {!loading && children}
     </AuthContext.Provider>
   );
 };
