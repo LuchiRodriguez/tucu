@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/authContextBase';
 
 // Importamos los componentes common atomizados
-import NavbarContainer from '../NavbarContainer/NavbarContainer';
-import NavbarContent from '../NavbarContent/NavbarContent';
+import NavbarContainer from './NavBarContainer/NavbarContainer';
+import NavbarContent from './NavBarContent/NavbarContent';
 import Logo from '../Logo/Logo'; // Usamos el componente Logo común
 import ProfileButton from '../ProfileButton/ProfileButton'; // Usamos el componente ProfileButton común
 import HeaderGreeting from '../HeaderGreeting/HeaderGreeting'; // Usamos el componente HeaderGreeting común

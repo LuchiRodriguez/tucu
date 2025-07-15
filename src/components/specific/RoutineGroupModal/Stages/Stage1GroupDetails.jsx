@@ -1,38 +1,24 @@
 // src/components/specific/RoutineGroupModal/Stages/Stage1GroupDetails.jsx
-import { useState, useEffect, useMemo } from 'react'; // Importado useMemo
+import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
+
+// Importamos los componentes common atomizados
+import Label from '../../common/Label/Label';
+import Input from '../../common/Input/Input'; // Usamos Input para el objetivo también
+import Select from '../../common/Select/Select'; // Nuevo componente Select
+import NavButton from '../../common/NavButton/NavButton'; // Nuevo componente NavButton
+import ErrorMessage from '../../common/ErrorMessage/ErrorMessage'; // Componente ErrorMessage común
+import ChevronIcon from '../../common/ChevronIcon/ChevronIcon'; // Componente ChevronIcon común
+
+// Importamos solo los estilos específicos que quedan en StyledRoutineGroupModal
 import {
   StyledModalBody,
-  StyledLabel,
-  StyledInput,
   StyledButtonContainer,
-  StyledNavButton,
-  StyledErrorMessage,
-  StyledSelect,
-  StyledTextArea,
 } from '../StyledRoutineGroupModal';
+
 import { getDocs, collection, query, where } from 'firebase/firestore';
 import { db } from '../../../../config/firebase';
 
-// Helper component para el icono de chevron
-const ChevronIcon = ({ direction }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-6 w-6"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    style={{
-      transform: direction === 'left' ? 'rotate(180deg)' : 'none',
-    }}
-  >
-    <path strokeLinecap="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-  </svg>
-);
-
-ChevronIcon.propTypes = {
-  direction: PropTypes.oneOf(['left', 'right']).isRequired,
-};
 
 // --- Stage 1: Detalles del Grupo de Rutinas ---
 const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, isEditingIndividualRoutine, setGroupNameConflictError, groupNameConflictError }) => {
@@ -52,7 +38,7 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, isEditingI
   useEffect(() => {
     let debounceCheck;
     // Solo validar si los campos están completos y no estamos en modo edición de rutina individual
-    if (isFormComplete && !isEditingIndividualRoutine) { // Usamos isFormComplete aquí
+    if (isFormComplete && !isEditingIndividualRoutine) {
       debounceCheck = setTimeout(async () => {
         try {
           const routineGroupsCollectionRef = collection(db, `artifacts/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/users/${groupData.studentId}/routineGroups`);
@@ -87,7 +73,7 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, isEditingI
 
     return () => clearTimeout(debounceCheck);
   }, [
-    isFormComplete, // Dependencia clave: el efecto se ejecuta cuando el formulario está completo
+    isFormComplete,
     groupData?.name,
     groupData?.stage,
     groupData?.id,
@@ -143,10 +129,10 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, isEditingI
 
   return (
     <StyledModalBody>
-      {/* --- Etapa de Entrenamiento (StyledSelect) --- */}
+      {/* --- Etapa de Entrenamiento (Select) --- */}
       <div style={{ marginBottom: '18px' }}>
-        <StyledLabel htmlFor="stage">Etapa de Entrenamiento</StyledLabel>
-        <StyledSelect
+        <Label htmlFor="stage">Etapa de Entrenamiento</Label>
+        <Select
           id="stage"
           value={groupData?.stage || ''}
           onChange={handleStageChange}
@@ -155,14 +141,14 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, isEditingI
           {stages.map(s => (
             <option key={s} value={s.toLowerCase()}>{s}</option>
           ))}
-        </StyledSelect>
-        {errors.stage && <StyledErrorMessage $isVisible={!!errors.stage}>{errors.stage}</StyledErrorMessage>}
+        </Select>
+        {errors.stage && <ErrorMessage isVisible={!!errors.stage}>{errors.stage}</ErrorMessage>}
       </div>
 
       {/* --- Campos de Nombre, Objetivo, Fecha de Vencimiento --- */}
       <div style={{ marginBottom: '18px' }}>
-        <StyledLabel htmlFor="groupName">Nombre del Grupo</StyledLabel>
-        <StyledInput
+        <Label htmlFor="groupName">Nombre del Grupo</Label>
+        <Input
           type="text"
           id="groupName"
           name="name"
@@ -170,42 +156,43 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, isEditingI
           onChange={handleInputChange}
           placeholder="Ej: Fase 1 - Adaptación"
         />
-        {errors.name && <StyledErrorMessage $isVisible={!!errors.name}>{errors.name}</StyledErrorMessage>}
-        {groupNameConflictError && <StyledErrorMessage $isVisible={true}>{groupNameConflictError}</StyledErrorMessage>}
+        {errors.name && <ErrorMessage isVisible={!!errors.name}>{errors.name}</ErrorMessage>}
+        {groupNameConflictError && <ErrorMessage isVisible={true}>{groupNameConflictError}</ErrorMessage>}
       </div>
 
       <div style={{ marginBottom: '18px' }}>
-        <StyledLabel htmlFor="groupObjective">Objetivo (breve descripción)</StyledLabel>
-        <StyledTextArea
+        <Label htmlFor="groupObjective">Objetivo (breve descripción)</Label>
+        <Input // Reemplazado StyledTextArea con Input
+          type="text" // Ahora es un input de texto de una sola línea
           id="groupObjective"
           name="objective"
           value={groupData?.objective || ''}
           onChange={handleInputChange}
           placeholder="Ej: Fortalecer base muscular y mejorar técnica."
-        ></StyledTextArea>
-        {errors.objective && <StyledErrorMessage $isVisible={!!errors.objective}>{errors.objective}</StyledErrorMessage>}
+        />
+        {errors.objective && <ErrorMessage isVisible={!!errors.objective}>{errors.objective}</ErrorMessage>}
       </div>
 
       <div style={{ marginBottom: '18px' }}>
-        <StyledLabel htmlFor="dueDate">Fecha de Vencimiento</StyledLabel>
-        <StyledInput
+        <Label htmlFor="dueDate">Fecha de Vencimiento</Label>
+        <Input
           type="date"
           id="dueDate"
           name="dueDate"
           value={groupData?.dueDate || ''}
           onChange={handleDateChange}
         />
-        {errors.dueDate && <StyledErrorMessage $isVisible={!!errors.dueDate}>{errors.dueDate}</StyledErrorMessage>}
+        {errors.dueDate && <ErrorMessage isVisible={!!errors.dueDate}>{errors.dueDate}</ErrorMessage>}
       </div>
 
       <StyledButtonContainer style={{ justifyContent: 'flex-end' }}>
-        <StyledNavButton
+        <NavButton
           onClick={handleNext}
-          $primary
-          disabled={!isFormComplete || !!groupNameConflictError} // <--- Condición de deshabilitado actualizada
+          primary
+          disabled={!isFormComplete || !!groupNameConflictError}
         >
           <ChevronIcon direction="right" />
-        </StyledNavButton>
+        </NavButton>
       </StyledButtonContainer>
     </StyledModalBody>
   );

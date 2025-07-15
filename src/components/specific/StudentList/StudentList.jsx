@@ -2,11 +2,16 @@
 import PropTypes from 'prop-types';
 import StudentItem from '../StudentItem/StudentItem'; // Importamos el componente de cada ítem de alumno
 
-// Importamos los estilos necesarios desde el StyledCoachPage para mantener la consistencia visual
+// Importamos los componentes common atomizados
+import Button from '../../common/Button/Button'; // Para el botón de reintentar
+import Subtitle from '../../common/Subtitle/Subtitle'; // Para mensajes generales
+import ErrorMessage from '../../common/ErrorMessage/ErrorMessage'; // Para mensajes de error
+
+// Importamos los estilos específicos para StudentList
 import {
-  StyledStudentList as StudentListUL, // Renombramos para usar como un <ul> estilizado
-  StyledAppMessage, // Mensajes de la app
-} from '../../../pages/CoachPage/StyledCoachPage'; // Ajusta la ruta si es necesario
+  StyledStudentListUL,
+  StyledStudentListMessageWrapper,
+} from './StyledStudentList';
 
 // ¡CAMBIO CLAVE AQUÍ! Usamos parámetros por defecto en la firma de la función
 function StudentList({
@@ -20,24 +25,23 @@ function StudentList({
 }) {
   // Manejo de estados de carga, error y vacíos
   if (loading) {
-    return <StyledAppMessage>Cargando alumnos...</StyledAppMessage>;
+    return (
+      <StyledStudentListMessageWrapper>
+        <Subtitle>Cargando alumnos...</Subtitle>
+      </StyledStudentListMessageWrapper>
+    );
   }
 
   if (error) {
     return (
-      <StyledAppMessage>
-        ¡Uups! Hubo un error al cargar los alumnos.
-        <button onClick={onRetrySync} style={{
-          backgroundColor: '#007bff',
-          color: 'white',
-          border: 'none',
-          borderRadius: '5px',
-          padding: '8px 15px',
-          marginTop: '10px',
-          cursor: 'pointer',
-          fontSize: '0.9rem'
-        }}>Reintentar</button>
-      </StyledAppMessage>
+      <StyledStudentListMessageWrapper>
+        <ErrorMessage isVisible={true}>
+          ¡Uups! Hubo un error al cargar los alumnos.
+        </ErrorMessage>
+        <Button onClick={onRetrySync} primary style={{ marginTop: '15px' }}>
+          Reintentar
+        </Button>
+      </StyledStudentListMessageWrapper>
     );
   }
 
@@ -46,23 +50,27 @@ function StudentList({
     if (searchText) {
       // Si hay texto de búsqueda pero no se encontraron resultados
       return (
-        <StyledAppMessage>
-          ¡No hay resultados para: {searchText}!
-        </StyledAppMessage>
+        <StyledStudentListMessageWrapper>
+          <Subtitle>
+            ¡No hay resultados para: <span>{searchText}</span>!
+          </Subtitle>
+        </StyledStudentListMessageWrapper>
       );
     } else {
       // Si no hay alumnos y no hay búsqueda activa (lista vacía)
       return (
-        <StyledAppMessage>
-          ¡No tenés alumnos todavía! Presioná + para crear uno.
-        </StyledAppMessage>
+        <StyledStudentListMessageWrapper>
+          <Subtitle>
+            ¡No tenés alumnos todavía! Presioná + para crear uno.
+          </Subtitle>
+        </StyledStudentListMessageWrapper>
       );
     }
   }
 
   // Si hay alumnos, los renderizamos en la lista
   return (
-    <StudentListUL>
+    <StyledStudentListUL>
       {students.map(student => (
         <StudentItem
           key={student.id}
@@ -71,7 +79,7 @@ function StudentList({
           isSelected={student.id === selectedStudentId}
         />
       ))}
-    </StudentListUL>
+    </StyledStudentListUL>
   );
 }
 
@@ -82,7 +90,7 @@ StudentList.propTypes = {
   students: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-    email: PropTypes.string.isRequired,
+    email: PropTypes.string, // Email puede ser opcional
   })).isRequired,
   loading: PropTypes.bool.isRequired,
   error: PropTypes.oneOfType([PropTypes.object, PropTypes.string, PropTypes.oneOf([null])]), // Permite objeto, string o null

@@ -2,40 +2,28 @@
 import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import localExercisesData from '../../../../data/exercises.json';
-import CollapsibleCard from '../../../common/CollapsibleCard/CollapsibleCard';
+
+// Importamos los componentes common atomizados
+import CollapsibleCard from '../../common/CollapsibleCard/CollapsibleCard';
+import Input from '../../common/Input/Input';
+import NavButton from '../../common/NavButton/NavButton';
+import RemoveExerciseButton from '../../common/RemoveExerciseButton/RemoveExerciseButton'; // Nuevo componente
+import ChevronIcon from '../../common/ChevronIcon/ChevronIcon';
+import SectionTitle from '../../common/SectionTitle/SectionTitle'; // Componente SectionTitle común
+import SubSectionTitle from '../../common/SubSectionTitle/SubSectionTitle'; // Componente SubSectionTitle común
+import Checkbox from '../../common/Checkbox/Checkbox'; // Componente Checkbox común
+import Subtitle from '../../common/Subtitle/Subtitle'; // Para mensajes de lista vacía
+
+// Importamos solo los estilos específicos que quedan en StyledRoutineGroupModal
 import {
   StyledModalBody,
-  StyledLabel,
-  StyledInput,
   StyledButtonContainer,
-  StyledNavButton,
-  StyledRemoveExerciseButton,
-  StyledExerciseItem,
-  StyledSectionTitle,
-  StyledSubSectionTitle,
-  StyledCurrentRoutineInfo
+  StyledExerciseItem, // Este es específico de la lista de ejercicios arrastrables
+  StyledCurrentRoutineInfo, // Este es específico de la información de la rutina actual
+  StyledExerciseSelectionItem, // Estilo para el div de selección de ejercicios
+  StyledExerciseSelectionList, // Estilo para el contenedor de la lista de selección
 } from '../StyledRoutineGroupModal';
 
-
-// Helper component para el icono de chevron
-const ChevronIcon = ({ direction }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-6 w-6"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    style={{
-      transform: direction === 'left' ? 'rotate(180deg)' : 'none',
-    }}
-  >
-    <path strokeLinecap="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-  </svg>
-);
-
-ChevronIcon.propTypes = {
-  direction: PropTypes.oneOf(['left', 'right']).isRequired,
-};
 
 // --- Stage 3: Añadir Ejercicios ---
 const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, goToPreviousStage, editingRoutineData }) => {
@@ -59,12 +47,13 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
     if (isAlreadySelected) {
       updatedExercises = currentExercises.filter(ex => ex.id !== exercise.id);
     } else {
+      // Si estamos editando y el ejercicio ya existía en la data inicial, mantenemos sus propiedades
       const existingExerciseInInitialEditData = (editingRoutineData?.exercises || []).find(ex => ex.id === exercise.id);
 
       const newExercise = {
         id: exercise.id,
         name: exercise.name,
-        type: exercise.type || 'reps_sets',
+        type: exercise.type || 'reps_sets', // Asume 'reps_sets' por defecto si no está definido
         sets: existingExerciseInInitialEditData?.sets !== undefined ? existingExerciseInInitialEditData.sets : 0,
         reps: existingExerciseInInitialEditData?.reps !== undefined ? existingExerciseInInitialEditData.reps : 0,
         time: existingExerciseInInitialEditData?.time !== undefined ? existingExerciseInInitialEditData.time : 0,
@@ -105,7 +94,7 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
       exercises: updatedExercises,
     };
 
-    setCurrentRoutine(updatedRoutine); // Esto ya estaba bien
+    setCurrentRoutine(updatedRoutine);
   };
 
   const filteredExercises = localExercisesData.filter(exercise =>
@@ -125,13 +114,13 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
 
   return (
     <StyledModalBody>
-      <StyledSectionTitle>{safeCurrentRoutine.name || 'Nueva Rutina'}</StyledSectionTitle>
+      <SectionTitle>{safeCurrentRoutine.name || 'Nueva Rutina'}</SectionTitle>
       <StyledCurrentRoutineInfo>
-        Descanso: {safeCurrentRoutine.restTime || 0}s | RIR: {safeCurrentRoutine.rir || 0} | Calentamiento: {safeCurrentRoutine.warmUp || 'N/A'}
+        Descanso: <span>{safeCurrentRoutine.restTime || 0}s</span> | RIR: <span>{safeCurrentRoutine.rir || 0}</span> | Calentamiento: <span>{safeCurrentRoutine.warmUp || 'N/A'}</span>
       </StyledCurrentRoutineInfo>
       
-      <StyledSubSectionTitle>Seleccionar Ejercicios:</StyledSubSectionTitle>
-      <StyledInput
+      <SubSectionTitle>Seleccionar Ejercicios:</SubSectionTitle>
+      <Input
         type="text"
         value={exerciseSearchText}
         onChange={(e) => setExerciseSearchText(e.target.value)}
@@ -140,77 +129,66 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine, goToNextStage, 
       />
 
       {Object.keys(groupedExercises).length === 0 && exerciseSearchText ? (
-        <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>No se encontraron ejercicios con esa búsqueda.</p>
+        <Subtitle style={{ textAlign: 'center', margin: '20px 0', color: '#7f8c8d' }}>No se encontraron ejercicios con esa búsqueda.</Subtitle>
       ) : Object.keys(groupedExercises).length === 0 && !exerciseSearchText ? (
-        <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>No hay ejercicios disponibles para seleccionar.</p>
+        <Subtitle style={{ textAlign: 'center', margin: '20px 0', color: '#7f8c8d' }}>No hay ejercicios disponibles para seleccionar.</Subtitle>
       ) : (
-        Object.keys(groupedExercises).map(categoryName => (
-          <CollapsibleCard key={categoryName} title={categoryName} defaultOpen={false}>
-            {groupedExercises[categoryName].map(exercise => {
-              const isSelected = exercisesInRoutine.some(ex => ex.id === exercise.id);
-              
-              return (
-                <div
-                  key={exercise.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginBottom: '8px',
-                    padding: '5px 0',
-                    borderBottom: '1px dashed #f0f0f0',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-                    <input
-                      type="checkbox"
+        <StyledExerciseSelectionList> {/* Contenedor para la lista de selección */}
+          {Object.keys(groupedExercises).map(categoryName => (
+            <CollapsibleCard key={categoryName} title={categoryName} defaultOpen={false}>
+              {groupedExercises[categoryName].map(exercise => {
+                const isSelected = exercisesInRoutine.some(ex => ex.id === exercise.id);
+                
+                return (
+                  <StyledExerciseSelectionItem key={exercise.id}>
+                    <Checkbox
                       id={`select-exercise-${exercise.id}`}
+                      label={exercise.name}
                       checked={isSelected}
                       onChange={() => handleExerciseSelection(exercise)}
-                      style={{ marginRight: '10px' }}
                     />
-                    <StyledLabel htmlFor={`select-exercise-${exercise.id}`} style={{ margin: 0, fontWeight: 'normal', cursor: 'pointer' }}>
-                      {exercise.name}
-                    </StyledLabel>
-                  </div>
-                </div>
-              );
-            })}
-          </CollapsibleCard>
-        ))
+                  </StyledExerciseSelectionItem>
+                );
+              })}
+            </CollapsibleCard>
+          ))}
+        </StyledExerciseSelectionList>
       )}
 
-      <StyledSubSectionTitle>Ejercicios en la Rutina:</StyledSubSectionTitle>
+      <SubSectionTitle>Ejercicios en la Rutina:</SubSectionTitle>
       {exercisesInRoutine.length === 0 ? (
-        <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>Selecciona ejercicios de la lista de arriba.</p>
+        <Subtitle style={{ textAlign: 'center', margin: '20px 0', color: '#7f8c8d' }}>Selecciona ejercicios de la lista de arriba.</Subtitle>
       ) : (
-        exercisesInRoutine
-          .sort((a, b) => a.order - b.order)
-          .map((exercise, index) => (
-            <StyledExerciseItem
-              key={exercise.id}
-              draggable
-              onDragStart={(e) => handleDragStart(e, index)}
-              onDragOver={handleDragOver}
-              onDrop={(e) => handleDrop(e, index)}
-            >
-              <span>{index + 1}. {exercise.name}</span>
-              <StyledRemoveExerciseButton onClick={() => handleExerciseSelection(exercise)}>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </StyledRemoveExerciseButton>
-            </StyledExerciseItem>
-          ))
+        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}> {/* Mantener ul para la semántica de lista */}
+          {exercisesInRoutine
+            .sort((a, b) => a.order - b.order)
+            .map((exercise, index) => (
+              <StyledExerciseItem
+                key={exercise.id}
+                draggable
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, index)}
+              >
+                <span>{index + 1}. {exercise.name}</span>
+                <RemoveExerciseButton onClick={() => handleExerciseSelection(exercise)}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </RemoveExerciseButton>
+              </StyledExerciseItem>
+            ))
+          }
+        </ul>
       )}
 
       <StyledButtonContainer>
-        <StyledNavButton onClick={goToPreviousStage}>
+        <NavButton onClick={goToPreviousStage}>
           <ChevronIcon direction="left" />
-        </StyledNavButton>
-        <StyledNavButton onClick={goToNextStage} $primary disabled={!canGoNext}>
+        </NavButton>
+        <NavButton onClick={goToNextStage} primary disabled={!canGoNext}>
           <ChevronIcon direction="right" />
-        </StyledNavButton>
+        </NavButton>
       </StyledButtonContainer>
     </StyledModalBody>
   );

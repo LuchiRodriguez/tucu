@@ -1,12 +1,13 @@
+// src/components/specific/StudentItem/StudentItem.jsx
 import PropTypes from 'prop-types';
 
-// Importamos los componentes estilizados
+// Importamos los componentes estilizados desde su archivo
 import {
   StyledStudentItemContainer,
   StyledStudentName,
   StyledStudentEmail,
-  StyledViewButton,
-} from './StyledStudentItem'; // Asegurate de la ruta correcta
+  StyledViewButton, // Ahora StyledViewButton es un styled(Button)
+} from './StyledStudentItem';
 
 // ¡CAMBIO CLAVE AQUÍ! Usamos un parámetro por defecto para isSelected
 function StudentItem({ student, onSelectStudent, isSelected = false }) {
@@ -14,7 +15,8 @@ function StudentItem({ student, onSelectStudent, isSelected = false }) {
 
   return (
     <StyledStudentItemContainer onClick={() => onSelectStudent(id)} $isSelected={isSelected}>
-      <div style={{width: '210px'}}>
+      {/* El div para el nombre y email ahora está estilizado dentro de StyledStudentItemContainer */}
+      <div>
         <StyledStudentName>{name}</StyledStudentName>
         {email && <StyledStudentEmail>{email}</StyledStudentEmail>} {/* Mostrar email si existe */}
       </div>

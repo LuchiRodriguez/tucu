@@ -1,37 +1,22 @@
 // src/components/specific/RoutineGroupModal/Stages/Stage2RoutineDetails.jsx
-import { useState } from 'react';
+import { useState } from 'react'; // Solo necesitamos useState, no React
 import PropTypes from 'prop-types';
 import warmUpExercises from '../../../../data/warmUpExercises.json';
+
+// Importamos los componentes common atomizados
+import Label from '../../common/Label/Label';
+import Input from '../../common/Input/Input';
+import Select from '../../common/Select/Select';
+import NavButton from '../../common/NavButton/NavButton'; // Importamos el NavButton común
+import ErrorMessage from '../../common/ErrorMessage/ErrorMessage'; // Importamos el ErrorMessage común
+import ChevronIcon from '../../common/ChevronIcon/ChevronIcon'; // Importamos el ChevronIcon común
+
+// Importamos solo los estilos específicos que quedan en StyledRoutineGroupModal
 import {
   StyledModalBody,
-  StyledLabel,
-  StyledInput,
   StyledButtonContainer,
-  StyledNavButton,
-  StyledErrorMessage,
-  StyledSelect,
-} from '../StyledRoutineGroupModal'; // Ajusta la ruta si 'StyledRoutineGroupModal' no está en el mismo nivel
+} from '../StyledRoutineGroupModal';
 
-
-// Helper component para el icono de chevron (idealmente, mover a common/Icons)
-const ChevronIcon = ({ direction }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-6 w-6"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    style={{
-      transform: direction === 'left' ? 'rotate(180deg)' : 'none',
-    }}
-  >
-    <path strokeLinecap="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-  </svg>
-);
-
-ChevronIcon.propTypes = {
-  direction: PropTypes.oneOf(['left', 'right']).isRequired,
-};
 
 // --- Stage 2: Detalles de la Rutina ---
 const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage, goToPreviousStage }) => {
@@ -59,41 +44,41 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
   return (
     <StyledModalBody>
       <div style={{ marginBottom: '18px' }}>
-        <StyledLabel htmlFor="routineName">Nombre de la Rutina</StyledLabel>
-        <StyledInput
+        <Label htmlFor="routineName">Nombre de la Rutina</Label>
+        <Input
           type="text"
           id="routineName"
           value={currentRoutine.name}
           onChange={(e) => setCurrentRoutine({ ...currentRoutine, name: e.target.value })}
           placeholder="Ej: Rutina de Piernas"
         />
-        {errors.name && <StyledErrorMessage $isVisible={!!errors.name}>{errors.name}</StyledErrorMessage>}
+        {errors.name && <ErrorMessage isVisible={!!errors.name}>{errors.name}</ErrorMessage>}
       </div>
       <div style={{ marginBottom: '18px' }}>
-        <StyledLabel htmlFor="restTime">Tiempo de Descanso (segundos)</StyledLabel>
-        <StyledInput
+        <Label htmlFor="restTime">Tiempo de Descanso (segundos)</Label>
+        <Input
           type="number"
           id="restTime"
           value={currentRoutine.restTime === 0 ? '' : currentRoutine.restTime} // Muestra vacío si es 0, para que el placeholder sea visible
           onChange={(e) => setCurrentRoutine({ ...currentRoutine, restTime: Number(e.target.value) })}
           placeholder="Ej: 60"
         />
-        {errors.restTime && <StyledErrorMessage $isVisible={!!errors.restTime}>{errors.restTime}</StyledErrorMessage>}
+        {errors.restTime && <ErrorMessage isVisible={!!errors.restTime}>{errors.restTime}</ErrorMessage>}
       </div>
       <div style={{ marginBottom: '18px' }}>
-        <StyledLabel htmlFor="rir">RIR (Repeticiones en Reserva)</StyledLabel>
-        <StyledInput
+        <Label htmlFor="rir">RIR (Repeticiones en Reserva)</Label>
+        <Input
           type="number"
           id="rir"
           value={currentRoutine.rir === 0 ? '' : currentRoutine.rir} // Muestra vacío si es 0
           onChange={(e) => setCurrentRoutine({ ...currentRoutine, rir: Number(e.target.value) })}
           placeholder="Ej: 2"
         />
-        {errors.rir && <StyledErrorMessage $isVisible={!!errors.rir}>{errors.rir}</StyledErrorMessage>}
+        {errors.rir && <ErrorMessage isVisible={!!errors.rir}>{errors.rir}</ErrorMessage>}
       </div>
-      <div className="input-group"> {/* Puedes mantener este div si lo usas para agrupar */}
-        <StyledLabel htmlFor="warmUpSelect">Entrada en Calor:</StyledLabel> {/* Usamos StyledLabel */}
-        <StyledSelect // Usamos StyledSelect
+      <div style={{ marginBottom: '18px' }}>
+        <Label htmlFor="warmUpSelect">Entrada en Calor:</Label>
+        <Select
             id="warmUpSelect"
             value={currentRoutine.warmUp} // El valor seleccionado será el nombre del ejercicio
             onChange={(e) => setCurrentRoutine({ ...currentRoutine, warmUp: e.target.value })}
@@ -106,16 +91,17 @@ const Stage2RoutineDetails = ({ currentRoutine, setCurrentRoutine, goToNextStage
                       {exercise.name}
                   </option>
               ))}
-        </StyledSelect>
+        </Select>
+        {errors.warmUp && <ErrorMessage isVisible={!!errors.warmUp}>{errors.warmUp}</ErrorMessage>}
       </div>
       <StyledButtonContainer>
-        <StyledNavButton onClick={goToPreviousStage}>
+        <NavButton onClick={goToPreviousStage}>
           <ChevronIcon direction="left" />
-        </StyledNavButton>
+        </NavButton>
         {/* El botón "Siguiente" se deshabilita si hay errores de validación */}
-        <StyledNavButton onClick={handleNext} $primary disabled={Object.keys(errors).length > 0}>
+        <NavButton onClick={handleNext} primary disabled={Object.keys(errors).length > 0}>
           <ChevronIcon direction="right" />
-        </StyledNavButton>
+        </NavButton>
       </StyledButtonContainer>
     </StyledModalBody>
   );

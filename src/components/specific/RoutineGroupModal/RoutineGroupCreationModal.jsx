@@ -14,14 +14,18 @@ import Stage3AddExercises from './Stages/Stage3AddExercises';
 import Stage4AssignSetsReps from './Stages/Stage4AssignSetsReps';
 // import Stage5ReviewSummary from './Stages/Stage5ReviewSummary'; // Descomentar si tienes esta etapa
 
+// Importamos el componente Modal común
+import { Modal } from '../../common/Modal/Modal';
+// Importamos los Styled Components específicos del Modal (Header, Title, CloseButton)
+// NOTA: StyledModalOverlay y StyledModalContent son manejados INTERNAMENTE por el componente Modal
 import {
-  StyledModalOverlay,
-  StyledModalContent,
   StyledModalHeader,
   StyledCloseButton,
   StyledModalTitle,
-  StyledErrorMessage,
-} from './StyledRoutineGroupModal';
+} from '../../common/Modal/StyledModal'; // <--- CAMBIO CLAVE AQUÍ: Importamos desde common/Modal/StyledModal
+
+// Importamos ErrorMessage común
+import ErrorMessage from '../../common/ErrorMessage/ErrorMessage'; // <--- CAMBIO CLAVE AQUÍ: Importamos desde common/ErrorMessage/ErrorMessage
 
 // --- Función auxiliar para limpiar objetos de 'undefined' para Firestore ---
 const cleanObjectForFirestore = (obj) => {
@@ -65,11 +69,9 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
     goToPreviousStage,
     resetForm,
     saveDraft,
-    // loadDraft, // Eliminado: ya no se usa directamente aquí
     isSaving,
     saveError,
     setStage,
-    // setSelectedRoutineIndex, // Eliminado: ya no se usa directamente aquí
     isEditingIndividualRoutine,
     isEditingExistingGroup,
   } = useRoutineGroupForm(studentId, draftGroupId, user?.uid, editingRoutineData, setGroupNameConflictError);
@@ -325,32 +327,31 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
 
   // La clave (key) del modal cambia cuando se abre o se cambia el modo (crear/editar),
   // forzando a React a desmontar y volver a montar el componente y sus hooks.
+  // La key se aplica al componente Modal completo para asegurar el re-renderizado.
   const modalKey = isOpen 
     ? (isEditingIndividualRoutine ? `edit-routine-${draftGroupId}-${editingRoutineData?.id}` : `edit-group-${draftGroupId}`)
     : 'new-group';
 
   return (
-    <StyledModalOverlay $isOpen={isOpen}>
-      <StyledModalContent key={modalKey}> {/* Añadimos la key aquí */}
-        <StyledModalHeader>
-          <StyledModalTitle>
-            {isEditingIndividualRoutine ? "Editar Rutina Individual" : (isEditingExistingGroup ? "Editar Grupo de Rutinas" : "Crear Nuevo Grupo de Rutinas")}
-          </StyledModalTitle>
-          <StyledCloseButton onClick={handleCloseModal}>&times;</StyledCloseButton>
-        </StyledModalHeader>
+    <Modal key={modalKey}> {/* Usamos el componente Modal común y le pasamos la key */}
+      <StyledModalHeader>
+        <StyledModalTitle>
+          {isEditingIndividualRoutine ? "Editar Rutina Individual" : (isEditingExistingGroup ? "Editar Grupo de Rutinas" : "Crear Nuevo Grupo de Rutinas")}
+        </StyledModalTitle>
+        <StyledCloseButton onClick={handleCloseModal}>&times;</StyledCloseButton>
+      </StyledModalHeader>
 
-        {isSaving && (
-          <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(255, 255, 255, 0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', zIndex: 10 }}>
-            <p style={{ color: '#3498db', fontSize: '1.2rem', fontWeight: 'bold' }}>Guardando borrador...</p>
-          </div>
-        )}
-        {(saveError || localErrors || groupNameConflictError) && (
-          <StyledErrorMessage $isVisible={true}>{saveError || localErrors || groupNameConflictError}</StyledErrorMessage>
-        )}
+      {isSaving && (
+        <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(255, 255, 255, 0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', zIndex: 10 }}>
+          <p style={{ color: '#3498db', fontSize: '1.2rem', fontWeight: 'bold' }}>Guardando borrador...</p>
+        </div>
+      )}
+      {(saveError || localErrors || groupNameConflictError) && (
+        <ErrorMessage isVisible={true}>{saveError || localErrors || groupNameConflictError}</ErrorMessage>
+      )}
 
-        {getStageComponent()}
-      </StyledModalContent>
-    </StyledModalOverlay>
+      {getStageComponent()}
+    </Modal>
   );
 };
 

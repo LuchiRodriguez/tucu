@@ -1,21 +1,44 @@
 // src/components/specific/RoutineList/RoutineList.jsx
-import React from 'react'; // Se mantiene React para React.useState
-import PropTypes from 'prop-types'; // Importamos PropTypes para validación
+import { useState } from 'react'; // Solo necesitamos useState
+import PropTypes from 'prop-types';
 
-// Importamos CollapsibleCard para el listado de rutinas del alumno
+// Importamos componentes common atomizados
 import CollapsibleCard from '../../common/CollapsibleCard/CollapsibleCard';
-import Card from '../../common/Card/Card'; // Importamos el componente Card
-import { StyledAppMessage } from '../../../pages/HomePage/StyledHomePage'; // Para mensajes de carga/error/vacío
-import { StyledInput, StyledLabel } from '../../../pages/CoachPage/StyledCoachPage'; // Reutilizamos estilos de input/label
+import Card from '../../common/Card/Card';
+import Checkbox from '../../common/Checkbox/Checkbox'; // Componente Checkbox común
+import Input from '../../common/Input/Input'; // Componente Input común
+import Label from '../../common/Label/Label'; // Componente Label común
+import SectionTitle from '../../common/SectionTitle/SectionTitle'; // Componente SectionTitle común
+import SubSectionTitle from '../../common/SubSectionTitle/SubSectionTitle'; // Componente SubSectionTitle común
+import Subtitle from '../../common/Subtitle/Subtitle'; // Para mensajes y texto general
+import ErrorMessage from '../../common/ErrorMessage/ErrorMessage'; // Para mensajes de error
+
+// Importamos los estilos específicos para RoutineList
+import {
+  StyledRoutineListContainer,
+  StyledRoutinesWrapper,
+  StyledRoutineDetailText,
+  StyledExercisesContainer,
+  StyledExerciseCardContent,
+  StyledExerciseHeader,
+  StyledExerciseName,
+  StyledExerciseDetailsWrapper,
+  StyledExerciseDetailLine,
+  StyledKilosInputGroup,
+} from './StyledRoutineList';
 
 // Función auxiliar para formatear segundos a minutos y segundos (MM:SS)
 const formatTime = (totalSeconds) => {
-  if (totalSeconds < 60) {
-    return `${totalSeconds} Segundos`;
+  if (totalSeconds === undefined || totalSeconds === null) return 'N/A';
+  const seconds = Number(totalSeconds);
+  if (isNaN(seconds)) return 'N/A';
+
+  if (seconds < 60) {
+    return `${seconds} Segundos`;
   } else {
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    const formattedSeconds = remainingSeconds < 10 ? `0${remainingSeconds}` : remainingSeconds;
     return `${minutes}:${formattedSeconds} Minutos`;
   }
 };
@@ -29,7 +52,7 @@ const RoutineList = ({
   updateExerciseKilos, // Función para el input de kilos del ejercicio individual
 }) => {
   // Estado local para manejar qué rutina está expandida
-  const [expandedRoutineId, setExpandedRoutineId] = React.useState(null);
+  const [expandedRoutineId, setExpandedRoutineId] = useState(null);
 
   // Función para manejar el clic en el título de una rutina para expandir/colapsar
   const handleToggleRoutineDetails = (routineId) => {
@@ -38,26 +61,26 @@ const RoutineList = ({
 
   // Renderizado condicional basado en los estados de carga y error
   if (loading) {
-    return <StyledAppMessage>Cargando rutinas...</StyledAppMessage>;
+    return <Subtitle style={{ textAlign: 'center', margin: '20px 0', color: '#202020' }}>Cargando rutinas...</Subtitle>;
   }
 
   if (error) {
     return (
-      <StyledAppMessage style={{ color: '#e74c3c' }}>
+      <ErrorMessage isVisible={true} style={{ margin: '20px auto' }}>
         ¡Uups! Hubo un error al cargar tus rutinas. Por favor, intentá de nuevo.
-      </StyledAppMessage>
+      </ErrorMessage>
     );
   }
 
   // Si no hay rutinas después de cargar y sin errores
   if (!loading && routines.length === 0) {
-    return <StyledAppMessage>¡No tienes rutinas asignadas aún!</StyledAppMessage>;
+    return <Subtitle style={{ textAlign: 'center', margin: '20px 0', color: '#7f8c8d' }}>¡No tienes rutinas asignadas aún!</Subtitle>;
   }
 
   return (
-    <section className="RoutineList-container" style={{ width: '100%' }}>
-      <h3 style={{ margin: '0 0 15px', textAlign: 'center' }}>Tus Rutinas Asignadas:</h3>
-      <div style={{ margin: '0', display: 'flex', flexDirection: 'column', gap: '10px', border: '1px solid #eee', borderRadius: '12px'}}>
+    <StyledRoutineListContainer>
+      <SectionTitle>Tus Rutinas Asignadas:</SectionTitle>
+      <StyledRoutinesWrapper>
         {routines.map(routine => {
           // ¡NUEVA LÓGICA! Calcular el porcentaje de completado de la rutina
           const totalExercises = routine.exercises ? routine.exercises.length : 0;
@@ -72,62 +95,66 @@ const RoutineList = ({
               onClickTitle={() => handleToggleRoutineDetails(routine.id)}
             >
               <div style={{ padding: '5px 0' }}>
-                <p style={{ fontSize: '0.9rem', color: '#777', marginBottom: '8px' }}>
-                  Creada el: {routine.createdAt && new Date(routine.createdAt.toDate()).toLocaleDateString('es-AR')}
-                </p>
-                <p style={{ fontSize: '0.9rem', color: '#777', marginBottom: '8px' }}>
-                  Descanso entre ejercicios: {routine.restTime || 0} segundos
-                </p>
-                <p style={{ fontSize: '0.9rem', color: '#777', marginBottom: '15px' }}>
-                  RIR General: {routine.rir || 0}
-                </p>
+                <StyledRoutineDetailText>
+                  Creada el: <span>{routine.createdAt && new Date(routine.createdAt.toDate()).toLocaleDateString('es-AR')}</span>
+                </StyledRoutineDetailText>
+                <StyledRoutineDetailText>
+                  Descanso entre ejercicios: <span>{routine.restTime || 0}s</span>
+                </StyledRoutineDetailText>
+                <StyledRoutineDetailText>
+                  RIR General: <span>{routine.rir || 0}</span>
+                </StyledRoutineDetailText>
                 {/* ¡NUEVA LÍNEA! Mostrar el porcentaje de completado */}
-                <p style={{ fontSize: '1rem', color: '#007bff', fontWeight: 'bold', marginBottom: '15px' }}>
-                  Progreso: {completionPercentage}% Completado
-                </p>
-                <h5 style={{ marginBottom: '10px', color: '#2c3e50' }}>Ejercicios de la rutina:</h5>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <StyledRoutineDetailText className="progress-text">
+                  Progreso: <span>{completionPercentage}% Completado</span>
+                </StyledRoutineDetailText>
+                
+                <SubSectionTitle>Ejercicios de la rutina:</SubSectionTitle>
+                <StyledExercisesContainer>
                   {routine.exercises.map(ex => (
-                    <Card key={ex.id} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                        <h6 style={{ margin: 0, color: '#333', fontSize: '1rem' }}>{ex.name}</h6>
-                        <input
-                          type="checkbox"
-                          checked={ex.completed || false}
-                          onChange={() => toggleExerciseCompleted(routine.id, ex.id)}
-                          style={{ transform: 'scale(1.2)' }}
-                        />
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '0.9rem', color: '#555' }}>
-                        <p style={{ margin: 0 }}>Series: {ex.sets || 0}</p>
-                        {ex.type === 'timed' ? (
-                          <p style={{ margin: 0 }}>Tiempo: {formatTime(ex.time || 0)}</p>
-                        ) : (
-                          <>
-                            <p style={{ margin: 0 }}>Repeticiones: {ex.reps || 0}</p>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '5px' }}>
-                              <StyledLabel style={{ margin: 0, fontWeight: 'normal', fontSize: '0.9rem' }}>Kilos:</StyledLabel>
-                              <StyledInput
-                                type="number"
-                                min="0"
-                                placeholder="Kilos"
-                                value={ex.kilos === 0 ? '' : ex.kilos}
-                                onChange={(e) => updateExerciseKilos(routine.id, ex.id, e.target.value)}
-                                style={{ width: '70px', textAlign: 'center', padding: '5px' }}
-                              />
-                            </div>
-                          </>
-                        )}
-                      </div>
+                    <Card key={ex.id}> {/* Card para cada ejercicio */}
+                      <StyledExerciseCardContent>
+                        <StyledExerciseHeader>
+                          <StyledExerciseName>{ex.name}</StyledExerciseName>
+                          <Checkbox
+                            id={`exercise-completed-${routine.id}-${ex.id}`}
+                            label="" // Dejamos el label vacío si el texto está al lado del checkbox
+                            checked={ex.completed || false}
+                            onChange={() => toggleExerciseCompleted(routine.id, ex.id)}
+                            style={{ transform: 'scale(1.2)' }} // Ajuste visual si es necesario
+                          />
+                        </StyledExerciseHeader>
+                        <StyledExerciseDetailsWrapper>
+                          <StyledExerciseDetailLine>Series: <span>{ex.sets || 0}</span></StyledExerciseDetailLine>
+                          {ex.type === 'timed' ? (
+                            <StyledExerciseDetailLine>Tiempo: <span>{formatTime(ex.time || 0)}</span></StyledExerciseDetailLine>
+                          ) : (
+                            <>
+                              <StyledExerciseDetailLine>Repeticiones: <span>{ex.reps || 0}</span></StyledExerciseDetailLine>
+                              <StyledKilosInputGroup>
+                                <Label htmlFor={`kilos-${routine.id}-${ex.id}`}>Kilos:</Label>
+                                <Input
+                                  type="number"
+                                  id={`kilos-${routine.id}-${ex.id}`}
+                                  min="0"
+                                  placeholder="Kilos"
+                                  value={ex.kilos === 0 ? '' : ex.kilos} // Mostrar vacío si es 0
+                                  onChange={(e) => updateExerciseKilos(routine.id, ex.id, e.target.value)}
+                                />
+                              </StyledKilosInputGroup>
+                            </>
+                          )}
+                        </StyledExerciseDetailsWrapper>
+                      </StyledExerciseCardContent>
                     </Card>
                   ))}
-                </div>
+                </StyledExercisesContainer>
               </div>
             </CollapsibleCard>
           );
         })}
-      </div>
-    </section>
+      </StyledRoutinesWrapper>
+    </StyledRoutineListContainer>
   );
 };
 
@@ -136,11 +163,11 @@ RoutineList.propTypes = {
   routines: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-    createdAt: PropTypes.any,
+    createdAt: PropTypes.any, // Firebase Timestamp puede ser un objeto, o Date
     restTime: PropTypes.number,
     rir: PropTypes.number,
     exercises: PropTypes.arrayOf(PropTypes.shape({
-      id: PropTypes.number.isRequired,
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired, // Puede ser string o number
       name: PropTypes.string.isRequired,
       type: PropTypes.string,
       sets: PropTypes.number,

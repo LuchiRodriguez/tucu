@@ -1,43 +1,28 @@
 // src/components/specific/RoutineGroupModal/Stages/Stage4AssignSetsReps.jsx
 import { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import CollapsibleCard from '../../../common/CollapsibleCard/CollapsibleCard';
+
+// Importamos los componentes common atomizados
+import CollapsibleCard from '../../common/CollapsibleCard/CollapsibleCard';
+import Label from '../../common/Label/Label';
+import Input from '../../common/Input/Input';
+import NavButton from '../../common/NavButton/NavButton';
+import SectionTitle from '../../common/SectionTitle/SectionTitle';
+import SubSectionTitle from '../../common/SubSectionTitle/SubSectionTitle';
+import Checkbox from '../../common/Checkbox/Checkbox'; // Componente Checkbox común
+import SaveButton from '../../common/SaveButton/SaveButton'; // Componente SaveButton común
+import AddAnotherRoutineButton from '../../common/AddAnotherRoutineButton/AddAnotherRoutineButton'; // Componente AddAnotherRoutineButton común
+import ChevronIcon from '../../common/ChevronIcon/ChevronIcon'; // Componente ChevronIcon común
+import Subtitle from '../../common/Subtitle/Subtitle'; // Para mensajes de lista vacía
+
+// Importamos solo los estilos específicos que quedan en StyledRoutineGroupModal
 import {
   StyledModalBody,
-  StyledLabel,
-  StyledInput,
   StyledButtonContainer,
-  StyledNavButton,
-  StyledSectionTitle,
-  StyledSubSectionTitle,
   StyledCurrentRoutineInfo,
-  StyledExerciseInputGroup,
-  StyledCheckboxContainer,
-  StyledCheckboxLabel,
-  StyledCheckboxInput,
-  StyledSaveButton,
-  StyledAddAnotherRoutineButton, // <--- Aquí es donde se importa
+  StyledExerciseInputGroup, // Este es específico para agrupar inputs de ejercicio
 } from '../StyledRoutineGroupModal';
 
-// Helper component para el icono de chevron
-const ChevronIcon = ({ direction }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-6 w-6"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    style={{
-      transform: direction === 'left' ? 'rotate(180deg)' : 'none',
-    }}
-  >
-    <path strokeLinecap="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-  </svg>
-);
-
-ChevronIcon.propTypes = {
-  direction: PropTypes.oneOf(['left', 'right']).isRequired,
-};
 
 // --- Stage 4: Asignar Series, Repeticiones, Tiempo, Kilos ---
 const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousStage, onSaveRoutineGroup, onAddAnotherRoutine, isEditingIndividualRoutine }) => {
@@ -104,14 +89,14 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousS
 
   return (
     <StyledModalBody>
-      <StyledSectionTitle>{safeCurrentRoutine.name || 'Nueva Rutina'}</StyledSectionTitle>
+      <SectionTitle>{safeCurrentRoutine.name || 'Nueva Rutina'}</SectionTitle>
       <StyledCurrentRoutineInfo>
-        Descanso: {safeCurrentRoutine.restTime || 0}s | RIR: {safeCurrentRoutine.rir || 0} | Calentamiento: {safeCurrentRoutine.warmUp || 'N/A'}
+        Descanso: <span>{safeCurrentRoutine.restTime || 0}s</span> | RIR: <span>{safeCurrentRoutine.rir || 0}</span> | Calentamiento: <span>{safeCurrentRoutine.warmUp || 'N/A'}</span>
       </StyledCurrentRoutineInfo>
 
-      <StyledSubSectionTitle>Asignar Detalles de Ejercicios:</StyledSubSectionTitle>
+      <SubSectionTitle>Asignar Detalles de Ejercicios:</SubSectionTitle>
       {exercisesInRoutine.length === 0 ? (
-        <p style={{ fontSize: '0.9rem', color: '#777', textAlign: 'center', margin: '20px 0' }}>No hay ejercicios seleccionados para esta rutina.</p>
+        <Subtitle style={{ textAlign: 'center', margin: '20px 0', color: '#7f8c8d' }}>No hay ejercicios seleccionados para esta rutina.</Subtitle>
       ) : (
         exercisesInRoutine
           .sort((a, b) => a.order - b.order)
@@ -119,8 +104,8 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousS
             <CollapsibleCard key={exercise.id} title={`${index + 1}. ${exercise.name}`} defaultOpen={true}>
               <div style={{ padding: '10px 0' }}>
                 <StyledExerciseInputGroup>
-                  <StyledLabel htmlFor={`sets-${exercise.id}`}>Series:</StyledLabel>
-                  <StyledInput
+                  <Label htmlFor={`sets-${exercise.id}`}>Series:</Label>
+                  <Input
                     type="number"
                     id={`sets-${exercise.id}`}
                     value={exercise.sets === 0 ? 0 : exercise.sets || ''} // Mostrar 0 si es 0, o vacío si es null/undefined
@@ -132,8 +117,8 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousS
 
                 {exercise.type === 'timed' ? (
                   <StyledExerciseInputGroup>
-                    <StyledLabel htmlFor={`time-${exercise.id}`}>Tiempo (segundos):</StyledLabel>
-                    <StyledInput
+                    <Label htmlFor={`time-${exercise.id}`}>Tiempo (segundos):</Label>
+                    <Input
                       type="number"
                       id={`time-${exercise.id}`}
                       value={exercise.time === 0 ? 0 : exercise.time || ''}
@@ -144,8 +129,8 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousS
                   </StyledExerciseInputGroup>
                 ) : (
                   <StyledExerciseInputGroup>
-                    <StyledLabel htmlFor={`reps-${exercise.id}`}>Repeticiones:</StyledLabel>
-                    <StyledInput
+                    <Label htmlFor={`reps-${exercise.id}`}>Repeticiones:</Label>
+                    <Input
                       type="number"
                       id={`reps-${exercise.id}`}
                       value={exercise.reps === 0 ? 0 : exercise.reps || ''}
@@ -157,8 +142,8 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousS
                 )}
 
                 <StyledExerciseInputGroup>
-                  <StyledLabel htmlFor={`kilos-${exercise.id}`}>Kilos:</StyledLabel>
-                  <StyledInput
+                  <Label htmlFor={`kilos-${exercise.id}`}>Kilos:</Label>
+                  <Input
                     type="number"
                     id={`kilos-${exercise.id}`}
                     value={exercise.kilos === 0 ? 0 : exercise.kilos || ''}
@@ -168,34 +153,31 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine, goToPreviousS
                   />
                 </StyledExerciseInputGroup>
 
-                <StyledCheckboxContainer>
-                  <StyledCheckboxInput
-                    type="checkbox"
-                    id={`completed-${exercise.id}`}
-                    checked={exercise.completed}
-                    onChange={(e) => handleCheckboxChange(exercise.id, e.target.checked)}
-                  />
-                  <StyledCheckboxLabel htmlFor={`completed-${exercise.id}`}>Completado</StyledCheckboxLabel>
-                </StyledCheckboxContainer>
+                <Checkbox
+                  id={`completed-${exercise.id}`}
+                  label="Completado"
+                  checked={exercise.completed}
+                  onChange={(e) => handleCheckboxChange(exercise.id, e.target.checked)}
+                />
               </div>
             </CollapsibleCard>
           ))
       )}
 
       <StyledButtonContainer>
-        <StyledNavButton onClick={goToPreviousStage}>
+        <NavButton onClick={goToPreviousStage}>
           <ChevronIcon direction="left" />
-        </StyledNavButton>
+        </NavButton>
 
         {/* Botones de guardado y añadir otra rutina */}
         {!isEditingIndividualRoutine && (
-          <StyledAddAnotherRoutineButton onClick={onAddAnotherRoutine} disabled={!canSave}>
+          <AddAnotherRoutineButton onClick={onAddAnotherRoutine} disabled={!canSave}>
             Añadir otra rutina
-          </StyledAddAnotherRoutineButton>
+          </AddAnotherRoutineButton>
         )}
-        <StyledSaveButton onClick={onSaveRoutineGroup} $primary disabled={!canSave}>
+        <SaveButton onClick={onSaveRoutineGroup} disabled={!canSave}>
           {isEditingIndividualRoutine ? 'Guardar Rutina' : 'Guardar y Publicar Grupo'}
-        </StyledSaveButton>
+        </SaveButton>
       </StyledButtonContainer>
     </StyledModalBody>
   );

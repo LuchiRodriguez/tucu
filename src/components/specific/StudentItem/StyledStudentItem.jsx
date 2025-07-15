@@ -1,65 +1,88 @@
-// src/components/specific/StudentItem/StyledStudentItem.jsx
+// src/components/specific/StudentItem/StyledStudentItem.js
 import styled from 'styled-components';
+import Button from '../../common/Button/Button'; // Importamos el componente Button común
 
-// Estilos para el contenedor principal del StudentItem
-// Reutilizamos mucho de los estilos de StyledCardContainer
-export const StyledStudentItemContainer = styled.li.withConfig({
-  // ¡CAMBIO CLAVE AQUÍ! Filtramos la prop $isSelected para que no se pase al DOM
-  shouldForwardProp: (prop) => !['isSelected'].includes(prop),
-})`
-  background-color: #fff; /* Fondo blanco */
-  border-radius: 12px; /* Bordes redondeados */
-  padding: 16px; /* Espaciado interno */
-  margin-bottom: 12px; /* Margen inferior para separar los items */
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
-  display: flex; /* Para organizar el contenido horizontalmente */
+export const StyledStudentItemContainer = styled.li`
+  display: flex;
   justify-content: space-between;
-  align-items: center; /* Centrar verticalmente */
-  gap: 12px; /* Espacio entre los elementos */
-  cursor: pointer; /* Indicar que es clickeable */
-  transition: all 0.2s ease-in-out; /* Transición suave para cualquier cambio */
+  align-items: center;
+  padding: 15px 20px;
+  background-color: ${props => props.$isSelected ? '#E8F6FD' : '#FFFFFF'}; /* Azul claro si seleccionado, Blanco Puro por defecto */
+  border: 1px solid ${props => props.$isSelected ? '#5DD62C' : '#F8F8F8'}; /* Borde verde si seleccionado, Gris Muy Claro por defecto */
+  border-radius: 12px;
+  margin-bottom: 10px; /* Espacio entre ítems */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  flex-wrap: wrap; /* Permite que los elementos se envuelvan en pantallas pequeñas */
 
   &:hover {
-    transform: translateY(-2px); /* Efecto al pasar el mouse */
-    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15); /* Sombra más pronunciada */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
-  /* Si quieres un borde distintivo cuando está seleccionado (pasas la prop $isSelected) */
-  ${props => props.$isSelected && ` /* ¡CAMBIO CLAVE AQUÍ! Usamos $isSelected */
-    border: 2px solid #e74c3c; /* Borde rojo para el seleccionado */
-  `}
+  /* Contenedor para el nombre y email del alumno */
+  div:first-of-type {
+    flex-basis: 65%; /* Ocupa la mayor parte del espacio */
+    min-width: 180px; /* Ancho mínimo para evitar que se aplaste demasiado */
+    display: flex;
+    flex-direction: column;
+    gap: 4px; /* Espacio entre nombre y email */
+
+    @media (max-width: 768px) {
+      flex-basis: 100%; /* Ocupa todo el ancho en móviles */
+      margin-bottom: 10px; /* Espacio antes del botón en móviles */
+    }
+  }
 `;
 
-// Estilos para el nombre del alumno
-export const StyledStudentName = styled.p`
-  font-size: 1.3rem; /* Tamaño de fuente un poco más grande */
-  font-weight: bold; /* Negrita */
-  color: #333; /* Color de texto oscuro */
-  flex-grow: 1; /* Para que ocupe el espacio disponible */
-  margin: 0; /* Eliminar margen por defecto de p */
+export const StyledStudentName = styled.h4`
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0F0F0F; /* Negro Profundo de la paleta */
+  margin: 0;
 `;
 
-// Estilos para el email del alumno (opcional, si quieres mostrarlo)
 export const StyledStudentEmail = styled.p`
   font-size: 0.9rem;
-  color: #777;
+  color: #202020; /* Gris Oscuro de la paleta */
   margin: 0;
-  /* Podrías querer que solo se muestre en ciertas condiciones */
 `;
 
-// Estilos para el botón de "Ver Rutinas" o un ícono de flecha
-export const StyledViewButton = styled.button`
-  width: 80px;
-  background-color: #3498db; /* Azul para el botón de acción */
-  color: white;
+export const StyledViewButton = styled(Button)`
+  background-color: #5DD62C; /* Verde Vibrante de la paleta */
+  color: #FFFFFF; /* Blanco Puro */
   border: none;
   border-radius: 8px;
   padding: 8px 15px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
+  font-size: 0.9rem;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(93, 214, 44, 0.2);
+  transition: all 0.2s ease-in-out;
+  flex-shrink: 0; /* Evita que el botón se encoja */
+  min-width: 120px; /* Ancho mínimo para el texto */
+  text-align: center;
 
-  &:hover {
-    background-color: #2980b9; /* Azul más oscuro al pasar el mouse */
+  &:hover:not(:disabled) {
+    background-color: #337418; /* Verde Oscuro en hover */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(93, 214, 44, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(93, 214, 44, 0.1);
+  }
+
+  &:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%; /* Ocupa todo el ancho en móviles */
+    padding: 10px 15px;
   }
 `;
