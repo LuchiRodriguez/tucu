@@ -1,3 +1,4 @@
+// .eslintrc.cjs
 module.exports = {
   root: true,
   env: { browser: true, es2020: true },
@@ -18,4 +19,10 @@ module.exports = {
       { allowConstantExport: true },
     ],
   },
-}
+  globals: {
+    __app_id: 'readonly', // Indica que __app_id es una variable global de solo lectura
+    // Si usas __firebase_config o __initial_auth_token en otros hooks, también podrías agregarlas aquí:
+    // __firebase_config: 'readonly',
+    // __initial_auth_token: 'readonly',
+  },
+};

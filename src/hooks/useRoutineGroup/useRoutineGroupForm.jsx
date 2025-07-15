@@ -4,6 +4,12 @@ import { db } from '../../config/firebase';
 import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 
+/**
+ * Función auxiliar para limpiar objetos de 'undefined' para Firestore.
+ * Elimina propiedades con valor 'undefined' y limpia recursivamente objetos y arrays.
+ * @param {object|Array|*} obj - El objeto o valor a limpiar.
+ * @returns {object|Array|*} El objeto o valor limpio.
+ */
 const cleanObjectForFirestore = (obj) => {
   if (obj === null || typeof obj !== 'object') {
     return obj;
@@ -17,7 +23,7 @@ const cleanObjectForFirestore = (obj) => {
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
       const value = obj[key];
-      if (value !== undefined) {
+      if (value !== undefined) { // Solo incluye propiedades que no son 'undefined'
         cleaned[key] = cleanObjectForFirestore(value);
       }
     }
@@ -25,12 +31,13 @@ const cleanObjectForFirestore = (obj) => {
   return cleaned;
 };
 
+// Plantillas para inicializar datos de grupos y rutinas
 const initialGroupDataTemplate = {
   name: '',
   objective: '',
-  dueDate: '',
+  dueDate: '', // Puede ser una fecha o string
   stage: '',
-  status: 'draft',
+  status: 'draft', // 'draft' o 'active'
   createdAt: null,
   updatedAt: null,
   assignedBy: '',
@@ -39,42 +46,52 @@ const initialGroupDataTemplate = {
 const initialRoutineDataTemplate = {
   id: '',
   name: '',
-  restTime: '',
-  rir: '',
+  restTime: '', // Puede ser string o number
+  rir: '',     // Puede ser string o number
   warmUp: '',
   exercises: [],
 };
 
+/**
+ * Hook personalizado para manejar la lógica de creación y edición de grupos de rutinas.
+ * Incluye gestión de etapas, datos de grupo/rutina, autoguardado y carga de borradores.
+ *
+ * @param {string} studentId - ID del alumno al que se le asigna el grupo de rutinas.
+ * @param {string|null} initialDraftGroupId - ID del borrador/grupo existente a cargar, o null para nueva creación.
+ * @param {string} coachId - ID del coach actual.
+ * @param {object|null} initialRoutineData - Datos de una rutina individual a editar, o null.
+ * @param {function} setGroupNameConflictError - Setter para el estado de error de conflicto de nombre de grupo.
+ * @returns {object} Un objeto con el estado y las funciones del formulario.
+ */
 const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, initialRoutineData = null, setGroupNameConflictError) => {
-  console.log("DEBUG useRoutineGroupForm - Initial props received:");
-  console.log("  studentId:", studentId);
-  console.log("  initialDraftGroupId:", initialDraftGroupId);
-  console.log("  coachId:", coachId);
-  console.log("  initialRoutineData:", initialRoutineData, "Type:", typeof initialRoutineData);
-
+  // Estados principales del formulario
   const [stage, setStage] = useState(1);
   const [groupData, setGroupData] = useState(() => ({ ...initialGroupDataTemplate, id: uuidv4(), createdAt: new Date() }));
   
-  // Capturamos el setter original de useState para depuración profunda
-  const [routines, setRoutinesInternal] = useState([]); 
+  // El estado 'routines' se inicializa con la rutina individual si se está editando, o con una rutina vacía.
+  const [routines, setRoutines] = useState(() => {
+    return initialRoutineData 
+      ? [{ ...initialRoutineData, id: initialRoutineData.id || uuidv4() }]
+      : [{ ...initialRoutineDataTemplate, id: uuidv4() }];
+  });
 
-  // Wrapper para setRoutines que logea lo que realmente recibe useState
-  const setRoutines = useCallback((valueOrUpdater) => {
-    console.log("[useRoutineGroupForm] Calling setRoutines (internal useState setter) with:", valueOrUpdater, "Type:", typeof valueOrUpdater);
-    setRoutinesInternal(valueOrUpdater);
-  }, []);
-
-  const [selectedRoutineIndex, setSelectedRoutineIndex] = useState(0);
+  const [selectedRoutineIndex, setSelectedRoutineIndex] = useState(() => {
+    return initialRoutineData ? 0 : 0; // Si se edita una rutina individual, siempre es la primera
+  });
   
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
 
+  // Ref para manejar el debounce del autoguardado
   const debounceTimeoutRef = useRef(null);
 
-  // --- Wrapper para safeSetRoutines que asegura que el estado sea siempre un array ---
+  /**
+   * Wrapper defensivo para setRoutines que asegura que el valor sea siempre un array.
+   * Esto previene errores si un actualizador intenta establecer un valor no-array.
+   * @param {Array|function} newRoutinesValueOrUpdater - El nuevo array de rutinas o una función actualizadora.
+   */
   const safeSetRoutines = useCallback((newRoutinesValueOrUpdater) => {
-    setRoutines(prev => { // Aquí prev es el valor actual del estado 'routines'
-      console.log("[useRoutineGroupForm] safeSetRoutines - Inside updater. prev (from useState):", prev, "Type:", typeof prev);
+    setRoutines(prev => {
       let finalValue;
       if (typeof newRoutinesValueOrUpdater === 'function') {
         finalValue = newRoutinesValueOrUpdater(prev);
@@ -83,78 +100,57 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
       }
 
       if (!Array.isArray(finalValue)) {
-        console.error("CRITICAL ERROR: Attempted to set 'routines' state to a non-array value. Resetting to empty array.", finalValue);
-        console.trace("Call stack when safeSetRoutines tries to set non-array:"); // Traza aquí
-        return [];
+        console.error("ERROR CRÍTICO: Se intentó establecer el estado 'routines' a un valor que no es un array. Restableciendo a array vacío.", finalValue);
+        return []; // Fallback a un estado válido para evitar errores en cascada
       }
-      console.log("[useRoutineGroupForm] safeSetRoutines - Inside updater. Returning finalValue:", finalValue, "Type:", typeof finalValue);
       return finalValue;
     });
-  }, [setRoutines]); // Depende del setter interno para logear
+  }, []);
 
-  // --- Lógica de selectedRoutine más robusta ---
+  /**
+   * Memoiza la rutina actualmente seleccionada del array de rutinas.
+   * Incluye comprobaciones defensivas para asegurar que siempre devuelva un objeto de rutina válido.
+   */
   const selectedRoutine = useMemo(() => {
-    console.log("[useRoutineGroupForm] Calculando selectedRoutine. routines:", routines, "Type:", typeof routines, "selectedRoutineIndex:", selectedRoutineIndex);
-    
-    // **CRITICAL DEBUGGING POINT**
-    // Log the actual content of 'routines' array if it's an array, before any other checks
-    if (Array.isArray(routines)) {
-      console.log("[useRoutineGroupForm] DEBUG: Current 'routines' array content:", JSON.stringify(routines, (key, value) => {
-        if (typeof value === 'function') {
-          return 'FUNCTION_DETECTED_IN_ARRAY'; // Replace function with a string for logging
-        }
-        return value;
-      }, 2));
-    }
-
-    // **Corrección defensiva aquí:** Asegurarse de que 'routines' sea un array antes de intentar acceder a él
     if (!Array.isArray(routines)) {
-      console.error("[useRoutineGroupForm] CRITICAL ERROR: 'routines' state is not an array at useMemo evaluation. Resetting to default template.", routines);
-      console.trace("Call stack when 'routines' is not an array in useMemo:"); // Añadido para trazar el origen
+      console.error("ERROR CRÍTICO: El estado 'routines' no es un array en useMemo. Devolviendo plantilla por defecto.", routines);
       return { ...initialRoutineDataTemplate, id: uuidv4() };
-    }
-
-    // NUEVO LOG: Qué hay en routines[0] si es un array
-    if (routines.length > 0) {
-      console.log("[useRoutineGroupForm] DEBUG: routines[0] value:", routines[0], "Type:", typeof routines[0]);
     }
 
     if (routines.length === 0) {
-      console.warn("[useRoutineGroupForm] routines es vacío. Devolviendo template.");
+      // Si no hay rutinas, devuelve una plantilla para que el UI no falle
       return { ...initialRoutineDataTemplate, id: uuidv4() };
     }
     if (selectedRoutineIndex < 0 || selectedRoutineIndex >= routines.length) {
-      console.warn("[useRoutineGroupForm] selectedRoutineIndex fuera de límites. Devolviendo primer rutina o template.");
+      // Si el índice está fuera de límites, devuelve la primera rutina o una plantilla
       return routines[0] || { ...initialRoutineDataTemplate, id: uuidv4() };
     }
 
     const routine = routines[selectedRoutineIndex];
-    // NUEVO LOG: Inspect the routine element directly before validation
-    console.log("[useRoutineGroupForm] DEBUG: Element at routines[selectedRoutineIndex]:", routine, "Type:", typeof routine);
-
     if (!routine || typeof routine !== 'object' || Array.isArray(routine)) {
-      console.error("[useRoutineGroupForm] La rutina en el índice es inválida (no es un objeto). Devolviendo template.", routine);
+      console.error("La rutina en el índice seleccionado es inválida (no es un objeto). Devolviendo plantilla.", routine);
       return { ...initialRoutineDataTemplate, id: uuidv4() };
     }
     return routine;
   }, [routines, selectedRoutineIndex]);
 
-
+  // Determina si se está editando una rutina individual existente
   const isEditingIndividualRoutine = useMemo(() => {
     return !!initialRoutineData;
   }, [initialRoutineData]);
 
+  // Determina si se está editando un grupo existente (no una rutina individual)
   const isEditingExistingGroup = useMemo(() => {
     return !!initialDraftGroupId && !isEditingIndividualRoutine;
   }, [initialDraftGroupId, isEditingIndividualRoutine]);
 
-
+  /**
+   * Actualiza la rutina actualmente seleccionada en el array de rutinas.
+   * Utiliza safeSetRoutines para asegurar la inmutabilidad y la validez del array.
+   * @param {object|function} updaterOrNewRoutine - El nuevo objeto de rutina o una función actualizadora.
+   */
   const setSelectedRoutine = useCallback((updaterOrNewRoutine) => {
-    console.log("[useRoutineGroupForm] setSelectedRoutine called with updaterOrNewRoutine:", updaterOrNewRoutine, "Type:", typeof updaterOrNewRoutine);
-
     safeSetRoutines(prevRoutines => {
-      console.log("[useRoutineGroupForm] setSelectedRoutine - INSIDE safeSetRoutines updater. prevRoutines (from useState):", prevRoutines, "Type:", typeof prevRoutines);
-      
       const currentRoutinesArray = Array.isArray(prevRoutines) ? [...prevRoutines] : [{ ...initialRoutineDataTemplate, id: uuidv4() }];
 
       const routineToUpdate = selectedRoutineIndex >= 0 && selectedRoutineIndex < currentRoutinesArray.length
@@ -164,68 +160,69 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
       let newRoutineValue;
       if (typeof updaterOrNewRoutine === 'function') {
         newRoutineValue = updaterOrNewRoutine(routineToUpdate);
-        console.log("[useRoutineGroupForm] setSelectedRoutine - Applied updater function. newRoutineValue (AFTER APPLYING UPDATER):", newRoutineValue, "Type:", typeof newRoutineValue);
       } else {
         newRoutineValue = updaterOrNewRoutine;
       }
 
-      // NUEVA VALIDACIÓN CRÍTICA: Si newRoutineValue es una función, significa que el actualizador
-      // que se pasó a setSelectedRoutine devolvió otra función, lo cual es incorrecto.
+      // Validación crítica: asegurar que el valor resultante del actualizador sea un objeto válido
       if (typeof newRoutineValue === 'function') {
-        console.error("[useRoutineGroupForm] CRITICAL ERROR: Updater function passed to setSelectedRoutine returned another FUNCTION. This is incorrect. Value:", newRoutineValue);
-        console.trace("Call stack when setSelectedRoutine updater returns a FUNCTION:"); // Traza aquí
+        console.error("ERROR CRÍTICO: La función actualizadora pasada a setSelectedRoutine devolvió otra FUNCIÓN. Esto es incorrecto. Valor:", newRoutineValue);
         return currentRoutinesArray; 
       }
-
       if (!newRoutineValue || typeof newRoutineValue !== 'object' || Array.isArray(newRoutineValue)) {
-        console.error("[useRoutineGroupForm] ERROR: newRoutineValue después de aplicar el actualizador no es un objeto válido (null/undefined/array). No se actualizará la rutina.", newRoutineValue);
+        console.error("ERROR: newRoutineValue después de aplicar el actualizador no es un objeto válido (null/undefined/array). No se actualizará la rutina.", newRoutineValue);
         return currentRoutinesArray;
       }
 
       if (selectedRoutineIndex >= 0 && selectedRoutineIndex < currentRoutinesArray.length) {
         currentRoutinesArray[selectedRoutineIndex] = newRoutineValue;
       } else {
-        console.warn("[useRoutineGroupForm] setSelectedRoutine: selectedRoutineIndex fuera de límites o nueva rutina. Agregando al final.");
+        // En caso de que el índice sea inválido o sea una nueva rutina, la añade al final.
+        // Esto debería ser manejado por goToNextStage al añadir una nueva rutina.
+        console.warn("setSelectedRoutine: selectedRoutineIndex fuera de límites o nueva rutina. Agregando al final.");
         currentRoutinesArray.push(newRoutineValue);
         setSelectedRoutineIndex(currentRoutinesArray.length - 1);
       }
-      console.log("[useRoutineGroupForm] setSelectedRoutine - INSIDE safeSetRoutines updater. Returning updatedRoutines:", currentRoutinesArray, "Type:", typeof currentRoutinesArray);
       return currentRoutinesArray;
     });
   }, [selectedRoutineIndex, safeSetRoutines]);
 
-
+  /**
+   * Resetea el formulario a su estado inicial.
+   */
   const resetForm = useCallback(() => {
     setStage(1);
     const newRoutines = [{ ...initialRoutineDataTemplate, id: uuidv4() }];
-    console.log("[useRoutineGroupForm] resetForm - Setting routines to:", newRoutines);
     safeSetRoutines(newRoutines);
     setSelectedRoutineIndex(0);
     setSaveError(null);
     if (setGroupNameConflictError) setGroupNameConflictError(null);
-    console.log("[useRoutineGroupForm] Formulario reseteado.");
   }, [setGroupNameConflictError, safeSetRoutines]);
 
-  // --- Función saveDraft: Guarda el borrador en Firestore ---
+  /**
+   * Guarda el borrador del grupo de rutinas en Firestore.
+   * No se ejecuta si se está editando una rutina individual.
+   */
   const saveDraft = useCallback(async () => {
     if (isEditingIndividualRoutine) {
-      console.log("[useRoutineGroupForm] saveDraft: Editando rutina individual, no se guarda como borrador de grupo.");
-      return;
+      return; // No guardar borrador de grupo si se edita rutina individual
     }
     if (!studentId || !coachId || !groupData.id) {
-      console.warn("[useRoutineGroupForm] saveDraft: Faltan datos para guardar el borrador (studentId, coachId, o groupData.id).");
+      console.warn("saveDraft: Faltan datos para guardar el borrador (studentId, coachId, o groupData.id).");
       return;
     }
 
     setIsSaving(true);
     setSaveError(null);
 
-    const docRef = doc(db, `artifacts/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/users/${studentId}/routineGroups`, groupData.id);
+    // Acceso seguro a __app_id
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const docRef = doc(db, `artifacts/${appId}/users/${studentId}/routineGroups`, groupData.id);
 
     try {
       if (groupData.name.trim()) {
         const q = query(
-          collection(db, `artifacts/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/users/${studentId}/routineGroups`),
+          collection(db, `artifacts/${appId}/users/${studentId}/routineGroups`),
           where('name', '==', groupData.name.trim()),
           where('assignedBy', '==', coachId)
         );
@@ -233,7 +230,7 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
         
         let nameConflict = false;
         querySnapshot.forEach((doc) => {
-          if (doc.id !== groupData.id) {
+          if (doc.id !== groupData.id) { // Conflicto si el nombre coincide con otro documento (no el actual)
             nameConflict = true;
           }
         });
@@ -256,19 +253,19 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
       });
 
       await setDoc(docRef, dataToSave, { merge: true });
-      console.log("[useRoutineGroupForm] Borrador guardado exitosamente:", dataToSave);
     } catch (e) {
-      console.error("[useRoutineGroupForm] Error al guardar borrador:", e);
+      console.error("Error al guardar borrador:", e);
       setSaveError("Error al guardar el borrador.");
     } finally {
       setIsSaving(false);
     }
   }, [groupData, routines, studentId, coachId, isEditingIndividualRoutine, setGroupNameConflictError]);
 
-
+  /**
+   * Carga un borrador/grupo de rutinas existente desde Firestore.
+   */
   const loadDraft = useCallback(async () => {
     if (!studentId || !initialDraftGroupId || !coachId) {
-      console.log("[useRoutineGroupForm] loadDraft: Faltan studentId, initialDraftGroupId o coachId. No se carga.");
       resetForm();
       return;
     }
@@ -278,7 +275,9 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
     if (setGroupNameConflictError) setGroupNameConflictError(null);
     
     try {
-      const docRef = doc(db, `artifacts/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/users/${studentId}/routineGroups`, initialDraftGroupId);
+      // Acceso seguro a __app_id
+      const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+      const docRef = doc(db, `artifacts/${appId}/users/${studentId}/routineGroups`, initialDraftGroupId);
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
@@ -316,21 +315,19 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
               order: ex.order === undefined ? 0 : ex.order,
             }))
           }));
-          console.log("[useRoutineGroupForm] loadDraft - Setting routines to:", loadedRoutines);
           safeSetRoutines(loadedRoutines.length > 0 ? loadedRoutines : [{ ...initialRoutineDataTemplate, id: uuidv4() }]);
-          setSelectedRoutineIndex(0);
-          setStage(1);
-          console.log("[useRoutineGroupForm] Borrador/Grupo activo cargado en estados.");
+          setSelectedRoutineIndex(0); // Siempre selecciona la primera rutina cargada
+          setStage(1); // Siempre vuelve a la etapa 1 al cargar un grupo
         } else {
-          console.log("[useRoutineGroupForm] Documento encontrado, pero no es un borrador/grupo activo válido para este profe. Reseteando formulario.");
+          console.warn("Documento encontrado, pero no es un borrador/grupo activo válido para este coach. Reseteando formulario.");
           resetForm();
         }
       } else {
-        console.log("[useRoutineGroupForm] No se encontró documento con el initialDraftGroupId. Reseteando formulario.");
+        console.warn("No se encontró documento con el initialDraftGroupId. Reseteando formulario.");
         resetForm();
       }
     } catch (e) {
-      console.error("[useRoutineGroupForm] Error al cargar borrador:", e);
+      console.error("Error al cargar borrador:", e);
       setSaveError("Error al cargar el borrador.");
       resetForm();
     } finally {
@@ -338,28 +335,27 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
     }
   }, [studentId, initialDraftGroupId, coachId, resetForm, setGroupNameConflictError, safeSetRoutines]);
 
-
-  // Effect for initial load or reset based on initialDraftGroupId or initialRoutineData
+  // Efecto para la carga inicial o reseteo del formulario
   useEffect(() => {
-    // Solo se ejecuta una vez en el montaje del componente o si las props iniciales cambian
     if (initialRoutineData) {
-      console.log("[useRoutineGroupForm] Initializing for individual routine edit.");
-      setGroupData(prev => ({ ...prev, id: initialDraftGroupId }));
+      // Si se pasa initialRoutineData, estamos en modo de edición de rutina individual
+      setGroupData(prev => ({ ...prev, id: initialDraftGroupId })); // El ID del grupo padre
       safeSetRoutines([initialRoutineData]);
       setSelectedRoutineIndex(0);
       setStage(2); // Ir directamente a la etapa 2 para edición de rutina individual
     } else if (initialDraftGroupId) {
-      console.log("[useRoutineGroupForm] initialDraftGroupId present. Calling loadDraft.");
+      // Si se pasa initialDraftGroupId, estamos editando un grupo existente
       loadDraft();
     } else {
-      console.log("[useRoutineGroupForm] No initialDraftGroupId. Calling resetForm for new creation.");
+      // Si no se pasa ninguno, es una nueva creación
       resetForm();
     }
   }, [initialDraftGroupId, initialRoutineData, loadDraft, resetForm, safeSetRoutines]);
 
-
+  // Efecto para el autoguardado con debounce
   useEffect(() => {
-    // Este useEffect se encargará del auto-guardado con debounce
+    // Solo se autoguarda si hay un ID de grupo, un coach, no se está editando una rutina individual,
+    // y no hay errores de conflicto de nombre o de guardado.
     if (groupData.id && coachId && !isEditingIndividualRoutine && !setGroupNameConflictError && !saveError) {
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current);
@@ -381,11 +377,16 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
     }
   }, [groupData, routines, coachId, saveDraft, isEditingIndividualRoutine, setGroupNameConflictError, saveError]);
 
-
+  /**
+   * Avanza a la siguiente etapa del formulario.
+   * Incluye lógica para guardar la rutina actual en el array de rutinas al pasar de la etapa 2 a la 3.
+   * También gestiona la adición de una nueva rutina al volver a la etapa 2 desde la 4.
+   */
   const goToNextStage = useCallback(() => {
     if (stage === 1) {
       setStage(2);
     } else if (stage === 2) {
+      // Al salir de la etapa 2 (detalles de rutina), guardar la rutina actual en el array de rutinas
       safeSetRoutines(prevRoutines => {
         const updatedRoutines = Array.isArray(prevRoutines) ? [...prevRoutines] : [];
         const existingIndex = updatedRoutines.findIndex(r => r.id === selectedRoutine.id);
@@ -394,14 +395,13 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
         } else {
           updatedRoutines[existingIndex] = selectedRoutine;
         }
-        console.log("[useRoutineGroupForm] routines después de actualizar en Stage 2 -> 3:", updatedRoutines);
         return updatedRoutines;
       });
-      console.log("[useRoutineGroupForm] Guardando selectedRoutine en routines antes de ir a Stage 3:", selectedRoutine);
       setStage(3);
     } else if (stage === 3) {
       setStage(4);
     } else if (stage === 4) {
+      // Al salir de la etapa 4 (asignar series/reps), guardar la rutina actual y preparar para una nueva
       safeSetRoutines(prev => {
         const updatedRoutines = Array.isArray(prev) ? [...prev] : [];
         const existingIndex = updatedRoutines.findIndex(r => r.id === selectedRoutine.id);
@@ -413,16 +413,20 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
         return updatedRoutines;
       });
 
+      // Reiniciar la rutina actual y el índice para añadir una nueva rutina
       setSelectedRoutine({ ...initialRoutineDataTemplate, id: uuidv4() });
-      setSelectedRoutineIndex(routines.length);
-      setStage(2);
+      setSelectedRoutineIndex(routines.length); // El nuevo índice será al final del array actual
+      setStage(2); // Volver a la etapa 2 para la nueva rutina
     }
-    console.log("[useRoutineGroupForm] Avanzando a la siguiente etapa:", stage + 1);
   }, [stage, setStage, safeSetRoutines, setSelectedRoutine, setSelectedRoutineIndex, selectedRoutine, routines.length]);
 
-
+  /**
+   * Vuelve a la etapa anterior del formulario.
+   * Incluye lógica para eliminar una rutina vacía si se vuelve de la etapa 2 a la 1.
+   */
   const goToPreviousStage = useCallback(() => {
     if (stage === 2) {
+      // Si la rutina actual está vacía y no es la única, la eliminamos al volver a la etapa 1
       const selectedRoutineIsEmpty = !selectedRoutine.name.trim() &&
                                    (selectedRoutine.restTime === '' || selectedRoutine.restTime === 0) &&
                                    (selectedRoutine.rir === '' || selectedRoutine.rir === 0) &&
@@ -430,10 +434,10 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
                                    selectedRoutine.exercises.length === 0;
       
       if (selectedRoutineIsEmpty && routines.length > 1 && !initialRoutineData) {
-        safeSetRoutines(prev => prev.slice(0, -1));
-        setSelectedRoutineIndex(routines.length - 2);
+        safeSetRoutines(prev => prev.slice(0, -1)); // Elimina la última rutina (la vacía)
+        setSelectedRoutineIndex(routines.length - 2); // Vuelve al índice de la rutina anterior
       } else if (selectedRoutineIsEmpty && routines.length === 1 && !initialRoutineData) {
-        // No hacer nada especial aquí si es la única rutina y está vacía
+        // Si es la única rutina y está vacía, no hacemos nada especial (se queda vacía)
       }
       setStage(1);
     } else if (stage === 3) {
@@ -441,14 +445,7 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
     } else if (stage === 4) {
       setStage(3);
     }
-    console.log("[useRoutineGroupForm] Volviendo a la etapa anterior:", stage - 1);
   }, [stage, selectedRoutine, routines.length, initialRoutineData, setStage, safeSetRoutines, setSelectedRoutineIndex]);
-
-  console.log("DEBUG useRoutineGroupForm final return values:");
-  console.log("  selectedRoutine:", selectedRoutine, "Type:", typeof selectedRoutine);
-  console.log("  setSelectedRoutine:", setSelectedRoutine, "Type:", typeof setSelectedRoutine);
-  console.log("  routines:", routines);
-  console.log("  selectedRoutineIndex:", selectedRoutineIndex);
 
   return {
     stage,
@@ -456,11 +453,11 @@ const useRoutineGroupForm = (studentId, initialDraftGroupId = null, coachId, ini
     groupData,
     setGroupData,
     routines,
-    setRoutines: safeSetRoutines,
+    setRoutines: safeSetRoutines, // Exportamos el setter defensivo
     selectedRoutineIndex,
     setSelectedRoutineIndex,
-    currentRoutine: selectedRoutine,
-    setCurrentRoutine: setSelectedRoutine,
+    currentRoutine: selectedRoutine, // La rutina actual seleccionada
+    setCurrentRoutine: setSelectedRoutine, // Setter para la rutina actual
     goToNextStage,
     goToPreviousStage,
     resetForm,
