@@ -3,31 +3,50 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, collection, onSnapshot, query, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
-import Card from '../../components/common/Card/Card';
+
+// Importamos componentes common atomizados
 import Navbar from '../../components/common/Navbar/Navbar';
 import CollapsibleCard from '../../components/common/CollapsibleCard/CollapsibleCard';
-import RoutineGroupCreationModal from '../../components/specific/RoutineGroupModal/RoutineGroupCreationModal';
+import RoutineGroupCreationModal from '../../components/specific/RoutineGroupModal/RoutineGroupCreationModal'; // Modal de creación/edición de rutinas
+import PageContainer from '../../components/common/PageContainer/PageContainer'; // Contenedor de página
+import ContentSection from '../../components/common/ContentSection/ContentSection'; // Sección de contenido
+import Title from '../../components/common/Title/Title'; // Título común
+import Subtitle from '../../components/common/Subtitle/Subtitle'; // Subtítulo común (para mensajes)
+import Button from '../../components/common/Button/Button'; // Botón común
+import ErrorMessage from '../../components/common/ErrorMessage/ErrorMessage'; // Mensaje de error común
+import EditIcon from '../../components/common/EditIcon/EditIcon'; // Icono de edición común
+import DeleteIcon from '../../components/common/DeleteIcon/DeleteIcon'; // Icono de eliminación común
+
 import { useAuth } from '../../context/authContextBase';
 
+// Importamos los estilos específicos para StudentPage
 import {
-  StyledCoachPageContainer,
-  StyledAppMessage,
-  StyledFormButton,
-} from '../CoachPage/StyledCoachPage';
-import editImage from '../../assets/edit.png';
-import deleteImage from '../../assets/delete.png';
+  StyledStudentPageContent,
+  StyledRoutineGroupsWrapper,
+  StyledGroupCard,
+  StyledGroupHeader,
+  StyledGroupStatus,
+  StyledGroupActions,
+  StyledGroupDetailText,
+  StyledRoutineSubtitle,
+  StyledRoutineListUL,
+  StyledExerciseDetailItem,
+  StyledRoutineActions,
+  StyledAddRoutineGroupButtonWrapper,
+} from './StyledStudentPage';
 
 // Función auxiliar para formatear segundos a minutos y segundos (MM:SS)
 const formatTime = (totalSeconds) => {
   if (totalSeconds === undefined || totalSeconds === null || isNaN(totalSeconds)) {
     return 'N/A';
   }
-  if (totalSeconds < 60) {
-    return `${totalSeconds} Segundos`;
+  const seconds = Number(totalSeconds);
+  if (seconds < 60) {
+    return `${seconds} Segundos`;
   } else {
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    const formattedSeconds = remainingSeconds < 10 ? `0${remainingSeconds}` : remainingSeconds;
     return `${minutes}:${formattedSeconds} Minutos`;
   }
 };
@@ -211,24 +230,28 @@ function StudentPage() {
 
   if (loadingStudent || loadingRoutineGroups) {
     return (
-      <StyledCoachPageContainer>
+      <PageContainer> {/* Usamos PageContainer común */}
         <Navbar loading={true} type={navbarType} studentName={navbarStudentName} isCoachDashboard={false} userName={coachName} />
-        <StyledAppMessage>Cargando información del alumno y sus grupos de rutinas...</StyledAppMessage>
-      </StyledCoachPageContainer>
+        <ContentSection style={{ textAlign: 'center', marginTop: '20px' }}> {/* Usamos ContentSection común */}
+          <Subtitle>Cargando información del alumno y sus grupos de rutinas...</Subtitle> {/* Usamos Subtitle común */}
+        </ContentSection>
+      </PageContainer>
     );
   }
 
   if (studentError) {
     return (
-      <StyledCoachPageContainer>
+      <PageContainer> {/* Usamos PageContainer común */}
         <Navbar loading={false} type={navbarType} studentName={navbarStudentName} isCoachDashboard={false} userName={coachName} />
-        <StyledAppMessage>
-          {studentError} <br />
-          <button onClick={() => navigate('/coach')}>
-            Volver al panel principal
-          </button>
-        </StyledAppMessage>
-      </StyledCoachPageContainer>
+        <ContentSection style={{ textAlign: 'center', marginTop: '20px' }}> {/* Usamos ContentSection común */}
+          <ErrorMessage isVisible={true}> {/* Usamos ErrorMessage común */}
+            {studentError} <br />
+            <Button onClick={() => navigate('/coach')} style={{ marginTop: '15px' }} primary> {/* Usamos Button común */}
+              Volver al panel principal
+            </Button>
+          </ErrorMessage>
+        </ContentSection>
+      </PageContainer>
     );
   }
 
@@ -236,168 +259,140 @@ function StudentPage() {
   // (evitamos mostrar el error si hay algunos grupos aunque la carga inicial falló parcialmente)
   if (routineGroupsError && routineGroups.length === 0) {
     return (
-      <StyledCoachPageContainer>
+      <PageContainer> {/* Usamos PageContainer común */}
         <Navbar loading={false} type={navbarType} studentName={navbarStudentName} isCoachDashboard={false} userName={coachName} />
-        <Card style={{ width: '100%', marginTop: '20px', padding: '0 0 20px', boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)' }}>
-          <StyledAppMessage style={{ marginTop: '0', fontSize: '0.9rem', color: '#e74c3c' }}>
+        <ContentSection style={{ width: '100%', marginTop: '20px', paddingBottom: '20px' }}> {/* Usamos ContentSection común */}
+          <ErrorMessage isVisible={true} style={{ marginTop: '0', fontSize: '0.9rem' }}> {/* Usamos ErrorMessage común */}
             {routineGroupsError}
-          </StyledAppMessage>
-          <button
+          </ErrorMessage>
+          <Button
             onClick={handleOpenCreateRoutineGroupModal}
-            style={{
-              backgroundColor: '#2ecc71',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '10px 20px',
-              fontSize: '1rem',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              marginTop: '20px',
-              width: 'fit-content',
-              alignSelf: 'center',
-              boxShadow: '0 4px 8px rgba(46, 204, 113, 0.2)',
-              transition: 'background-color 0.2s ease, transform 0.2s ease',
-            }}
+            primary
+            style={{ marginTop: '20px', width: 'fit-content', alignSelf: 'center' }}
           >
             Crear Nuevo Grupo de Rutinas
-          </button>
-        </Card>
-      </StyledCoachPageContainer>
+          </Button>
+        </ContentSection>
+      </PageContainer>
     );
   }
 
   return (
-    <StyledCoachPageContainer>
+    <PageContainer>
       <Navbar loading={false} type={navbarType} studentName={navbarStudentName} isCoachDashboard={false} userName={coachName} />
-      <Card style={{ width: '100%', marginTop: '20px', padding: '0 0 20px', boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)' }}>
-        <h2 style={{ textAlign: 'center', margin: '0' }}>
-          <p className="text-gray-600 text-sm mt-2">Objetivo: {student?.objective || 'No definido'}</p>
-        </h2>
+      <StyledStudentPageContent> {/* Contenedor principal de la página del alumno */}
+        <Title as="h2">{student?.name || student?.email?.split('@')[0] || 'Alumno'}</Title> {/* Título del alumno */}
+        <Subtitle>Objetivo: <span>{student?.objective || 'No definido'}</span></Subtitle> {/* Objetivo del alumno */}
 
         {Object.keys(groupedRoutineGroups).length === 0 ? (
-          <StyledAppMessage style={{ marginTop: '0', fontSize: '0.9rem', color: '#555' }}>
+          <Subtitle style={{ marginTop: '0', fontSize: '0.9rem', color: '#7f8c8d', textAlign: 'center' }}>
             Este alumno aún no tiene<br/>grupos de rutinas asignados.
-          </StyledAppMessage>
+          </Subtitle>
         ) : (
-          <div style={{ width: '100%' }}>
+          <StyledRoutineGroupsWrapper> {/* Wrapper para los grupos de rutinas */}
             {Object.entries(groupedRoutineGroups).map(([stageName, groups]) => (
-              <CollapsibleCard style={{boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)'}} key={stageName} title={`Etapa: ${stageName.charAt(0).toUpperCase() + stageName.slice(1)}`} defaultOpen={true}>
-                <div className="space-y-4 p-2">
+              <CollapsibleCard key={stageName} title={`Etapa: ${stageName.charAt(0).toUpperCase() + stageName.slice(1)}`} defaultOpen={true}>
+                <div style={{ padding: '5px' }}> {/* Padding interno para el CollapsibleCard */}
                   {groups.map(group => (
-                    <div key={group.id} className="border border-gray-200 rounded-md p-4 shadow-sm bg-gray-50">
-                      <h4 style={{display: 'flex', alignItems: 'center', gap: '10px', margin: '0', justifyContent: 'space-between'}} className="font-bold text-lg mb-2">
-                        <div style={{display: 'flex', alignItems: 'center', gap: '10px', margin: '0'}}>
-                          {group.name}
-                          <span style={{color: 'gray'}}>{group.status === 'draft' && <p className="text-orange-500 text-sm font-semibold">Borrador</p>}
-                          </span>
-                        </div>
-                        <div style={{display: 'flex', gap: '10px'}}>
-                          <img
-                            src={editImage}
-                            alt="Editar Grupo"
-                            style={{ width: '24px', height: '24px', cursor: 'pointer' }}
+                    <StyledGroupCard key={group.id} className={group.status === 'draft' ? 'draft' : 'active'}> {/* Card para cada grupo */}
+                      <StyledGroupHeader>
+                        <Title as="h4">{group.name}</Title> {/* Nombre del grupo */}
+                        {group.status && (
+                          <StyledGroupStatus $isDraft={group.status === 'draft'}>
+                            {group.status === 'draft' ? 'Borrador' : 'Activo'}
+                          </StyledGroupStatus>
+                        )}
+                        <StyledGroupActions>
+                          <EditIcon
                             onClick={() => handleEditRoutineGroup(group.id)}
+                            ariaLabel={`Editar grupo ${group.name}`}
                           />
-                          <img
-                            src={deleteImage}
-                            alt="Eliminar Grupo"
-                            style={{ width: '24px', height: '24px', cursor: 'pointer' }}
+                          <DeleteIcon
                             onClick={() => handleDeleteRoutineGroup(group.id)}
+                            ariaLabel={`Eliminar grupo ${group.name}`}
                           />
-                        </div>
-                      </h4>
+                        </StyledGroupActions>
+                      </StyledGroupHeader>
                       
-                      <p style={{margin: '0'}} className="text-gray-700 text-sm mb-1">Objetivo del grupo: {group.objective}</p>
-                      <p className="text-gray-700 text-sm mb-2">Vencimiento: {group.dueDate instanceof Date ? group.dueDate.toLocaleDateString() : (group.dueDate?.toDate ? group.dueDate.toDate().toLocaleDateString() : group.dueDate)}</p>
+                      <StyledGroupDetailText>Objetivo del grupo: <span>{group.objective}</span></StyledGroupDetailText>
+                      <StyledGroupDetailText>Vencimiento: <span>{group.dueDate instanceof Date ? group.dueDate.toLocaleDateString('es-AR') : (group.dueDate?.toDate ? group.dueDate.toDate().toLocaleDateString('es-AR') : group.dueDate)}</span></StyledGroupDetailText>
                       
-                      <h4 className="font-semibold text-md mt-4 mb-2">Rutinas en este Grupo:</h4>
+                      <StyledRoutineSubtitle>Rutinas en este Grupo:</StyledRoutineSubtitle>
                       {group.routines && group.routines.length > 0 ? (
-                        <div className="space-y-2">
+                        <StyledRoutineListUL> {/* Lista de rutinas dentro del grupo */}
                           {group.routines.map((routine, routineIdx) => {
                             const routineKey = routine.id || `routine-${group.id}-${routineIdx}`;
                             return (
                               <CollapsibleCard key={routineKey} title={routine.name} defaultOpen={false}>
-                                <div style={{ padding: '5px 0' }}>
-                                  <p style={{ fontSize: '0.9rem', color: '#777', marginBottom: '8px' }}>
-                                    Descanso: {formatTime(routine.restTime)} | RIR: {routine.rir || 0}
-                                  </p>
-                                  <p style={{ fontSize: '0.9rem', color: '#777', marginBottom: '15px' }}>
-                                    Calentamiento: {routine.warmUp || 'No especificado'}
-                                  </p>
-                                  <h5 style={{ marginBottom: '10px', color: '#2c3e50' }}>Ejercicios:</h5>
+                                <div style={{ padding: '5px' }}> {/* Padding interno para CollapsibleCard de rutina */}
+                                  <StyledGroupDetailText>
+                                    Descanso: <span>{formatTime(routine.restTime)}</span> | RIR: <span>{routine.rir || 0}</span>
+                                  </StyledGroupDetailText>
+                                  <StyledGroupDetailText>
+                                    Calentamiento: <span>{routine.warmUp || 'No especificado'}</span>
+                                  </StyledGroupDetailText>
+                                  <StyledRoutineSubtitle as="h5">Ejercicios:</StyledRoutineSubtitle> {/* Subtítulo para ejercicios */}
                                   {routine.exercises && routine.exercises.length > 0 ? (
                                     <ul style={{ listStyle: 'none', padding: '0', margin: '0' }}>
                                       {routine.exercises.map((ex, exIdx) => {
                                         const exerciseKey = ex.id || `ex-${routine.id}-${exIdx}`;
                                         return (
-                                          <li key={exerciseKey} style={{ fontSize: '0.9rem', color: '#555', marginBottom: '4px' }}>
-                                            {exIdx + 1}. {ex.name}
+                                          <StyledExerciseDetailItem key={exerciseKey}>
+                                            <strong>{exIdx + 1}. {ex.name}</strong>
                                             {ex.type === 'timed' ? (
                                               ` (${ex.sets || 0} Series, ${formatTime(ex.time)} de trabajo)`
                                             ) : (
                                               ` (${ex.sets || 0} Series, ${ex.reps || 0} Reps, ${ex.kilos || 0} Kg)`
                                             )}
-                                          </li>
+                                          </StyledExerciseDetailItem>
                                         );
                                       })}
                                     </ul>
                                   ) : (
-                                    <p className="text-gray-600 text-sm">No hay ejercicios en esta rutina.</p>
+                                    <Subtitle style={{ fontSize: '0.9rem', color: '#7f8c8d' }}>No hay ejercicios en esta rutina.</Subtitle>
                                   )}
-                                  <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-                                    <StyledFormButton
-                                      type="button"
+                                  <StyledRoutineActions>
+                                    <Button
                                       onClick={() => handleEditIndividualRoutine(group.id, routine)}
+                                      primary
                                       style={{ backgroundColor: '#3498db', padding: '8px 12px', fontSize: '0.85rem' }}
                                     >
                                       Editar Rutina
-                                    </StyledFormButton>
-                                    <StyledFormButton
-                                      type="button"
+                                    </Button>
+                                    <Button
                                       onClick={() => handleDeleteIndividualRoutine(group.id, routine.id)}
+                                      secondary
                                       style={{ backgroundColor: '#e74c3c', padding: '8px 12px', fontSize: '0.85rem' }}
                                     >
                                       Eliminar Rutina
-                                    </StyledFormButton>
-                                  </div>
+                                    </Button>
+                                  </StyledRoutineActions>
                                 </div>
                               </CollapsibleCard>
                             );
                           })}
-                        </div>
+                        </StyledRoutineListUL>
                       ) : (
-                        <p className="text-gray-600 text-sm">No hay rutinas en este grupo aún.</p>
+                        <Subtitle style={{ fontSize: '0.9rem', color: '#7f8c8d' }}>No hay rutinas en este grupo aún.</Subtitle>
                       )}
-                    </div>
+                    </StyledGroupCard>
                   ))}
                 </div>
               </CollapsibleCard>
             ))}
-          </div>
+          </StyledRoutineGroupsWrapper>
         )}
 
-        <button
-          onClick={handleOpenCreateRoutineGroupModal}
-          style={{
-            backgroundColor: '#2ecc71',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '10px 20px',
-            fontSize: '1rem',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            marginTop: '20px',
-            width: 'fit-content',
-            alignSelf: 'center',
-            boxShadow: '0 4px 8px rgba(46, 204, 113, 0.2)',
-            transition: 'background-color 0.2s ease, transform 0.2s ease',
-          }}
-        >
-          Crear nuevo grupo de rutinas
-        </button>
-      </Card>
+        <StyledAddRoutineGroupButtonWrapper>
+          <Button
+            onClick={handleOpenCreateRoutineGroupModal}
+            primary
+            style={{ width: 'fit-content' }}
+          >
+            Crear nuevo grupo de rutinas
+          </Button>
+        </StyledAddRoutineGroupButtonWrapper>
+      </StyledStudentPageContent>
 
       {/* RENDERIZADO CONDICIONAL: El modal solo se renderiza si isOpen es true */}
       {isRoutineGroupModalOpen && (
@@ -406,10 +401,10 @@ function StudentPage() {
           onClose={handleCloseRoutineGroupModal}
           studentId={studentId}
           draftGroupId={editingDraftId}
-          editingRoutineData={editingRoutineData} // Aquí se pasa el estado, que debería ser un objeto o null
+          editingRoutineData={editingRoutineData}
         />
       )}
-    </StyledCoachPageContainer>
+    </PageContainer>
   );
 }
 

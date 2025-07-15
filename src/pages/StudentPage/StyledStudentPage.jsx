@@ -1,190 +1,149 @@
-// src/pages/StudentRoutinesPage/StyledStudentRoutinesPage.jsx
+// src/pages/StudentPage/StyledStudentPage.js
 import styled from 'styled-components';
+import { StyledSubtitleBase } from '../../components/common/Subtitle/StyledSubtitle'; // Para anidar estilos de Subtitle
+import { StyledTitleBase } from '../../components/common/Title/StyledTitle'; // Para anidar estilos de Title
 
-export const StyledStudentRoutinesContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  background-color: #f8f9fa; /* Un fondo claro para la página */
-  min-height: 100vh;
-`;
+// NOTA: StyledCoachPageContainer fue reemplazado por common/PageContainer
+// NOTA: StyledAppMessage fue reemplazado por common/Subtitle o common/ErrorMessage
+// NOTA: StyledFormButton fue reemplazado por common/Button
 
-export const StyledStudentRoutinesHeader = styled.header`
-  background-color: #f0f0f0;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-  border-bottom: 1px solid #e0e0e0;
+export const StyledStudentPageContent = styled.div`
   width: 100%;
-  max-width: 600px;
+  margin-top: 20px;
+  padding: 0 0 20px;
+  background-color: #FFFFFF; /* Blanco Puro */
   border-radius: 12px;
-  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.08);
-  margin-bottom: 20px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Sombra para el Card principal */
+  box-sizing: border-box;
+
+  ${StyledTitleBase} { /* Estilo para el título principal del alumno */
+    text-align: center;
+    margin: 0;
+    padding-top: 20px;
+    padding-bottom: 10px;
+    color: #0F0F0F; /* Negro Profundo */
+  }
+
+  ${StyledSubtitleBase} { /* Estilo para el objetivo del alumno */
+    text-align: center;
+    margin-top: 5px;
+    margin-bottom: 20px;
+    color: #202020; /* Gris Oscuro */
+    font-size: 0.95rem;
+  }
 `;
 
-export const StyledStudentNameTitle = styled.h2`
-  font-size: 1.8rem;
-  color: #333;
-  text-align: center;
-  margin: 0;
+export const StyledRoutineGroupsWrapper = styled.div`
+  width: 100%;
+  padding: 10px; /* Padding para el contenedor de los grupos de rutinas */
+  box-sizing: border-box;
+`;
+
+export const StyledGroupCard = styled.div`
+  border: 1px solid #BDC3C7; /* Gris Neutro */
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  background-color: #F8F8F8; /* Gris Muy Claro */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+
+  &.draft {
+    border-left: 5px solid #F39C12; /* Naranja para borradores */
+  }
+  &.active {
+    border-left: 5px solid #5DD62C; /* Verde Vibrante para activos */
+  }
+`;
+
+export const StyledGroupHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  flex-wrap: wrap; /* Permite que los elementos se envuelvan */
+  gap: 10px; /* Espacio entre elementos del header */
+
+  ${StyledTitleBase} { /* Título del grupo de rutina */
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #0F0F0F; /* Negro Profundo */
+    flex-grow: 1; /* Permite que el título crezca */
+  }
+`;
+
+export const StyledGroupStatus = styled.span`
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 5px;
+  color: #FFFFFF; /* Blanco Puro */
+  background-color: ${props => props.$isDraft ? '#F39C12' : '#5DD62C'}; /* Naranja o Verde */
+  margin-left: 10px;
+  flex-shrink: 0; /* Evita que se encoja */
+`;
+
+export const StyledGroupActions = styled.div`
+  display: flex;
+  gap: 10px; /* Espacio entre los botones de acción */
+  flex-shrink: 0;
+`;
+
+export const StyledGroupDetailText = styled.p`
+  font-size: 0.9rem;
+  color: #202020; /* Gris Oscuro */
+  margin: 0 0 5px 0; /* Margen inferior para separar las líneas */
 
   span {
-    color: #007bff; /* Color para el nombre del alumno */
     font-weight: bold;
+    color: #0F0F0F; /* Negro Profundo para los valores */
   }
 `;
 
-export const StyledHeaderMessage = styled.p`
-  font-size: 1rem;
-  color: #666;
-  text-align: center;
-  margin: 0;
+export const StyledRoutineSubtitle = styled.h4`
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0F0F0F; /* Negro Profundo */
+  margin-top: 20px;
+  margin-bottom: 10px;
 `;
 
-export const StyledRoutinesListWrapper = styled.div`
-  width: 100%;
-  max-width: 600px;
-  margin-top: 20px;
-  padding: 20px;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.08);
-  min-height: 200px; /* Para que tenga un tamaño visible aunque no haya rutinas */
+export const StyledRoutineListUL = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center; /* Para centrar el mensaje de "no hay rutinas" */
-  gap: 15px;
+  gap: 8px; /* Espacio entre los ítems de rutina */
 `;
 
-export const StyledAddRoutineButton = styled.button`
-  background-color: #007bff; /* Verde para añadir (acción principal del coach aquí) */
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  font-size: 2.5rem;
+export const StyledExerciseDetailItem = styled.li`
+  font-size: 0.9rem;
+  color: #202020; /* Gris Oscuro */
+  margin-bottom: 4px;
+  line-height: 1.4;
+
+  strong {
+    color: #0F0F0F; /* Negro Profundo */
+  }
+`;
+
+export const StyledRoutineActions = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  justify-content: flex-end; /* Alinea los botones a la derecha */
+
+  button {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+`;
+
+export const StyledAddRoutineGroupButtonWrapper = styled.div`
   display: flex;
   justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
-  transition: all 0.2s ease-in-out;
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  z-index: 1000;
-
-  &:hover {
-    background-color: #218838;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(40, 167, 69, 0.4);
-  }
-
-  &:active {
-    background-color: #1e7e34;
-    transform: translateY(0);
-    box-shadow: 0 2px 5px rgba(40, 167, 69, 0.3);
-  }
-`;
-
-// Estilos para el formulario del modal de crear rutina
-export const StyledForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  padding: 20px;
-  max-width: 500px; /* Asegura que el formulario no sea demasiado ancho en pantallas grandes */
-  margin: 0 auto;
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-`;
-
-export const StyledLabel = styled.label`
-  font-size: 1rem;
-  color: #333;
-  font-weight: bold;
-`;
-
-export const StyledInput = styled.input`
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 1rem;
-  width: 100%;
-  box-sizing: border-box;
-`;
-
-export const StyledTextArea = styled.textarea`
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 1rem;
-  width: 100%;
-  min-height: 80px;
-  resize: vertical;
-  box-sizing: border-box;
-`;
-
-export const StyledButtonContainer = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
   margin-top: 20px;
-`;
-
-export const StyledFormButton = styled.button`
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-
-  ${props => props.primary && `
-    background-color: #28a745; /* Verde para acción principal */
-    color: white;
-    &:hover {
-      background-color: #218838;
-    }
-  `}
-
-  ${props => props.secondary && `
-    background-color: #dc3545; /* Rojo para acción secundaria/cancelar */
-    color: white;
-    &:hover {
-      background-color: #c82333;
-    }
-  `}
-
-  &:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-  }
-`;
-
-// Este es el StyledModalCloseButton que te daba el error "unused".
-// Lo mantengo aquí exportado por si en algún momento decidís usarlo en StudentRoutinesPage.jsx.
-// Si no lo usas, el linter te volverá a avisar, y ahí podrías quitar solo el export si estás seguro
-// que no lo vas a usar nunca en este archivo. Por ahora lo dejamos.
-export const StyledModalCloseButton = styled.button`
-  background-color: #6c757d; /* Gris para botones de cerrar */
-  color: white;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.2s ease-in-out;
-  margin-top: 15px; /* Pequeño margen superior */
-  align-self: flex-end; /* Para que se alinee a la derecha si está dentro de un flex column */
-
-  &:hover {
-    background-color: #5a6268;
-  }
+  padding-top: 10px;
+  border-top: 1px solid #F8F8F8; /* Separador */
 `;

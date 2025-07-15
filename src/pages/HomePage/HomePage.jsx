@@ -1,16 +1,15 @@
 // src/pages/HomePage/HomePage.jsx
-// import React from 'react'; // Eliminado, ya no es necesario en React 17+ para componentes funcionales
 import { useRoutines } from '../../hooks/useRoutines/useRoutines';
-import RoutineList from '../../components/specific/RoutineList/RoutineList';
-import Navbar from '../../components/common/Navbar/Navbar'; // ¡DESCOMENTADO!
-import Card from '../../components/common/Card/Card';
 import { useAuth } from '../../context/authContextBase';
 
-import {
-  StyledHomePageContainer,
-  StyledAppMessage,
-  StyledWhatsappImageButton
-} from './StyledHomePage';
+// Importamos los componentes common atomizados
+import Navbar from '../../components/common/Navbar/Navbar';
+import RoutineList from '../../components/specific/RoutineList/RoutineList'; // RoutineList ya refactorizado
+import PageContainer from '../../components/common/PageContainer/PageContainer'; // Contenedor de página
+import ContentSection from '../../components/common/ContentSection/ContentSection'; // Sección de contenido
+import Subtitle from '../../components/common/Subtitle/Subtitle'; // Para mensajes generales
+import ErrorMessage from '../../components/common/ErrorMessage/ErrorMessage'; // Para mensajes de error
+import WhatsappButton from '../../components/common/WhatsAppButton/WhatsAppButton'; // Nuevo: Botón de WhatsApp
 
 import whatsappLogo from '../../assets/whatsapp.webp';
 
@@ -33,7 +32,7 @@ function HomePage() {
   const showNoRoutinesMessage = !isLoadingPage && !routinesError && routines.length === 0;
 
   return (
-    <StyledHomePageContainer>
+    <PageContainer> {/* Usamos el PageContainer común */}
       <Navbar
         userName={userName}
         loading={isLoadingPage}
@@ -43,26 +42,22 @@ function HomePage() {
         isCoachDashboard={false}
       />
       
-      <Card style={{ marginTop: '20px', width: '90%' }}>
-        {isLoadingPage && <StyledAppMessage>Cargando tus rutinas...</StyledAppMessage>}
-        {routinesError && <StyledAppMessage>¡Uups! Hubo un error al cargar tus rutinas.</StyledAppMessage>}
+      <ContentSection style={{ marginTop: '20px' }}> {/* Usamos ContentSection común */}
+        {isLoadingPage && <Subtitle style={{ textAlign: 'center', color: '#202020' }}>Cargando tus rutinas...</Subtitle>}
+        {routinesError && <ErrorMessage isVisible={true} style={{ margin: '0 auto' }}>¡Uups! Hubo un error al cargar tus rutinas.</ErrorMessage>}
         
         {showNoRoutinesMessage && (
           <>
-            <StyledAppMessage>
+            <Subtitle style={{ textAlign: 'center', color: '#7f8c8d' }}>
               Aún no tienes rutinas creadas. Pídele al profe que te cree una rutina.
-            </StyledAppMessage>
-            <StyledWhatsappImageButton
-              href="https://wa.me/XXXXXXXXXX?text=Hola%20Profe,%20me%20podrías%20crear%20una%20rutina%3F"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <img
-                src={whatsappLogo}
-                alt="Enviar mensaje por WhatsApp"
-                onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/60x60/CCCCCC/000000?text=WA" }}
+            </Subtitle>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+              <WhatsappButton
+                href="https://wa.me/XXXXXXXXXX?text=Hola%20Profe,%20me%20podrías%20crear%20una%20rutina%3F"
+                altText="Enviar mensaje por WhatsApp"
+                imageSrc={whatsappLogo}
               />
-            </StyledWhatsappImageButton>
+            </div>
           </>
         )}
 
@@ -75,8 +70,8 @@ function HomePage() {
             updateExerciseKilos={updateExerciseKilos}
           />
         )}
-      </Card>
-    </StyledHomePageContainer>
+      </ContentSection>
+    </PageContainer>
   );
 }
 

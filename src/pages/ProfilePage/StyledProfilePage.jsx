@@ -1,77 +1,34 @@
-// src/pages/ProfilePage/StyledProfilePage.jsx
+// src/pages/ProfilePage/StyledProfilePage.js
 import styled from 'styled-components';
 
-export const StyledProfilePageContainer = styled.div`
-  color: #1a1a1a; /* Color de texto general */
-  font-family: 'Roboto', sans-serif; /* Consistencia en la tipografía */
-  min-height: 100vh;
-  padding: 0; /* No padding aquí, el contenido lo maneja */
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Centra el contenido horizontalmente */
-  box-sizing: border-box;
-
-  /* Media Queries para responsividad */
-  @media (min-width: 768px) {
-    padding: 0;
-  }
-`;
-
-export const StyledProfileHeader = styled.header`
-  width: 100%;
-  max-width: 900px; /* Ancho máximo para el header */
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  align-items: center;
-  margin-top: 0; /* Se pega al navbar */
-  box-sizing: border-box;
-`;
-
-export const StyledProfileTitle = styled.h1`
-  font-size: 2rem;
-  font-weight: 700;
-  text-align: center;
-  color: #1a1a1a; /* Color de texto general */
-  margin: 0;
-
-  @media (min-width: 768px) {
-    font-size: 2.5rem;
-  }
-`;
+// NOTA: StyledProfilePageContainer fue reemplazado por common/PageContainer
+// NOTA: StyledProfileTitle fue reemplazado por common/Title
 
 export const StyledProfileInfo = styled.div`
-  width: 100%;
-  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  text-align: left; /* Alinea el texto a la izquierda dentro de la Card */
-
-  @media (min-width: 768px) {
-    padding: 15px;
-  }
+  gap: 15px; /* Espacio entre los ítems de información */
+  margin-bottom: 25px; /* Espacio antes del botón de logout */
+  padding: 10px 0; /* Padding interno si es necesario */
+  border-top: 1px solid #F8F8F8; /* Separador superior */
+  border-bottom: 1px solid #F8F8F8; /* Separador inferior */
 `;
 
 export const StyledProfileInfoItem = styled.p`
   font-size: 1rem;
+  color: #202020; /* Gris Oscuro de la paleta */
   margin: 0;
-  color: #333;
+  line-height: 1.5;
 
   strong {
-    color: #2c3e50;
-    margin-right: 5px;
-  }
-
-  @media (min-width: 768px) {
-    font-size: 1.1rem;
+    color: #0F0F0F; /* Negro Profundo para las etiquetas */
+    margin-right: 8px;
   }
 `;
 
 export const StyledLogoutButtonWrapper = styled.div`
-  margin-top: 25px; /* Espacio superior para el botón de cerrar sesión */
-  width: 100%;
   display: flex;
-  justify-content: center; /* Centra el botón */
+  justify-content: center;
+  margin-top: 20px; /* Espacio superior para el botón de logout */
+  width: 100%;
 `;

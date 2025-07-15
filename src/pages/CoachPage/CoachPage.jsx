@@ -1,24 +1,26 @@
-import React from 'react';
+// src/pages/CoachPage/CoachPage.jsx
+import { useState, useEffect } from 'react'; // Usamos useState y useEffect directamente
 import { useNavigate } from 'react-router-dom';
 import { useStudents } from '../../hooks/useStudents/useStudents';
-import { Modal } from '../../components/common/Modal/Modal';
 import { useAuth } from '../../context/authContextBase';
 
-import StudentList from '../../components/specific/StudentList/StudentList';
+// Importamos los componentes common atomizados
 import Navbar from '../../components/common/Navbar/Navbar';
+import StudentList from '../../components/specific/StudentList/StudentList'; // StudentList ya refactorizado
+import PageContainer from '../../components/common/PageContainer/PageContainer'; // Nuevo: Contenedor de página
+import ContentSection from '../../components/common/ContentSection/ContentSection'; // Nuevo: Sección de contenido
+import FloatingActionButton from '../../components/common/FloatingActionButton/FloatingActionButton'; // Nuevo: Botón flotante
+import Modal from '../../components/common/Modal/Modal'; // Modal ya refactorizado
+import Form from '../../components/common/Form/Form'; // Nuevo: Componente Form
+import Label from '../../components/common/Label/Label'; // Label común
+import Input from '../../components/common/Input/Input'; // Input común
+import Button from '../../components/common/Button/Button'; // Button común
+import ButtonRow from '../../components/common/ButtonRow/ButtonRow'; // Nuevo: Contenedor de botones en fila
+import Title from '../../components/common/Title/Title'; // Título común
+import ErrorMessage from '../../components/common/ErrorMessage/ErrorMessage'; // ErrorMessage común
 
-import {
-  StyledCoachPageContainer,
-  StyledStudentListContainer,
-  StyledCreateButton,
-  StyledForm,
-  StyledLabel,
-  StyledInput,
-  StyledButtonContainer,
-  StyledFormButton,
-} from './StyledCoachPage';
-
-import { StyledErrorMessage } from '../LoginPage/StyledLoginPage';
+// No necesitamos importar StyledCoachPage ni StyledLoginPage para estilos aquí
+// import { StyledAppMessage } from '../../../pages/HomePage/StyledHomePage'; // Ya no se necesita aquí
 
 function CoachPage() {
   const navigate = useNavigate();
@@ -43,9 +45,9 @@ function CoachPage() {
     setAddStudentError,
   } = statesUpdaters;
 
-  const [openCreateStudentModal, setOpenCreateStudentModal] = React.useState(false);
-  const [newStudentName, setNewStudentName] = React.useState('');
-  const [newStudentEmail, setNewStudentEmail] = React.useState('');
+  const [openCreateStudentModal, setOpenCreateStudentModal] = useState(false);
+  const [newStudentName, setNewStudentName] = useState('');
+  const [newStudentEmail, setNewStudentEmail] = useState('');
 
   const handleSelectStudent = (studentId) => {
     selectStudent(studentId);
@@ -57,13 +59,16 @@ function CoachPage() {
     setAddStudentError(null); 
     if (newStudentName.trim() && newStudentEmail.trim()) {
       await addStudent(newStudentName.trim(), newStudentEmail.trim());
+      // Pequeño retraso para que el estado de error se propague antes de cerrar el modal
       setTimeout(() => {
-        if (!states.addStudentError) {
+        if (!states.addStudentError) { // Solo cierra si no hay error después de la adición
           setOpenCreateStudentModal(false);
           setNewStudentName('');
           setNewStudentEmail('');
         }
       }, 0); 
+    } else {
+      setAddStudentError("Por favor, completa todos los campos.");
     }
   };
 
@@ -74,17 +79,25 @@ function CoachPage() {
     setAddStudentError(null);
   };
 
+  // Efecto para limpiar errores al cerrar el modal si se cierra sin guardar
+  useEffect(() => {
+    if (!openCreateStudentModal) {
+      setAddStudentError(null);
+    }
+  }, [openCreateStudentModal, setAddStudentError]);
+
+
   return (
-    <StyledCoachPageContainer>
+    <PageContainer> {/* Usamos el PageContainer común */}
       <Navbar
         type="coach"
-        loading={loading}
+        loading={loading || authLoading} // Considerar también el loading de auth
         searchValue={searchValue}
         setSearchValue={setSearchValue}
         isCoachDashboard={true}
       />
 
-      <StyledStudentListContainer>
+      <ContentSection> {/* Usamos el ContentSection común */}
         <StudentList
           students={searchedStudents}
           loading={loading}
@@ -94,19 +107,20 @@ function CoachPage() {
           selectedStudentId={selectedStudentId}
           onRetrySync={sincronizeStudents}
         />
-      </StyledStudentListContainer>
+      </ContentSection>
 
-      <StyledCreateButton onClick={() => setOpenCreateStudentModal(true)}>
+      <FloatingActionButton onClick={() => setOpenCreateStudentModal(true)}>
         +
-      </StyledCreateButton>
+      </FloatingActionButton>
 
-      {!!openCreateStudentModal && (
+      {openCreateStudentModal && ( // Usamos el componente Modal común
         <Modal>
-          <StyledForm onSubmit={handleCreateStudentSubmit}>
-            <h2>Crear Nuevo Alumno</h2>
-            {addStudentError && <StyledErrorMessage>{addStudentError}</StyledErrorMessage>}
-            <StyledLabel htmlFor="studentName">Nombre del Alumno:</StyledLabel>
-            <StyledInput
+          <Form onSubmit={handleCreateStudentSubmit} ariaLabel="Formulario para crear nuevo alumno"> {/* Usamos el componente Form común */}
+            <Title as="h2" style={{ marginBottom: '15px' }}>Crear Nuevo Alumno</Title> {/* Usamos Title común */}
+            {addStudentError && <ErrorMessage isVisible={true}>{addStudentError}</ErrorMessage>} {/* Usamos ErrorMessage común */}
+            
+            <Label htmlFor="studentName">Nombre del Alumno:</Label>
+            <Input
               id="studentName"
               type="text"
               placeholder="Ej. Juan Pérez"
@@ -114,8 +128,9 @@ function CoachPage() {
               onChange={(e) => setNewStudentName(e.target.value)}
               required
             />
-            <StyledLabel htmlFor="studentEmail">Email del Alumno:</StyledLabel>
-            <StyledInput
+            
+            <Label htmlFor="studentEmail">Email del Alumno:</Label>
+            <Input
               id="studentEmail"
               type="email"
               placeholder="Ej. juan@mail.com"
@@ -123,18 +138,19 @@ function CoachPage() {
               onChange={(e) => setNewStudentEmail(e.target.value)}
               required
             />
-            <StyledButtonContainer>
-              <StyledFormButton type="submit" primary>
+            
+            <ButtonRow> {/* Usamos el ButtonRow común */}
+              <Button type="submit" primary>
                 Crear
-              </StyledFormButton>
-              <StyledFormButton type="button" secondary onClick={handleCloseModal}>
+              </Button>
+              <Button type="button" secondary onClick={handleCloseModal}>
                 Cancelar
-              </StyledFormButton>
-            </StyledButtonContainer>
-          </StyledForm>
+              </Button>
+            </ButtonRow>
+          </Form>
         </Modal>
       )}
-    </StyledCoachPageContainer>
+    </PageContainer>
   );
 }
 

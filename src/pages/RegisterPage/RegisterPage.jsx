@@ -1,37 +1,36 @@
 // src/pages/RegisterPage/RegisterPage.jsx
-import React from 'react'; // Reincorporamos React para React.useState
-import { useNavigate, Link } from 'react-router-dom';
+import { useState } from 'react'; // Solo necesitamos useState
+import { useNavigate, Link as RouterLink } from 'react-router-dom'; // Renombramos Link para evitar conflicto
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../config/firebase';
 
-import {
-  StyledRegisterContainer,
-  StyledRegisterFormWrapper,
-  StyledRegisterTitle,
-  StyledRegisterSubtitle,
-  StyledForm,
-  StyledLabel,
-  StyledInput,
-  StyledButton,
-  StyledErrorMessage,
-  StyledSuccessMessage,
-  StyledLink,
-  StyledLogo,
-} from './StyledRegisterPage';
+// Importamos los componentes common atomizados
+import PageContainer from '../../components/common/PageContainer/PageContainer'; // Contenedor de página
+import FormWrapper from '../../components/common/FormWrapper/FormWrapper'; // Wrapper para el formulario
+import Title from '../../components/common/Title/Title'; // Título común
+import Subtitle from '../../components/common/Subtitle/Subtitle'; // Subtítulo común
+import Form from '../../components/common/Form/Form'; // Formulario común
+import Label from '../../components/common/Label/Label'; // Label común
+import Input from '../../components/common/Input/Input'; // Input común
+import Button from '../../components/common/Button/Button'; // Button común
+import ErrorMessage from '../../components/common/ErrorMessage/ErrorMessage'; // ErrorMessage común
+import SuccessMessage from '../../components/common/SuccessMessage/SuccessMessage'; // SuccessMessage común
+import Link from '../../components/common/Link/Link'; // Link común
+import Logo from '../../components/common/Logo/Logo'; // Logo común
 
-import logoImage from '../../assets/logo.jpg'; // ¡IMPORTAMOS LA IMAGEN DEL LOGO!
+import logoImage from '../../assets/logo.jpg'; // Importamos la imagen del logo
 
 function RegisterPage() {
   const navigate = useNavigate();
 
-  const [name, setName] = React.useState('');
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [confirmPassword, setConfirmPassword] = React.useState('');
-  const [error, setError] = React.useState('');
-  const [success, setSuccess] = React.useState('');
-  const [loading, setLoading] = React.useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async (event) => {
     event.preventDefault();
@@ -90,22 +89,23 @@ function RegisterPage() {
   };
 
   return (
-    <StyledRegisterContainer>
-      <StyledRegisterFormWrapper>
-        <StyledLogo
+    <PageContainer style={{ justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}> {/* Centra el contenido verticalmente */}
+      <FormWrapper> {/* Usamos el FormWrapper común */}
+        <Logo
           src={logoImage}
           alt="Logo Prof Angel San Roman"
+          style={{ width: '150px', height: 'auto', marginBottom: '10px' }} // Ajusta el tamaño del logo
           onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/150x150/CCCCCC/000000?text=Error" }}
         />
 
         <div>
-          <StyledRegisterTitle>Registrate</StyledRegisterTitle>
-          <StyledRegisterSubtitle>Creá tu cuenta de alumno para empezar.</StyledRegisterSubtitle>
+          <Title as="h2" style={{ textAlign: 'center', marginBottom: '5px' }}>Registrate</Title> {/* Usamos Title común */}
+          <Subtitle style={{ textAlign: 'center', color: '#7f8c8d' }}>Creá tu cuenta de alumno para empezar.</Subtitle> {/* Usamos Subtitle común */}
         </div>
 
-        <StyledForm onSubmit={handleRegister}>
-          <StyledLabel htmlFor="name">Nombre Completo</StyledLabel>
-          <StyledInput
+        <Form onSubmit={handleRegister} ariaLabel="Formulario de registro"> {/* Usamos Form común */}
+          <Label htmlFor="name">Nombre Completo</Label>
+          <Input
             id="name"
             type="text"
             placeholder="Ej. Sofía Giménez"
@@ -114,8 +114,8 @@ function RegisterPage() {
             required
           />
 
-          <StyledLabel htmlFor="email">Email</StyledLabel>
-          <StyledInput
+          <Label htmlFor="email">Email</Label>
+          <Input
             id="email"
             type="email"
             placeholder="ejemplo@mail.com"
@@ -124,8 +124,8 @@ function RegisterPage() {
             required
           />
 
-          <StyledLabel htmlFor="password">Contraseña</StyledLabel>
-          <StyledInput
+          <Label htmlFor="password">Contraseña</Label>
+          <Input
             id="password"
             type="password"
             placeholder="••••••••"
@@ -134,8 +134,8 @@ function RegisterPage() {
             required
           />
 
-          <StyledLabel htmlFor="confirmPassword">Confirmar Contraseña</StyledLabel>
-          <StyledInput
+          <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
+          <Input
             id="confirmPassword"
             type="password"
             placeholder="••••••••"
@@ -144,19 +144,19 @@ function RegisterPage() {
             required
           />
 
-          {error && <StyledErrorMessage>{error}</StyledErrorMessage>}
-          {success && <StyledSuccessMessage>{success}</StyledSuccessMessage>}
+          {error && <ErrorMessage isVisible={true}>{error}</ErrorMessage>}
+          {success && <SuccessMessage isVisible={true}>{success}</SuccessMessage>}
 
-          <StyledButton type="submit" disabled={loading}>
+          <Button type="submit" primary disabled={loading}>
             {loading ? 'Registrando...' : 'Registrarme'}
-          </StyledButton>
-        </StyledForm>
+          </Button>
+        </Form>
 
-        <StyledLink>
-          ¿Ya tenés una cuenta? <Link to="/login">Iniciá sesión aquí</Link>
-        </StyledLink>
-      </StyledRegisterFormWrapper>
-    </StyledRegisterContainer>
+        <Link>
+          ¿Ya tenés una cuenta? <RouterLink to="/login">Iniciá sesión aquí</RouterLink>
+        </Link>
+      </FormWrapper>
+    </PageContainer>
   );
 }
 
