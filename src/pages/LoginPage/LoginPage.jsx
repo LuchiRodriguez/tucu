@@ -1,10 +1,11 @@
 // src/pages/LoginPage/LoginPage.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../config/firebase';
+import { useAuth } from '../../context/authContextBase';
 
-// Importamos los componentes common atomizados
+// Componentes comunes
 import PageContainer from '../../components/layout/PageContainer/PageContainer';
 import FormWrapper from '../../components/common/Forms/FormWrapper/FormWrapper';
 import Title from '../../components/common/Messages/Title/Title';
@@ -20,12 +21,20 @@ import logoImage from '../../assets/logo.jpg';
 
 function LoginPage() {
   const navigate = useNavigate();
+  const { user, role, loading: authLoading } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Redirección automática si ya hay sesión iniciada
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate(role === 'coach' ? '/coach' : '/home', { replace: true });
+    }
+  }, [user, role, authLoading, navigate]);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -35,10 +44,8 @@ function LoginPage() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      setSuccess('¡Inicio de sesión exitoso! Redirigiendo...');
-      setTimeout(() => {
-        navigate('/home');
-      }, 1500);
+      setSuccess('¡Inicio de sesión exitoso!');
+      // Redirección ocurre vía useEffect
     } catch (firebaseError) {
       let errorMessage = 'Error al iniciar sesión. Por favor, intentá de nuevo.';
       switch (firebaseError.code) {
@@ -70,7 +77,10 @@ function LoginPage() {
           src={logoImage}
           alt="Logo Prof Angel San Roman"
           style={{ width: '150px', height: 'auto', marginBottom: '10px' }}
-          onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/150x150/CCCCCC/000000?text=Error" }}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "https://placehold.co/150x150/CCCCCC/000000?text=Error";
+          }}
         />
 
         <div>

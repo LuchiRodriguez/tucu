@@ -1,11 +1,12 @@
 // src/pages/RegisterPage/RegisterPage.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../config/firebase';
+import { useAuth } from '../../context/authContextBase';
 
-// Importamos los componentes common atomizados
+// Componentes comunes
 import PageContainer from '../../components/layout/PageContainer/PageContainer';
 import FormWrapper from '../../components/common/Forms/FormWrapper/FormWrapper';
 import Title from '../../components/common/Messages/Title/Title';
@@ -21,6 +22,7 @@ import logoImage from '../../assets/logo.jpg';
 
 function RegisterPage() {
   const navigate = useNavigate();
+  const { user, role, loading: authLoading } = useAuth();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -29,6 +31,13 @@ function RegisterPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Redirección automática después de registrarse
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate(role === 'coach' ? '/coach' : '/home', { replace: true });
+    }
+  }, [user, role, authLoading, navigate]);
 
   const handleRegister = async (event) => {
     event.preventDefault();
@@ -54,16 +63,12 @@ function RegisterPage() {
         uid: user.uid,
         name: name,
         email: email,
-        role: 'student', // Asignamos el rol por defecto de 'student'
+        role: 'student', // Rol por defecto
         createdAt: new Date(),
       });
 
-      setSuccess('¡Registro exitoso! Redirigiendo a la página principal...');
-      
-      setTimeout(() => {
-        navigate('/home'); 
-      }, 1500); 
-
+      setSuccess('¡Registro exitoso! Redirigiendo...');
+      // Redirección ocurre en useEffect
     } catch (firebaseError) {
       let errorMessage = 'Error al registrarse. Por favor, intentá de nuevo.';
       switch (firebaseError.code) {
@@ -92,7 +97,7 @@ function RegisterPage() {
         <Logo
           src={logoImage}
           alt="Logo Prof Angel San Roman"
-          onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/150x150/CCCCCC/000000?text=Error" }}
+          onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/150x150/CCCCCC/000000?text=Error" }}
           style={{ width: '150px', height: 'auto', marginBottom: '10px' }}
         />
 

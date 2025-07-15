@@ -17,7 +17,7 @@ function ProtectedRoute({ children, allowedRoles = [] }) {
     // Si hay un error de autenticación o no hay usuario logueado
     if (error || !user) {
       console.log("No user or auth error, redirecting to login.");
-      navigate('/login');
+      navigate('/login', { replace: true });
       return;
     }
 
