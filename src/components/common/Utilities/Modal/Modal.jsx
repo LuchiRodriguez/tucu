@@ -1,34 +1,56 @@
-// src/components/common/Utilities/Modal/Modal.jsx
+import { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-// Importamos los Styled Components que ya tenés para el modal
 import {
   StyledModalOverlay,
   StyledModalContent,
   StyledModalHeader,
   StyledCloseButton,
   StyledModalTitle,
-} from '../Modal/StyledModal'; // Asegúrate de que esta ruta sea correcta según tu estructura
+} from '../Modal/StyledModal';
 
-/**
- * Componente Modal genérico para mostrar contenido en una ventana flotante.
- *
- * @param {object} props - Propiedades del componente.
- * @param {boolean} props.isOpen - Indica si el modal está abierto o cerrado.
- * @param {function} props.onClose - Función a llamar cuando se solicita cerrar el modal.
- * @param {string} props.title - Título del modal.
- * @param {React.ReactNode} props.children - Contenido a mostrar dentro del modal.
- */
 function Modal({ isOpen, onClose, title, children }) {
-  if (!isOpen) {
-    return null; // No renderizar nada si el modal no está abierto
-  }
+  const modalRef = useRef(null);
+
+  // Manejar foco y bloqueo scroll
+  useEffect(() => {
+    if (isOpen) {
+      // Bloquear scroll en body
+      document.body.style.overflow = 'hidden';
+
+      // Poner foco en modal
+      modalRef.current?.focus();
+
+      // Manejar tecla ESC para cerrar
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  // Cerrar al clickear fuera del contenido (overlay)
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
 
   return (
-    <StyledModalOverlay>
+    <StyledModalOverlay onClick={handleOverlayClick} tabIndex={-1} ref={modalRef} aria-modal="true" role="dialog" aria-labelledby="modal-title">
       <StyledModalContent>
         <StyledModalHeader>
-          <StyledModalTitle>{title}</StyledModalTitle>
-          <StyledCloseButton onClick={onClose}>&times;</StyledCloseButton>
+          <StyledModalTitle id="modal-title">{title}</StyledModalTitle>
+          <StyledCloseButton aria-label="Cerrar modal" onClick={onClose}>&times;</StyledCloseButton>
         </StyledModalHeader>
         {children}
       </StyledModalContent>

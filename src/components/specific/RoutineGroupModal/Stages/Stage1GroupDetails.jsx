@@ -1,30 +1,33 @@
 // src/components/specific/RoutineGroupModal/Stages/Stage1GroupDetails.jsx
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 
-// Importamos los componentes common atomizados
 import Label from '../../../common/Forms/Label/Label';
-import Input from '../../../common/Forms/Input/Input'; // Usamos Input para el objetivo también
-import Select from '../../../common/Forms/Select/Select'; // Nuevo componente Select
-import NavButton from '../../../common/Navigation/Navbar/NavButton/NavButton'; // Nuevo componente NavButton
-import ErrorMessage from '../../../common/Messages/ErrorMessage/ErrorMessage'; // Componente ErrorMessage común
-import ChevronIcon from '../../../common/Icons/ChevronIcon/ChevronIcon'; // Componente ChevronIcon común
+import Input from '../../../common/Forms/Input/Input';
+import Select from '../../../common/Forms/Select/Select';
+import NavButton from '../../../common/Navigation/Navbar/NavButton/NavButton';
+import ErrorMessage from '../../../common/Messages/ErrorMessage/ErrorMessage';
+import ChevronIcon from '../../../common/Icons/ChevronIcon/ChevronIcon';
 
-// Importamos solo los estilos específicos que quedan en StyledRoutineGroupModal
 import {
   StyledModalBody,
   StyledButtonContainer,
+  StyledFieldContainer
 } from '../StyledRoutineGroupModal';
 
 import { getDocs, collection, query, where } from 'firebase/firestore';
 import { db } from '../../../../config/firebase';
 
+const Stage1GroupDetails = ({
+  groupData,
+  setGroupData,
+  goToNextStage,
+  isEditingIndividualRoutine,
+  setGroupNameConflictError,
+  groupNameConflictError
+}) => {
+  const [errors, setErrors] = useState({});
 
-// --- Stage 1: Detalles del Grupo de Rutinas ---
-const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, isEditingIndividualRoutine, setGroupNameConflictError, groupNameConflictError }) => {
-  const [errors, setErrors] = useState({}); // Estado de errores como objeto
-
-  // Calcula si el formulario está completo en tiempo real
   const isFormComplete = useMemo(() => {
     return (
       !!groupData?.stage?.trim() &&
@@ -34,41 +37,42 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, isEditingI
     );
   }, [groupData]);
 
-  // Efecto para validar el nombre del grupo y la etapa
   useEffect(() => {
     let debounceCheck;
-    // Solo validar si los campos están completos y no estamos en modo edición de rutina individual
     if (isFormComplete && !isEditingIndividualRoutine) {
       debounceCheck = setTimeout(async () => {
         try {
-          const routineGroupsCollectionRef = collection(db, `artifacts/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/users/${groupData.studentId}/routineGroups`);
+          const routineGroupsRef = collection(
+            db,
+            `artifacts/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/users/${groupData.studentId}/routineGroups`
+          );
           const q = query(
-            routineGroupsCollectionRef,
+            routineGroupsRef,
             where('stage', '==', groupData.stage),
             where('name', '==', groupData.name),
             where('status', '==', 'active')
           );
-          const querySnapshot = await getDocs(q);
+          const snapshot = await getDocs(q);
 
           const now = new Date();
-          const foundDuplicate = querySnapshot.docs.find(docSnap => {
-            const existingGroup = docSnap.data();
-            const dueDate = existingGroup.dueDate && existingGroup.dueDate.toDate ? existingGroup.dueDate.toDate() : existingGroup.dueDate ? new Date(existingGroup.dueDate) : null;
-            return (docSnap.id !== groupData.id) && (!dueDate || dueDate >= now);
+          const duplicate = snapshot.docs.find(doc => {
+            const data = doc.data();
+            const due = data.dueDate?.toDate?.() || new Date(data.dueDate);
+            return (doc.id !== groupData.id) && (!due || due >= now);
           });
 
-          if (foundDuplicate) {
+          if (duplicate) {
             setGroupNameConflictError("Ya existe un grupo de rutinas activo con la misma etapa y nombre. Por favor, elige otro nombre o etapa.");
           } else {
-            setGroupNameConflictError(null); // Limpiar error si no hay conflicto
+            setGroupNameConflictError(null);
           }
-        } catch (error) {
-          console.error("Error al verificar duplicado de grupo:", error);
+        } catch (err) {
+          console.error("Error al verificar duplicado de grupo:", err);
           setGroupNameConflictError("Error al verificar el nombre del grupo.");
         }
       }, 500);
     } else {
-      setGroupNameConflictError(null); // Limpiar error si los campos no están completos o si estamos editando una rutina individual
+      setGroupNameConflictError(null);
     }
 
     return () => clearTimeout(debounceCheck);
@@ -82,46 +86,33 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, isEditingI
     setGroupNameConflictError
   ]);
 
-
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
     setGroupData(prev => ({ ...prev, [name]: value }));
     setErrors(prev => ({ ...prev, [name]: null }));
     setGroupNameConflictError(null);
-  };
+  }, [setGroupData, setErrors, setGroupNameConflictError]);
 
-  const handleDateChange = (e) => {
+  const handleDateChange = useCallback((e) => {
     setGroupData(prev => ({ ...prev, dueDate: e.target.value }));
     setErrors(prev => ({ ...prev, dueDate: null }));
-  };
+  }, [setGroupData]);
 
-  const handleStageChange = (e) => {
+  const handleStageChange = useCallback((e) => {
     setGroupData(prev => ({ ...prev, stage: e.target.value }));
     setErrors(prev => ({ ...prev, stage: null }));
     setGroupNameConflictError(null);
-  };
+  }, [setGroupData, setErrors, setGroupNameConflictError]);
 
   const handleNext = () => {
     const newErrors = {};
-
-    if (!groupData?.stage?.trim()) {
-      newErrors.stage = "La etapa es obligatoria.";
-    }
-    if (!groupData?.name?.trim()) {
-      newErrors.name = "El nombre del grupo es obligatorio.";
-    }
-    if (!groupData?.objective?.trim()) {
-      newErrors.objective = "El objetivo es obligatorio.";
-    }
-    if (!groupData?.dueDate) {
-      newErrors.dueDate = "La fecha de vencimiento es obligatoria.";
-    }
+    if (!groupData?.stage?.trim()) newErrors.stage = "La etapa es obligatoria.";
+    if (!groupData?.name?.trim()) newErrors.name = "El nombre del grupo es obligatorio.";
+    if (!groupData?.objective?.trim()) newErrors.objective = "El objetivo es obligatorio.";
+    if (!groupData?.dueDate) newErrors.dueDate = "La fecha de vencimiento es obligatoria.";
 
     setErrors(newErrors);
-
-    if (Object.keys(newErrors).length > 0 || groupNameConflictError) {
-      return;
-    }
+    if (Object.keys(newErrors).length > 0 || groupNameConflictError) return;
     goToNextStage();
   };
 
@@ -129,24 +120,18 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, isEditingI
 
   return (
     <StyledModalBody>
-      {/* --- Etapa de Entrenamiento (Select) --- */}
-      <div style={{ marginBottom: '18px' }}>
+      <StyledFieldContainer>
         <Label htmlFor="stage">Etapa de Entrenamiento</Label>
-        <Select
-          id="stage"
-          value={groupData?.stage || ''}
-          onChange={handleStageChange}
-        >
+        <Select id="stage" value={groupData?.stage || ''} onChange={handleStageChange}>
           <option value="">Selecciona una etapa</option>
           {stages.map(s => (
             <option key={s} value={s.toLowerCase()}>{s}</option>
           ))}
         </Select>
-        {errors.stage && <ErrorMessage isVisible={!!errors.stage}>{errors.stage}</ErrorMessage>}
-      </div>
+        {errors.stage && <ErrorMessage isVisible>{errors.stage}</ErrorMessage>}
+      </StyledFieldContainer>
 
-      {/* --- Campos de Nombre, Objetivo, Fecha de Vencimiento --- */}
-      <div style={{ marginBottom: '18px' }}>
+      <StyledFieldContainer>
         <Label htmlFor="groupName">Nombre del Grupo</Label>
         <Input
           type="text"
@@ -156,24 +141,24 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, isEditingI
           onChange={handleInputChange}
           placeholder="Ej: Fase 1 - Adaptación"
         />
-        {errors.name && <ErrorMessage isVisible={!!errors.name}>{errors.name}</ErrorMessage>}
-        {groupNameConflictError && <ErrorMessage isVisible={true}>{groupNameConflictError}</ErrorMessage>}
-      </div>
+        {errors.name && <ErrorMessage isVisible>{errors.name}</ErrorMessage>}
+        {groupNameConflictError && <ErrorMessage isVisible>{groupNameConflictError}</ErrorMessage>}
+      </StyledFieldContainer>
 
-      <div style={{ marginBottom: '18px' }}>
+      <StyledFieldContainer>
         <Label htmlFor="groupObjective">Objetivo (breve descripción)</Label>
-        <Input // Reemplazado StyledTextArea con Input
-          type="text" // Ahora es un input de texto de una sola línea
+        <Input
+          type="text"
           id="groupObjective"
           name="objective"
           value={groupData?.objective || ''}
           onChange={handleInputChange}
           placeholder="Ej: Fortalecer base muscular y mejorar técnica."
         />
-        {errors.objective && <ErrorMessage isVisible={!!errors.objective}>{errors.objective}</ErrorMessage>}
-      </div>
+        {errors.objective && <ErrorMessage isVisible>{errors.objective}</ErrorMessage>}
+      </StyledFieldContainer>
 
-      <div style={{ marginBottom: '18px' }}>
+      <StyledFieldContainer>
         <Label htmlFor="dueDate">Fecha de Vencimiento</Label>
         <Input
           type="date"
@@ -182,8 +167,8 @@ const Stage1GroupDetails = ({ groupData, setGroupData, goToNextStage, isEditingI
           value={groupData?.dueDate || ''}
           onChange={handleDateChange}
         />
-        {errors.dueDate && <ErrorMessage isVisible={!!errors.dueDate}>{errors.dueDate}</ErrorMessage>}
-      </div>
+        {errors.dueDate && <ErrorMessage isVisible>{errors.dueDate}</ErrorMessage>}
+      </StyledFieldContainer>
 
       <StyledButtonContainer style={{ justifyContent: 'flex-end' }}>
         <NavButton
@@ -203,9 +188,8 @@ Stage1GroupDetails.propTypes = {
   setGroupData: PropTypes.func.isRequired,
   goToNextStage: PropTypes.func.isRequired,
   isEditingIndividualRoutine: PropTypes.bool.isRequired,
-  isEditingExistingGroup: PropTypes.bool.isRequired,
   setGroupNameConflictError: PropTypes.func.isRequired,
-  groupNameConflictError: PropTypes.string,
+  groupNameConflictError: PropTypes.string
 };
 
 export default Stage1GroupDetails;

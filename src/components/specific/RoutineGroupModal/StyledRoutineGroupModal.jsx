@@ -163,3 +163,10 @@ export const StyledSummaryListItem = styled.li`
   color: #202020; /* Gris Oscuro */
   margin-bottom: 5px;
 `;
+
+export const StyledFieldContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 18px;
+`;
