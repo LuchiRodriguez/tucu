@@ -2,6 +2,7 @@
 import styled from 'styled-components';
 import { StyledSubtitleBase } from '../../components/common/Messages/Subtitle/StyledSubtitle'; // Para anidar estilos de Subtitle
 import { StyledTitleBase } from '../../components/common/Messages/Title/StyledTitle'; // Para anidar estilos de Title
+import CollapsibleCard from '../../components/common/Utilities/CollapsibleCard/CollapsibleCard';
 
 // NOTA: StyledCoachPageContainer fue reemplazado por common/PageContainer
 // NOTA: StyledAppMessage fue reemplazado por common/Subtitle o common/ErrorMessage
@@ -38,19 +39,19 @@ export const StyledRoutineGroupsWrapper = styled.div`
   box-sizing: border-box;
 `;
 
-export const StyledGroupCard = styled.div`
-  border: 1px solid #BDC3C7; /* Gris Neutro */
+export const StyledGroupCard = styled(CollapsibleCard)`
+  border: 1px solid #BDC3C7;
   border-radius: 8px;
   padding: 15px;
   margin-bottom: 15px;
-  background-color: #F8F8F8; /* Gris Muy Claro */
+  background-color: #F8F8F8;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 
   &.draft {
-    border-left: 5px solid #F39C12; /* Naranja para borradores */
+    border-left: 5px solid #F39C12;
   }
   &.active {
-    border-left: 5px solid #5DD62C; /* Verde Vibrante para activos */
+    border-left: 5px solid #5DD62C;
   }
 `;
 

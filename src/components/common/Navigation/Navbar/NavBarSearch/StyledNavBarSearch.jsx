@@ -7,7 +7,7 @@ export const StyledNavbarSearchBase = styled(Input)`
   max-width: 300px; /* Ancho máximo para el campo de búsqueda */
   padding: 8px 12px;
   font-size: 0.9rem;
-  margin-top: 5px; /* Espacio superior */
+  margin: 5px;
   background-color: #F8F8F8; /* Fondo más claro para el input de búsqueda */
   border-color: #BDC3C7; /* Borde más suave */
 
@@ -19,6 +19,6 @@ export const StyledNavbarSearchBase = styled(Input)`
   @media (max-width: 768px) {
     max-width: 200px;
     padding: 6px 10px;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
   }
 `;

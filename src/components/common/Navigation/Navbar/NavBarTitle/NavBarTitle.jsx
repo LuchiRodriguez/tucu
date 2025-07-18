@@ -1,11 +1,9 @@
 // src/components/common/NavbarTitle/NavbarTitle.jsx
 import PropTypes from 'prop-types';
-// Eliminamos la importación de 'Title' aquí, ya que solo se usa en StyledNavbarTitle.js
 import { StyledNavbarTitleBase } from './StyledNavbarTitle';
 
 /**
  * Componente NavbarTitle para títulos dentro de la barra de navegación.
- * Extiende el componente Title (H1).
  *
  * @param {object} props - Propiedades del componente.
  * @param {React.ReactNode} props.children - Contenido del título.

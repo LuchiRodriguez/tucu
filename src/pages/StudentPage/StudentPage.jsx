@@ -291,12 +291,11 @@ function StudentPage() {
         ) : (
           <StyledRoutineGroupsWrapper> {/* Wrapper para los grupos de rutinas */}
             {Object.entries(groupedRoutineGroups).map(([stageName, groups]) => (
-              <CollapsibleCard key={stageName} title={`Etapa: ${stageName.charAt(0).toUpperCase() + stageName.slice(1)}`} defaultOpen={true}>
+              <CollapsibleCard key={stageName} title={`Etapa: ${stageName.charAt(0).toUpperCase() + stageName.slice(1)}`} defaultOpen={false}>
                 <div style={{ padding: '5px' }}> {/* Padding interno para el CollapsibleCard */}
                   {groups.map(group => (
-                    <StyledGroupCard key={group.id} className={group.status === 'draft' ? 'draft' : 'active'}> {/* Card para cada grupo */}
+                    <StyledGroupCard key={group.id} className={group.status === 'draft' ? 'draft' : 'active'} title={group.name} defaultOpen={false}>
                       <StyledGroupHeader>
-                        <Title as="h4">{group.name}</Title> {/* Nombre del grupo */}
                         {group.status && (
                           <StyledGroupStatus $isDraft={group.status === 'draft'}>
                             {group.status === 'draft' ? 'Borrador' : 'Activo'}

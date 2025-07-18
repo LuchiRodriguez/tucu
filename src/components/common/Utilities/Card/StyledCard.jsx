@@ -3,8 +3,6 @@ import styled from 'styled-components';
 import { StyledCardBase } from './StyledCardBase'; // Importamos la base de la tarjeta
 import Button from '../../Buttons/Button/Button'; // Importamos el componente Button
 import Input from '../../Forms/Input/Input'; // Importamos el componente Input
-// Importamos el nuevo ChevronIcon común
-import ChevronIcon from '../../Icons/ChevronIcon/ChevronIcon'; 
 
 // 1. Componente div estilizado para el contenedor de la Card
 // Extiende StyledCardBase y añade estilos específicos de flexbox
@@ -61,9 +59,5 @@ export const StyledChevronButton = styled(Button)`
     transform: none; /* Desactivamos la transformación de active del Button base */
     box-shadow: none;
   }
-  
-  /* Aseguramos que el ChevronIcon dentro de este botón herede el color */
-  ${ChevronIcon} {
-    stroke: inherit; /* El icono tomará el color del botón padre */
-  }
+
 `;

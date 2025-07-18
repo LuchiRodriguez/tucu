@@ -8,6 +8,7 @@ export const StyledNavbarTitleBase = styled(Title)`
   color: #0F0F0F; /* Negro Profundo para el texto */
 
   @media (max-width: 768px) {
-    font-size: 1.1rem;
+    font-size: 1rem;
+    margin-top: 5px;
   }
 `;

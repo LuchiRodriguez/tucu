@@ -8,3 +8,5 @@ export const StyledCardBase = styled.div`
   padding: 16px; /* Padding interno por defecto */
   margin-bottom: 12px; /* Margen inferior por defecto */
 `;
+
+

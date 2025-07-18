@@ -14,7 +14,6 @@ import { StyledChevronIconBase } from './StyledChevronIcon';
 const ChevronIcon = ({ direction = 'right', style, className, ...rest }) => {
   return (
     <StyledChevronIconBase direction={direction} style={style} className={className} {...rest}>
-      {/* SVG path for a right-pointing chevron */}
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
     </StyledChevronIconBase>
   );
