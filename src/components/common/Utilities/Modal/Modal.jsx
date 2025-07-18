@@ -5,7 +5,7 @@ import {
   StyledModalContent,
   StyledModalHeader,
   StyledCloseButton,
-  StyledModalTitle,
+  StyledModalTitle
 } from '../Modal/StyledModal';
 
 function Modal({ isOpen, onClose, title, children }) {
@@ -52,8 +52,7 @@ function Modal({ isOpen, onClose, title, children }) {
           <StyledModalTitle id="modal-title">{title}</StyledModalTitle>
           <StyledCloseButton aria-label="Cerrar modal" onClick={onClose}>&times;</StyledCloseButton>
         </StyledModalHeader>
-        {children}
-      </StyledModalContent>
+        {children}      </StyledModalContent>
     </StyledModalOverlay>
   );
 }
@@ -62,7 +61,7 @@ Modal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   title: PropTypes.string.isRequired,
-  children: PropTypes.node,
+  children: PropTypes.node
 };
 
 export default Modal;

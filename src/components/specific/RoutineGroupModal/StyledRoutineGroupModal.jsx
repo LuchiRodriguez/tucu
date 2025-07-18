@@ -170,3 +170,10 @@ export const StyledFieldContainer = styled.div`
   gap: 5px;
   margin-bottom: 18px;
 `;
+
+export const StyledModalFooter = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  align-self: end;
+`;
