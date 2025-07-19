@@ -89,9 +89,6 @@ export const StyledExerciseInputGroup = styled.div`
   }
 `;
 
-// NOTA: StyledCheckboxContainer, StyledCheckboxInput, StyledCheckboxLabel
-// fueron movidos a src/components/common/Checkbox/StyledCheckbox.js
-
 // NOTA: StyledAddExerciseButton fue movido a src/components/common/AddExerciseButton/StyledAddExerciseButton.js (si lo creaste)
 // NOTA: StyledRemoveExerciseButton fue movido a src/components/common/RemoveExerciseButton/StyledRemoveExerciseButton.js
 

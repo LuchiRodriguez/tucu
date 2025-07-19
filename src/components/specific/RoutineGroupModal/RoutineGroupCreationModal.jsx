@@ -247,7 +247,6 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
 
   const getStageComponent = () => {
     const isEditingIndividualRoutineSafe = typeof isEditingIndividualRoutine === 'boolean' ? isEditingIndividualRoutine : false;
-    const isEditingExistingGroupSafe = typeof isEditingExistingGroup === 'boolean' ? isEditingExistingGroup : false;
 
     // // --- LOG DE DEPURACIÓN CRÍTICO ---
     // console.log("DEBUG RGCModal - getStageComponent: currentRoutine:", currentRoutine, "Type:", typeof currentRoutine);
@@ -260,11 +259,8 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId, draftGroupId = 
           <Stage1GroupDetails
             groupData={groupData}
             setGroupData={setGroupData}
-            goToNextStage={goToNextStage}
-            isEditingIndividualRoutine={isEditingIndividualRoutineSafe}
-            isEditingExistingGroup={isEditingExistingGroupSafe}
-            setGroupNameConflictError={setGroupNameConflictError}
             groupNameConflictError={groupNameConflictError}
+            setGroupNameConflictError={setGroupNameConflictError}
           />
         );
       case 2:

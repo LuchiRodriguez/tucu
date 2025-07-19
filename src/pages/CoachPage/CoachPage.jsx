@@ -39,7 +39,7 @@ function CoachPage() {
 
 
   return (
-    <PageContainer> {/* Usamos el PageContainer común */}
+    <PageContainer>
       <Navbar
         type="coach"
         loading={loading || authLoading} // Considerar también el loading de auth
@@ -48,7 +48,7 @@ function CoachPage() {
         isCoachDashboard={true}
       />
 
-      <ContentSection> {/* Usamos el ContentSection común */}
+      <ContentSection style={{flexGrow: 1}}>
         <StudentList
           students={searchedStudents}
           loading={loading}
