@@ -68,7 +68,6 @@ const Exercise = ({
 Exercise.propTypes = {
   exercise: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired, // ID interno del ejercicio en la rutina
-    apiId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]), // ID de la API WGER (puede ser opcional si no siempre se usa)
     name: PropTypes.string.isRequired,
     description: PropTypes.string,
     category_name: PropTypes.string,

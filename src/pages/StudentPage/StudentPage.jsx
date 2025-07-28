@@ -319,7 +319,7 @@ function StudentPage() {
             primary
             style={{ marginTop: '20px', width: 'fit-content', alignSelf: 'center' }}
           >
-            Crear Nuevo Grupo de Rutinas
+            Crear grupo de rutinas
           </Button>
         </ContentSection>
       </PageContainer>
@@ -433,7 +433,7 @@ function StudentPage() {
           </>
         ) : (
           <Subtitle style={{ marginTop: '0', fontSize: '0.9rem', color: '#7f8c8d', textAlign: 'center' }}>
-            Este alumno aún no tiene<br/>grupos de rutinas asignados.
+            Este alumno aún no tiene<br/>rutinas asignadas.
           </Subtitle>
         )}
 
@@ -443,7 +443,7 @@ function StudentPage() {
             primary
             style={{ width: 'fit-content' }}
           >
-            Crear nuevo grupo de rutinas
+            Crear grupo de rutinas
           </Button>
         </StyledAddRoutineGroupButtonWrapper>
       </StyledStudentPageContent>

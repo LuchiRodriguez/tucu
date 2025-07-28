@@ -43,7 +43,6 @@ function Stage1GroupDetails({ groupData, setGroupData, groupNameConflictError, s
         <option value="rehabilitacion">Rehabilitación</option>
         <option value="sin etapa">Sin Etapa</option>
       </Select>
-      {/* Input para el Nombre del Grupo */}
       <Label htmlFor="name">Nombre del Grupo</Label>
       <Input
         id="name"
