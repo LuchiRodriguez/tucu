@@ -13,6 +13,7 @@ import { useAuth } from './context/authContextBase';
 import ProtectedRoute from './components/common/Navigation/ProtectedRoute/ProtectedRoute';
 
 import LoadingGif from './components/common/Utilities/LoadingGif/LoadingGif';
+import ErrorBoundary from './ErrorBoundary';
 
 
 const NotFoundPage = () => (
@@ -49,6 +50,7 @@ function InitialRouteHandler() {
 
 function App() {
   return (
+    <ErrorBoundary>
     <AuthProvider>
       <HashRouter>
         <Routes>
@@ -97,6 +99,7 @@ function App() {
         </Routes>
       </HashRouter>
     </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

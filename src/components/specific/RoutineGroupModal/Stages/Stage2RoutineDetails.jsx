@@ -4,29 +4,38 @@ import warmUpExercises from '../../../../data/warmUpExercises';
 
 // Importamos los componentes comunes
 import Input from '../../../../components/common/Forms/Input/Input';
-import Label from '../../../../components/common/Forms/Label/Label'; // Re-importamos Label
-import Select from '../../../common/Forms/Select/Select';
+import Label from '../../../../components/common/Forms/Label/Label';
+import Select from '../../../../components/common/Forms/Select/Select';
 
 /**
- * Componente para la primera etapa del formulario de grupo de rutinas: Detalles del Grupo.
- * Permite al coach ingresar el nombre, objetivo, fecha de vencimiento y etapa del grupo.
+ * Componente para la segunda etapa del formulario de detalle de rutina.
+ * Permite ingresar datos de rutina: id, grupo, nombre, rir, descanso, calentamiento y fecha de vencimiento.
  *
- * @param {object} props - Propiedades del componente.
- * @param {object} props.routineData - Objeto que contiene los datos actuales del grupo (name, objective, dueDate, stage).
- * @param {function} props.setRoutineData - Función para actualizar el estado de routineData.
- * @param {string|null} props.rotuineNameConflictError - Mensaje de error si hay conflicto de nombre de grupo.
- * @param {function} props.setRotuineNameConflictError - Función para limpiar el error de conflicto de nombre.
+ * @param {object} props
+ * @param {object} props.routineData - Objeto con datos de la rutina incluyendo id y groupId.
+ * @param {function} props.setRoutineData - Función para actualizar rutina.
+ * @param {string|null} props.routineNameConflictError - Mensaje de error por conflicto de nombre.
+ * @param {function} props.setRoutineNameConflictError - Función para limpiar el error.
+ * @param {string} props.groupId - ID del grupo al que pertenece esta rutina.
+ * @param {string} props.userId - ID del usuario (opcional, puede venir del contexto).
  */
 function Stage2RoutineDetails({
   routineData,
   setRoutineData,
   routineNameConflictError,
-  setRoutineNameConflictError
+  setRoutineNameConflictError,
+  groupId,
+  userId,
 }) {
-
+  // Actualizamos campo específico dentro de routineData sin perder otros campos
   const handleInputChange = (e) => {
     const { id, value } = e.target;
-    setRoutineData(prev => ({ ...prev, [id]: value }));
+    setRoutineData((prev) => ({
+      ...prev,
+      [id]: value,
+      groupId, // aseguramos que siempre esté actualizado el groupId
+      userId,  // opcional: si querés que se guarde en routineData
+    }));
 
     if (id === 'name' && routineNameConflictError) {
       setRoutineNameConflictError(null);
@@ -35,6 +44,16 @@ function Stage2RoutineDetails({
 
   return (
     <div style={{ flexGrow: '1' }}>
+      {/* ID oculto o solo para referencia */}
+      {routineData.id && (
+        <input type="hidden" id="id" value={routineData.id} readOnly />
+      )}
+
+      {/* Mostrar el groupId en un campo oculto o solo para referencia */}
+      {groupId && (
+        <input type="hidden" id="groupId" value={groupId} readOnly />
+      )}
+
       <Label htmlFor="name">Nombre de rutina</Label>
       <Input
         id="name"
@@ -86,16 +105,35 @@ function Stage2RoutineDetails({
           </option>
         ))}
       </Select>
+
+      <Label htmlFor="dueDate">Fecha de Vencimiento</Label>
+      <Input
+        id="dueDate"
+        type="date"
+        value={routineData.dueDate || ''}
+        onChange={handleInputChange}
+        required
+        style={{ marginBottom: '15px' }}
+      />
     </div>
   );
 }
 
-
 Stage2RoutineDetails.propTypes = {
-  routineData: PropTypes.object.isRequired,
+  routineData: PropTypes.shape({
+    id: PropTypes.string,
+    groupId: PropTypes.string,
+    name: PropTypes.string,
+    rir: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    restTime: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    warmUp: PropTypes.string,
+    dueDate: PropTypes.string,
+  }).isRequired,
   setRoutineData: PropTypes.func.isRequired,
   routineNameConflictError: PropTypes.string,
   setRoutineNameConflictError: PropTypes.func.isRequired,
+  groupId: PropTypes.string.isRequired,
+  userId: PropTypes.string, // puede ser opcional si viene de contexto
 };
 
 export default Stage2RoutineDetails;

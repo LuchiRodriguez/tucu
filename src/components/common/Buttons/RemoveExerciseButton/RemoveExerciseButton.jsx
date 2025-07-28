@@ -16,7 +16,7 @@ import { StyledRemoveExerciseButtonBase } from './StyledRemoveExerciseButton';
 const RemoveExerciseButton = ({ children, onClick, disabled = false, style, className, ...rest }) => {
   return (
     <StyledRemoveExerciseButtonBase
-      type="button" // Siempre es un botón, no un submit
+      type="button"
       onClick={onClick}
       disabled={disabled}
       style={style}

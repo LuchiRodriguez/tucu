@@ -40,21 +40,22 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setLoading(true);
-      setError(null);
-      if (currentUser) {
-        fetchUserData(currentUser);
-      } else {
-        setUser(null);
-        setRole(null);
-        setUserName(null);
-        setLoading(false);
-      }
-    });
+  const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    setLoading(true);
+    setError(null);
 
-    return unsubscribe;
-  }, [fetchUserData]);
+    if (currentUser) {
+      await fetchUserData(currentUser);
+    } else {
+      setUser(null);
+      setRole(null);
+      setUserName(null);
+      setLoading(false);
+    }
+  });
+
+  return unsubscribe;
+}, [fetchUserData]);
 
   const logout = useCallback(async () => {
     setError(null);
@@ -77,13 +78,21 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {loading ? (
-        <LoadingGif/>
-      ) : (
-        children
-      )}
+      <RenderContent loading={loading}>
+        {children}
+      </RenderContent>
     </AuthContext.Provider>
   );
+};
+
+const RenderContent = ({ loading, children }) => {
+  if (loading) return <LoadingGif />;
+  return children;
+};
+
+RenderContent.propTypes = {
+  loading: PropTypes.bool.isRequired,
+  children: PropTypes.node,
 };
 
 AuthProvider.propTypes = {

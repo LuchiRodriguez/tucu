@@ -20,7 +20,7 @@ export const StyledButtonBase = styled.button`
     if (props.$secondary) return '#202020'; // Gris Oscuro
     return '#BDC3C7'; // Gris neutro por defecto
   }};
-  color: ${props => (props.$primary || props.$secondary) ? 'white' : '#0F0F0F'}; /* Texto blanco para primario/secundario, negro para otros */
+  color: ${props => (props.$primary || props.$secondary) ? 'white' : '#0F0F0F'};
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);

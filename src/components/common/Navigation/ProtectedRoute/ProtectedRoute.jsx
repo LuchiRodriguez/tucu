@@ -1,43 +1,40 @@
-// src/components/common/ProtectedRoute/ProtectedRoute.jsx
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../../context/authContextBase'; // Importamos nuestro hook de autenticación
+import { useAuth } from '../../../../context/authContextBase';
 import PropTypes from 'prop-types';
 
-// Usamos parámetros por defecto directamente en la firma de la función
 function ProtectedRoute({ children, allowedRoles = [] }) {
   const { user, role, loading, error } = useAuth();
   const navigate = useNavigate();
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    if (loading) {
-      return; // No hacer nada mientras la autenticación está cargando
-    }
+    if (loading) return;
 
-    // Si hay un error de autenticación o no hay usuario logueado
     if (error || !user) {
-      console.log("No user or auth error, redirecting to login.");
+      setRedirecting(true);
       navigate('/login', { replace: true });
       return;
     }
 
-    // Si el usuario está logueado pero su rol no está permitido para esta ruta
-    if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(role)) {
-      console.warn(`User with role '${role}' is not allowed to access this route. Redirecting.`);
+    if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
+      setRedirecting(true);
       if (role === 'coach') {
-        navigate('/coach'); // Redirige al panel del coach si es coach
+        navigate('/coach', { replace: true });
       } else {
-        navigate('/'); // Redirige a la raíz (home de estudiante o login si no hay nada)
+        navigate('/', { replace: true });
       }
     }
-  }, [user, role, loading, error, allowedRoles, navigate]); // Dependencias para re-ejecutar el efecto
+  }, [user, role, loading, error, allowedRoles, navigate]);
 
-  // Mientras carga, o si no hay usuario, o si el rol no es permitido, no renderizamos nada
-  if (loading || error || !user || (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(role))) {
+  if (loading || redirecting) {
     return null;
   }
 
-  // Si todas las condiciones de acceso se cumplen, renderizamos los children
+  if (error || !user || (allowedRoles.length > 0 && !allowedRoles.includes(role))) {
+    return null;
+  }
+
   return children;
 }
 

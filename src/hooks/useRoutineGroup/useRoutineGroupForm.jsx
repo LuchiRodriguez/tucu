@@ -285,3 +285,5 @@ export function useRoutineGroupForm({
     saveError,
   };
 }
+
+export { cleanObjectForFirestore };

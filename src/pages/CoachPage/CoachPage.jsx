@@ -9,9 +9,6 @@ import StudentList from '../../components/specific/StudentList/StudentList'; // 
 import PageContainer from '../../components/layout/PageContainer/PageContainer'; // Nuevo: Contenedor de página
 import ContentSection from '../../components/layout/ContentSection/ContentSection'; // Nuevo: Sección de contenido
 
-// No necesitamos importar StyledCoachPage ni StyledLoginPage para estilos aquí
-// import { StyledAppMessage } from '../../../pages/HomePage/StyledHomePage'; // Ya no se necesita aquí
-
 function CoachPage() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -42,7 +39,7 @@ function CoachPage() {
     <PageContainer>
       <Navbar
         type="coach"
-        loading={loading || authLoading} // Considerar también el loading de auth
+        loading={loading || authLoading}
         searchValue={searchValue}
         setSearchValue={setSearchValue}
         isCoachDashboard={true}

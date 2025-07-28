@@ -1,32 +1,27 @@
 // src/components/specific/StudentList/StudentList.jsx
 import PropTypes from 'prop-types';
-import StudentItem from '../StudentItem/StudentItem'; // Importamos el componente de cada ítem de alumno
+import StudentItem from '../StudentItem/StudentItem';
 
 // Importamos los componentes common atomizados
-import Button from '../../common/Buttons/Button/Button'; // Para el botón de reintentar
 import Subtitle from '../../common/Messages/Subtitle/Subtitle'; // Para mensajes generales
 import ErrorMessage from '../../common/Messages/ErrorMessage/ErrorMessage'; // Para mensajes de error
 
-// Importamos los estilos específicos para StudentList
 import {
   StyledStudentListUL,
   StyledStudentListMessageWrapper,
 } from './StyledStudentList';
 
-// ¡CAMBIO CLAVE AQUÍ! Usamos parámetros por defecto en la firma de la función
 function StudentList({
-  students = [], // Valor por defecto
+  students = [],
   loading,
-  error = null, // Valor por defecto
-  searchText = '', // Valor por defecto
+  error = null,
+  searchText = '',
   onSelectStudent,
-  selectedStudentId = null, // Valor por defecto
-  onRetrySync,
+  selectedStudentId = null,
 }) {
-  // Manejo de estados de carga, error y vacíos
   if (loading) {
     return (
-      <StyledStudentListMessageWrapper>
+      <StyledStudentListMessageWrapper> {/*div*/}
         <Subtitle>Cargando alumnos...</Subtitle>
       </StyledStudentListMessageWrapper>
     );
@@ -34,30 +29,24 @@ function StudentList({
 
   if (error) {
     return (
-      <StyledStudentListMessageWrapper>
+      <StyledStudentListMessageWrapper> {/*div*/}
         <ErrorMessage isVisible={true}>
           ¡Uups! Hubo un error al cargar los alumnos.
         </ErrorMessage>
-        <Button onClick={onRetrySync} primary style={{ marginTop: '15px' }}>
-          Reintentar
-        </Button>
       </StyledStudentListMessageWrapper>
     );
   }
 
-  // Si no hay alumnos después de cargar y sin errores
   if (students.length === 0) {
     if (searchText) {
-      // Si hay texto de búsqueda pero no se encontraron resultados
       return (
-        <StyledStudentListMessageWrapper>
+        <StyledStudentListMessageWrapper> {/*div*/}
           <Subtitle>
             ¡No hay resultados para: <span>{searchText}</span>!
           </Subtitle>
         </StyledStudentListMessageWrapper>
       );
     } else {
-      // Si no hay alumnos y no hay búsqueda activa (lista vacía)
       return (
         <StyledStudentListMessageWrapper>
           <Subtitle>
@@ -68,7 +57,6 @@ function StudentList({
     }
   }
 
-  // Si hay alumnos, los renderizamos en la lista
   return (
     <StyledStudentListUL>
       {students.map(student => (
@@ -83,17 +71,14 @@ function StudentList({
   );
 }
 
-// Eliminado: StudentList.defaultProps ya no es necesario
-
-// Validación de PropTypes para el componente StudentList
 StudentList.propTypes = {
   students: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-    email: PropTypes.string, // Email puede ser opcional
+    email: PropTypes.string,
   })).isRequired,
   loading: PropTypes.bool.isRequired,
-  error: PropTypes.oneOfType([PropTypes.object, PropTypes.string, PropTypes.oneOf([null])]), // Permite objeto, string o null
+  error: PropTypes.oneOfType([PropTypes.object, PropTypes.string, PropTypes.oneOf([null])]),
   searchText: PropTypes.string,
   onSelectStudent: PropTypes.func.isRequired,
   selectedStudentId: PropTypes.string,

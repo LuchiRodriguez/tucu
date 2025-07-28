@@ -13,10 +13,7 @@ export const StyledModalOverlay = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000; /* Asegura que esté por encima de la mayoría del contenido */
-  /* Las propiedades de opacidad y visibilidad se manejarán en el componente que usa el modal,
-     o si el modal tiene un estado interno para isOpen, se pueden añadir aquí.
-     Para este componente base, solo definimos el estilo estático. */
+  z-index: 1000;
 `;
 
 export const StyledModalContent = styled.div`

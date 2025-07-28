@@ -26,7 +26,7 @@ export const StyledButtonContainer = styled.div`
 
 export const StyledCurrentRoutineInfo = styled.p`
   background-color: #F8F8F8; /* Gris Muy Claro de la paleta */
-  border-left: 4:px solid #5DD62C; /* Verde Vibrante para el borde izquierdo */
+  border-left: 4px solid #5DD62C; /* Verde Vibrante para el borde izquierdo */
   padding: 10px 15px;
   border-radius: 8px;
   font-size: 0.9rem;
