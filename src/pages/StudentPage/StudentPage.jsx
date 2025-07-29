@@ -1,10 +1,9 @@
 // src/pages/StudentPage/StudentPage.jsx
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc, collection, onSnapshot, query, deleteDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 
-// Importamos componentes common atomizados
 import Navbar from '../../components/common/Navigation/Navbar/Navbar';
 import CollapsibleCard from '../../components/common/Utilities/CollapsibleCard/CollapsibleCard';
 import RoutineGroupCreationModal from '../../components/specific/RoutineGroupModal/RoutineGroupCreationModal';
@@ -12,18 +11,19 @@ import PageContainer from '../../components/layout/PageContainer/PageContainer';
 import ContentSection from '../../components/layout/ContentSection/ContentSection';
 import Title from '../../components/common/Messages/Title/Title';
 import Subtitle from '../../components/common/Messages/Subtitle/Subtitle';
+import SectionTitle from '../../components/common/Messages/SectionTitle/SectionTitle';
 import Button from '../../components/common/Buttons/Button/Button';
 import ErrorMessage from '../../components/common/Messages/ErrorMessage/ErrorMessage';
 import EditIcon from '../../components/common/Icons/EditIcon/EditIcon';
 import DeleteIcon from '../../components/common/Icons/DeleteIcon/DeleteIcon';
+import LoadingGif from '../../components/common/Utilities/LoadingGif/LoadingGif';
 
 import { useAuth } from '../../context/authContextBase';
+import { useStudentRoutineGroupsData } from '../../hooks/useRoutines/useRoutines';
 
-// Importamos los estilos específicos para StudentPage
 import {
   StyledStudentPageContent,
   StyledRoutineGroupsWrapper,
-  StyledGroupCard,
   StyledGroupHeader,
   StyledGroupStatus,
   StyledGroupActions,
@@ -61,16 +61,18 @@ function StudentPage() {
   const [loadingStudent, setLoadingStudent] = useState(true);
   const [studentError, setStudentError] = useState(null);
 
-  const [routineGroups, setRoutineGroups] = useState([]);
-  const [loadingRoutineGroups, setLoadingRoutineGroups] = useState(true);
-  const [routineGroupsError, setRoutineGroupsError] = useState(null);
-
   const [isRoutineGroupModalOpen, setIsRoutineGroupModalOpen] = useState(false);
-  const [editingDraftId, setEditingDraftId] = useState(null);
-  const [editingRoutineData, setEditingRoutineData] = useState(null);
+  const [editingDraftId, setEditingDraftId] = useState(null); // Estado para el ID del grupo/borrador a editar
+  const [editingRoutineData, setEditingRoutineData] = useState(null); // Estado para los datos de la rutina individual a editar
 
-  // Acceso seguro a __app_id
-  const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+  // Usamos el hook que devuelve datos del stage y grupos para este alumno
+  const {
+    currentStageData,
+    loading: loadingRoutineGroups, // Renombramos para evitar conflicto con loadingStudent
+    error: routineGroupsError, // Renombramos para evitar conflicto con studentError
+    errorMessage: routineGroupsErrorMessage, // Obtenemos el mensaje de error
+  } = useStudentRoutineGroupsData(studentId);
+
 
   // Efecto para cargar la información del alumno
   useEffect(() => {
@@ -105,128 +107,46 @@ function StudentPage() {
     fetchStudent();
   }, [studentId, navigate]);
 
-  // Efecto para escuchar los grupos de rutinas del alumno en tiempo real
-  useEffect(() => {
-    if (!studentId || !user?.uid) {
-      setRoutineGroupsError("ID del alumno o del profe no proporcionado para cargar grupos de rutinas.");
-      setLoadingRoutineGroups(false);
-      return;
-    }
-
-    setLoadingRoutineGroups(true);
-    setRoutineGroupsError(null);
-
-    const routineGroupsCollectionRef = collection(db, `artifacts/${appId}/users/${studentId}/routineGroups`);
-    const q = query(routineGroupsCollectionRef);
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      try {
-        const groupsData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        const visibleGroups = groupsData.filter(group =>
-          group.status === 'active' || (group.status === 'draft' && group.assignedBy === user.uid)
-        );
-        setRoutineGroups(visibleGroups);
-        console.log("Grupos de rutinas del alumno cargados/actualizados:", visibleGroups);
-      } catch (err) {
-        console.error("Error al obtener los grupos de rutinas del alumno en tiempo real:", err);
-        setRoutineGroupsError("Error al cargar los grupos de rutinas del alumno.");
-      } finally {
-        setLoadingRoutineGroups(false);
-      }
-    }, (error) => {
-      console.error("Error en la suscripción a los grupos de rutinas:", error);
-      setRoutineGroupsError("No se pudieron cargar los grupos de rutinas. Posiblemente problemas de permisos.");
-      setLoadingRoutineGroups(false);
-    });
-
-    return () => unsubscribe();
-  }, [studentId, user?.uid, appId]);
-
-  /**
-   * Calcula y devuelve los datos de la "etapa actual" (la más reciente entre las activas,
-   * o la más reciente entre los borradores si no hay activas).
-   * Devuelve un objeto { stageName: string, groups: Array<RoutineGroup> } o null.
-   */
-  const currentActiveStageData = useMemo(() => {
-    if (!routineGroups || routineGroups.length === 0) {
-        return null; // No hay grupos de rutinas
-    }
-
-    // Función auxiliar para convertir Firestore Timestamp a Date o usar 0 para fechas inválidas
-    const getDateFromField = (item, field) => {
-        const dateValue = item[field];
-        if (dateValue && typeof dateValue.toDate === 'function') {
-            return dateValue.toDate();
-        }
-        if (dateValue) {
-            const parsedDate = new Date(dateValue);
-            return isNaN(parsedDate) ? 0 : parsedDate;
-        }
-        return 0; // Si no hay fecha o es inválida, se considera la más antigua
-    };
-
-    // 1. Priorizar grupos activos y encontrar el más reciente por dueDate
-    const activeGroups = routineGroups.filter(group => group.status === 'active');
-    const sortedActiveGroups = [...activeGroups].sort((a, b) => {
-        const dateA = getDateFromField(a, 'dueDate');
-        const dateB = getDateFromField(b, 'dueDate');
-        return dateB - dateA; // Orden descendente (el más reciente primero)
-    });
-
-    if (sortedActiveGroups.length > 0) {
-        const latestActiveGroup = sortedActiveGroups[0];
-        const stageName = latestActiveGroup.stage || 'Sin Etapa';
-        // Recopilar TODOS los grupos que pertenecen a esta etapa (activos y borradores)
-        const groupsInThisStage = routineGroups.filter(group => (group.stage || 'Sin Etapa') === stageName);
-        return { stageName, groups: groupsInThisStage };
-    }
-
-    // 2. Si no hay grupos activos, considerar borradores y encontrar el más reciente por dueDate
-    const draftGroups = routineGroups.filter(group => group.status === 'draft' && group.assignedBy === user.uid);
-    const sortedDraftGroups = [...draftGroups].sort((a, b) => {
-        const dateA = getDateFromField(a, 'dueDate');
-        const dateB = getDateFromField(b, 'dueDate');
-        return dateB - dateA; // Orden descendente (el más reciente primero)
-    });
-
-    if (sortedDraftGroups.length > 0) {
-        const latestDraftGroup = sortedDraftGroups[0];
-        const stageName = latestDraftGroup.stage || 'Sin Etapa';
-        // Recopilar TODOS los grupos (activos y borradores) que pertenecen a esta etapa
-        const groupsInThisStage = routineGroups.filter(group => (group.stage || 'Sin Etapa') === stageName);
-        return { stageName, groups: groupsInThisStage };
-    }
-
-    return null; // No se encontraron grupos activos ni borradores válidos
-  }, [routineGroups, user?.uid]); // Dependencia: routineGroups y user.uid para filtrar borradores
-
-
-  // Utilizar useCallback para envolver los handlers
+  // Handlers para el modal
   const handleOpenCreateRoutineGroupModal = useCallback(() => {
-    setEditingDraftId(null);
-    setEditingRoutineData(null); // Aseguramos que sea null para una nueva creación
+    setEditingDraftId(null); // Resetear para crear uno nuevo
+    setEditingRoutineData(null); // Resetear para crear uno nuevo
     setIsRoutineGroupModalOpen(true);
   }, []);
 
   const handleCloseRoutineGroupModal = useCallback(() => {
     setIsRoutineGroupModalOpen(false);
-    setEditingDraftId(null);
-    setEditingRoutineData(null); // Limpiamos al cerrar
+    setEditingDraftId(null); // Limpiar al cerrar
+    setEditingRoutineData(null); // Limpiar al cerrar
   }, []);
 
   const handleEditRoutineGroup = useCallback((groupId) => {
-    setEditingDraftId(groupId);
-    setEditingRoutineData(null); // Cuando se edita un grupo, no hay rutina individual seleccionada
+    setEditingDraftId(groupId); // Establecer el ID del grupo a editar
+    setEditingRoutineData(null); // Asegurarse de que no estamos editando una rutina individual
     setIsRoutineGroupModalOpen(true);
   }, []);
 
+  const handleDeleteRoutineGroup = useCallback(async (groupId) => {
+    if (!user) {
+      console.error("No hay usuario autenticado.");
+      return;
+    }
+    // Usar un modal de confirmación personalizado en lugar de window.confirm si tienes uno
+    if (window.confirm('¿Estás seguro de que quieres eliminar este grupo de rutinas (incluyendo borradores)?')) {
+      try {
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const groupDocRef = doc(db, `artifacts/${appId}/users/${studentId}/routineGroups`, groupId);
+        await deleteDoc(groupDocRef);
+        console.log(`Grupo de rutinas con ID ${groupId} eliminado con éxito.`);
+      } catch (err) {
+        console.error("Error al eliminar el grupo de rutinas:", err);
+      }
+    }
+  }, [user, studentId]); // Dependencia: user, studentId
+
   const handleEditIndividualRoutine = useCallback((groupId, routineToEdit) => {
-    console.log(`Editando rutina individual: ${routineToEdit.name} (ID: ${routineToEdit.id}) del grupo: ${groupId}`);
-    setEditingDraftId(groupId);
-    setEditingRoutineData(routineToEdit); // Esto SÍ es un objeto (la rutina)
+    setEditingDraftId(groupId); // Necesitamos el ID del grupo padre
+    setEditingRoutineData(routineToEdit); // Pasamos el objeto de la rutina a editar
     setIsRoutineGroupModalOpen(true);
   }, []);
 
@@ -235,10 +155,10 @@ function StudentPage() {
       console.error("No hay usuario autenticado para eliminar la rutina.");
       return;
     }
-
     // Usar un modal de confirmación personalizado en lugar de window.confirm si tienes uno
     if (window.confirm('¿Estás seguro de que quieres eliminar esta rutina individual?')) {
       try {
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const groupDocRef = doc(db, `artifacts/${appId}/users/${studentId}/routineGroups`, groupId);
         const groupDocSnap = await getDoc(groupDocRef);
 
@@ -257,37 +177,14 @@ function StudentPage() {
         console.error("Error al eliminar la rutina individual:", err);
       }
     }
-  }, [user, studentId, appId]);
+  }, [user, studentId]); // Dependencia: user, studentId
 
-  const handleDeleteRoutineGroup = useCallback(async (groupId) => {
-    if (!user) {
-      console.error("No hay usuario autenticado.");
-      return;
-    }
-    // Usar un modal de confirmación personalizado en lugar de window.confirm si tienes uno
-    if (window.confirm('¿Estás seguro de que quieres eliminar este grupo de rutinas (incluyendo borradores)?')) {
-      try {
-        const groupDocRef = doc(db, `artifacts/${appId}/users/${studentId}/routineGroups`, groupId);
-        await deleteDoc(groupDocRef);
-        console.log(`Grupo de rutinas con ID ${groupId} eliminado con éxito.`);
-      } catch (err) {
-        console.error("Error al eliminar el grupo de rutinas:", err);
-      }
-    }
-  }, [user, studentId, appId]);
 
   const navbarType = 'studentRoutinesPage';
   const navbarStudentName = student?.name || student?.email?.split('@')[0] || 'Este Alumno';
 
   if (loadingStudent || loadingRoutineGroups) {
-    return (
-      <PageContainer>
-        <Navbar loading={true} type={navbarType} studentName={navbarStudentName} isCoachDashboard={false} userName={coachName} />
-        <ContentSection style={{ textAlign: 'center', marginTop: '20px' }}>
-          <Subtitle>Cargando información del alumno y sus grupos de rutinas...</Subtitle>
-        </ContentSection>
-      </PageContainer>
-    );
+    return <LoadingGif />;
   }
 
   if (studentError) {
@@ -306,16 +203,19 @@ function StudentPage() {
     );
   }
 
-  if (routineGroupsError && routineGroups.length === 0) {
+  // Si hay error en la carga de grupos de rutinas O no hay datos de etapa actual
+  // y el error no es por "no hay grupos", entonces mostramos el error.
+  // Si no hay currentStageData y no hay error, significa que simplemente no hay rutinas.
+  if (routineGroupsError && !currentStageData) {
     return (
       <PageContainer>
         <Navbar loading={false} type={navbarType} studentName={navbarStudentName} isCoachDashboard={false} userName={coachName} />
-        <ContentSection style={{ width: '100%', marginTop: '20px', paddingBottom: '20px' }}>
+        <ContentSection style={{ textAlign: 'center', marginTop: '20px', paddingBottom: '20px' }}>
           <ErrorMessage isVisible={true} style={{ marginTop: '0', fontSize: '0.9rem' }}>
-            {routineGroupsError}
+            {routineGroupsErrorMessage || "Error al cargar las rutinas."}
           </ErrorMessage>
           <Button
-            onClick={handleOpenCreateRoutineGroupModal}
+            onClick={handleOpenCreateRoutineGroupModal} // Usamos el handler
             primary
             style={{ marginTop: '20px', width: 'fit-content', alignSelf: 'center' }}
           >
@@ -326,124 +226,138 @@ function StudentPage() {
     );
   }
   
+  // Condición para mostrar "Este alumno aún no tiene grupos de rutinas asignados."
+  const showNoRoutinesMessage = !currentStageData || (currentStageData.groups && currentStageData.groups.length === 0);
+
   return (
     <PageContainer>
       <Navbar loading={false} type={navbarType} studentName={navbarStudentName} isCoachDashboard={false} userName={coachName} />
-      <StyledStudentPageContent  style={{flexGrow: '1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
+      <StyledStudentPageContent style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
         <div>
-          <Title as="h2">Objetivo: <span>{student?.objective || 'No definido'}</span></Title>
-          {currentActiveStageData &&
-            <Subtitle style={{ marginTop: '5px', marginBottom: '20px' }}>
-              Etapa actual: <span>{currentActiveStageData.stageName.charAt(0).toUpperCase() + currentActiveStageData.stageName.slice(1)}</span>
-            </Subtitle>
-          }
+          <Title as="h2">{student?.name || student?.email?.split('@')[0] || 'Alumno'}</Title> {/* Título principal con el nombre del alumno */}
+          <Subtitle style={{ marginBottom: '20px' }}>Objetivo: <span>{student?.objective || 'No definido'}</span></Subtitle>
         </div>
-        {currentActiveStageData ? (
-          <>
-            <StyledRoutineGroupsWrapper>
-              {currentActiveStageData.groups.map(group => (
-                <StyledGroupCard
-                key={group.id}
-                title={group.name}
-                defaultOpen={false}
-                $isDraft={group.status === 'draft'}
-                >
-                  <StyledGroupHeader>
-                    {group.status && (
-                      <StyledGroupStatus $isDraft={group.status === 'draft'}>
-                        {group.status === 'draft' ? 'Borrador' : 'Activo'}
-                      </StyledGroupStatus>
-                    )}
-                    <StyledGroupActions>
-                      <EditIcon
-                        onClick={() => handleEditRoutineGroup(group.id)}
-                        aria-label={`Editar grupo ${group.name}`}
+        <div>
+          {showNoRoutinesMessage ? (
+            <Subtitle style={{ marginTop: 0, fontSize: '0.9rem', color: '#7f8c8d', textAlign: 'center' }}>
+              Este alumno aún no tiene<br />grupos de rutinas asignados.
+            </Subtitle>
+          ) : (
+            <>
+              {/* Etapa actual como subtítulo fijo */}
+              <SectionTitle style={{ marginTop: '25px', marginBottom: '15px' }}>
+                Etapa: {currentStageData.stageName.charAt(0).toUpperCase() + currentStageData.stageName.slice(1)}
+              </SectionTitle>
+              
+              {/* Listado de CollapsibleCards para los grupos de rutinas de la etapa actual */}
+              <StyledRoutineGroupsWrapper>
+                {currentStageData.groups.map(group => ( // Usamos currentStageData.groups directamente
+                  <CollapsibleCard
+                    key={group.id}
+                    title={group.name}
+                    defaultOpen={false}
+                    $isDraft={group.status === 'draft'}
+                  >
+                    {/* Contenido dentro del cuerpo colapsable del grupo */}
+                    <StyledGroupHeader>
+                      {group.status && (
+                        <StyledGroupStatus $isDraft={group.status === 'draft'}>
+                          {group.status === 'draft' ? 'Borrador' : 'Activo'}
+                        </StyledGroupStatus>
+                      )}
+                      <StyledGroupActions>
+                        <EditIcon
+                          onClick={() => handleEditRoutineGroup(group.id)} // Usamos el handler
+                          aria-label={`Editar grupo ${group.name}`}
                         />
-                      <DeleteIcon
-                        onClick={() => handleDeleteRoutineGroup(group.id)}
-                        aria-label={`Eliminar grupo ${group.name}`}
+                        <DeleteIcon
+                          onClick={() => handleDeleteRoutineGroup(group.id)} // Usamos el handler
+                          aria-label={`Eliminar grupo ${group.name}`}
                         />
-                    </StyledGroupActions>
-                  </StyledGroupHeader>
-                  
-                  <StyledGroupDetailText>Objetivo del grupo: <span>{group.objective}</span></StyledGroupDetailText>
-                  <StyledGroupDetailText>Vencimiento: <span>{group.dueDate instanceof Date ? group.dueDate.toLocaleDateString('es-AR') : (group.dueDate?.toDate ? group.dueDate.toDate().toLocaleDateString('es-AR') : group.dueDate)}</span></StyledGroupDetailText>
-                  
-                  <StyledRoutineSubtitle>Rutinas en este Grupo:</StyledRoutineSubtitle>
-                  {group.routines && group.routines.length > 0 ? (
-                    <StyledRoutineListUL>
-                      {group.routines.map((routine, routineIdx) => {
-                        const routineKey = routine.id || `routine-${group.id}-${routineIdx}`;
-                        return (
-                          <CollapsibleCard key={routineKey} title={routine.name} defaultOpen={false}>
-                            <div style={{ padding: '5px' }}>
-                              <StyledGroupDetailText>
-                                Descanso: <span>{formatTime(routine.restTime)}</span> | RIR: <span>{routine.rir || 0}</span>
-                              </StyledGroupDetailText>
-                              <StyledGroupDetailText>
-                                Calentamiento: <span>{routine.warmUp || 'No especificado'}</span>
-                              </StyledGroupDetailText>
-                              <StyledRoutineSubtitle as="h5">Ejercicios:</StyledRoutineSubtitle>
-                              {routine.exercises && routine.exercises.length > 0 ? (
-                                <ul style={{ listStyle: 'none', padding: '0', margin: '0' }}>
-                                  {routine.exercises.map((ex, exIdx) => {
-                                    const exerciseKey = ex.id || `ex-${routine.id}-${exIdx}`;
-                                    return (
-                                      <StyledExerciseDetailItem key={exerciseKey}>
-                                        <strong>{exIdx + 1}. {ex.name}</strong>
-                                        {ex.type === 'timed' ? (
-                                          ` (${ex.sets || 0} Series, ${formatTime(ex.time)} de trabajo)`
-                                        ) : (
-                                          ` (${ex.sets || 0} Series, ${ex.reps || 0} Reps, ${ex.kilos || 0} Kg)`
-                                        )}
-                                      </StyledExerciseDetailItem>
-                                    );
-                                  })}
-                                </ul>
-                              ) : (
-                                <Subtitle style={{ fontSize: '0.9rem', color: '#7f8c8d' }}>No hay ejercicios en esta rutina.</Subtitle>
-                              )}
-                              <StyledRoutineActions>
-                                <Button
-                                  onClick={() => handleEditIndividualRoutine(group.id, routine)}
-                                  primary
-                                  style={{ backgroundColor: '#3498db', padding: '8px 12px', fontSize: '0.85rem' }}
-                                >
-                                  Editar Rutina
-                                </Button>
-                                <Button
-                                  onClick={() => handleDeleteIndividualRoutine(group.id, routine.id)}
-                                  secondary
-                                  style={{ backgroundColor: '#e74c3c', padding: '8px 12px', fontSize: '0.85rem' }}
+                      </StyledGroupActions>
+                    </StyledGroupHeader>
+                    
+                    <StyledGroupDetailText>Objetivo del grupo: <span>{group.objective}</span></StyledGroupDetailText>
+                    <StyledGroupDetailText>
+                      Vencimiento: <span>
+                        {group.dueDate instanceof Date
+                          ? group.dueDate.toLocaleDateString('es-AR')
+                          : (group.dueDate?.toDate ? group.dueDate.toDate().toLocaleDateString('es-AR') : group.dueDate)}
+                      </span>
+                    </StyledGroupDetailText>
+                    
+                    <StyledRoutineSubtitle>Rutinas en este Grupo:</StyledRoutineSubtitle>
+                    {group.routines && group.routines.length > 0 ? (
+                      <StyledRoutineListUL>
+                        {group.routines.map((routine, routineIdx) => {
+                          const routineKey = routine.id || `routine-${group.id}-${routineIdx}`;
+                          return (
+                            <CollapsibleCard key={routineKey} title={routine.name} defaultOpen={false}>
+                              <div style={{ padding: '5px' }}>
+                                <StyledGroupDetailText>
+                                  Descanso: <span>{formatTime(routine.restTime)}</span> | RIR: <span>{routine.rir || 0}</span>
+                                </StyledGroupDetailText>
+                                <StyledGroupDetailText>
+                                  Calentamiento: <span>{routine.warmUp || 'No especificado'}</span>
+                                </StyledGroupDetailText>
+                                <StyledRoutineSubtitle as="h5">Ejercicios:</StyledRoutineSubtitle>
+                                {routine.exercises && routine.exercises.length > 0 ? (
+                                  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                    {routine.exercises.map((ex, exIdx) => {
+                                      const exerciseKey = ex.id || `ex-${routine.id}-${exIdx}`;
+                                      return (
+                                        <StyledExerciseDetailItem key={exerciseKey}>
+                                          <strong>{exIdx + 1}. {ex.name}</strong>
+                                          {ex.type === 'timed' ? (
+                                            ` (${ex.sets || 0} Series, ${formatTime(ex.time)} de trabajo)`
+                                          ) : (
+                                            ` (${ex.sets || 0} Series, ${ex.reps || 0} Reps, ${ex.kilos || 0} Kg)`
+                                          )}
+                                        </StyledExerciseDetailItem>
+                                      );
+                                    })}
+                                  </ul>
+                                ) : (
+                                  <Subtitle style={{ fontSize: '0.9rem', color: '#7f8c8d' }}>No hay ejercicios en esta rutina.</Subtitle>
+                                )}
+                                <StyledRoutineActions>
+                                  <Button
+                                    onClick={() => handleEditIndividualRoutine(group.id, routine)} // Usamos el handler
+                                    primary
+                                    style={{ backgroundColor: '#3498db', padding: '8px 12px', fontSize: '0.85rem' }}
                                   >
-                                  Eliminar Rutina
-                                </Button>
-                              </StyledRoutineActions>
-                            </div>
-                          </CollapsibleCard>
-                        );
-                      })}
-                    </StyledRoutineListUL>
-                  ) : (
-                    <Subtitle style={{ fontSize: '0.9rem', color: '#7f8c8d' }}>No hay rutinas en este grupo aún.</Subtitle>
-                  )}
-                </StyledGroupCard>
-              ))}
-            </StyledRoutineGroupsWrapper>
-          </>
-        ) : (
-          <Subtitle style={{ marginTop: '0', fontSize: '0.9rem', color: '#7f8c8d', textAlign: 'center' }}>
-            Este alumno aún no tiene<br/>rutinas asignadas.
-          </Subtitle>
-        )}
+                                    Editar Rutina
+                                  </Button>
+                                  <Button
+                                    onClick={() => handleDeleteIndividualRoutine(group.id, routine.id)} // Usamos el handler
+                                    secondary
+                                    style={{ backgroundColor: '#e74c3c', padding: '8px 12px', fontSize: '0.85rem' }}
+                                  >
+                                    Eliminar Rutina
+                                  </Button>
+                                </StyledRoutineActions>
+                              </div>
+                            </CollapsibleCard>
+                          );
+                        })}
+                      </StyledRoutineListUL>
+                    ) : (
+                      <Subtitle style={{ fontSize: '0.9rem', color: '#7f8c8d' }}>No hay rutinas en este grupo aún.</Subtitle>
+                    )}
+                  </CollapsibleCard>
+                ))}
+              </StyledRoutineGroupsWrapper>
+            </>
+          )}
+        </div>
 
         <StyledAddRoutineGroupButtonWrapper>
           <Button
-            onClick={handleOpenCreateRoutineGroupModal}
+            onClick={handleOpenCreateRoutineGroupModal} // Usamos el handler
             primary
             style={{ width: 'fit-content' }}
           >
-            Crear grupo de rutinas
+            Crear nuevo grupo de rutinas
           </Button>
         </StyledAddRoutineGroupButtonWrapper>
       </StyledStudentPageContent>
@@ -451,10 +365,10 @@ function StudentPage() {
       {isRoutineGroupModalOpen && (
         <RoutineGroupCreationModal
           isOpen={isRoutineGroupModalOpen}
-          onClose={handleCloseRoutineGroupModal}
+          onClose={handleCloseRoutineGroupModal} // Usamos el handler
           studentId={studentId}
-          draftGroupId={editingDraftId}
-          editingRoutineData={editingRoutineData}
+          draftGroupId={editingDraftId} // Pasamos el ID del borrador/grupo a editar
+          editingRoutineData={editingRoutineData} // Pasamos los datos de la rutina individual a editar
         />
       )}
     </PageContainer>

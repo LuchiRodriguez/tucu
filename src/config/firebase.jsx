@@ -1,7 +1,7 @@
     // src/config/firebase.jsx
     import { initializeApp } from "firebase/app";
     import { getAuth } from "firebase/auth";
-    import { getFirestore } from "firebase/firestore";
+    import {getFirestore, doc} from 'firebase/firestore';
 
     // Tu configuración de Firebase
     const firebaseConfig = {
@@ -20,4 +20,6 @@
     // Obtén las instancias de los servicios que usas
     export const auth = getAuth(app);
     export const db = getFirestore(app);
+
+    export const getRoutineDocRef = (userId, routineId) => doc(db, `users/${userId}`, routineId);
     

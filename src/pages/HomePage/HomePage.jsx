@@ -1,5 +1,5 @@
 // src/pages/HomePage/HomePage.jsx
-import { useRoutines } from '../../hooks/useRoutines/useRoutines';
+import { useStudentRoutineGroupsData } from '../../hooks/useRoutines/useRoutines';
 import { useAuth } from '../../context/authContextBase';
 
 // Importamos los componentes common atomizados
@@ -23,7 +23,7 @@ function HomePage() {
     completedActivedRoutines,
     toggleExerciseCompleted,
     updateExerciseKilos,
-  } = useRoutines();
+  } = useStudentRoutineGroupsData();
 
   const isLoadingPage = authLoading || routinesLoading;
 

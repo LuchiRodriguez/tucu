@@ -1,39 +1,34 @@
 // src/components/specific/RoutineGroupModal/Stages/Stage1GroupDetails.jsx
 import PropTypes from 'prop-types';
-
-// Importamos los componentes comunes
 import Input from '../../../../components/common/Forms/Input/Input';
-import Label from '../../../../components/common/Forms/Label/Label'; // Re-importamos Label
+import Label from '../../../../components/common/Forms/Label/Label';
 import Select from '../../../../components/common/Forms/Select/Select';
 
 /**
- * Componente para la primera etapa del formulario de grupo de rutinas: Detalles del Grupo.
- * Permite al coach ingresar el nombre, objetivo, fecha de vencimiento y etapa del grupo.
- *
- * @param {object} props - Propiedades del componente.
- * @param {object} props.groupData - Objeto que contiene los datos actuales del grupo (name, objective, dueDate, stage).
- * @param {function} props.setGroupData - Función para actualizar el estado de groupData.
- * @param {string|null} props.groupNameConflictError - Mensaje de error si hay conflicto de nombre de grupo.
- * @param {function} props.setGroupNameConflictError - Función para limpiar el error de conflicto de nombre.
+ * Componente de la primera etapa para ingresar los detalles del grupo de rutinas.
+ * Este componente es puramente presentacional y recibe los datos y la función de actualización
+ * de su componente padre.
  */
-function Stage1GroupDetails({ groupData, setGroupData, groupNameConflictError, setGroupNameConflictError }) {
+function Stage1GroupDetails({ groupData, setGroupData }) { // ✅ Eliminado: groupNameConflictError, setGroupNameConflictError
   const handleInputChange = (e) => {
-  const { id, value } = e.target;
-  setGroupData({ [id]: value });
-  if (id === 'name' && groupNameConflictError) {
-    setGroupNameConflictError(null);
-  }
-};
+    const { id, value } = e.target;
+    // setGroupData ya limpia el saveError en el hook padre
+    setGroupData((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
 
   return (
-    <div style={{ flexGrow: '1' }}>
+    <div style={{ flexGrow: 1 }}>
+      {/* Etapa del grupo */}
       <Label htmlFor="stage">Etapa</Label>
       <Select
         id="stage"
         value={groupData.stage || ''}
         onChange={handleInputChange}
         required
-        style={{marginBottom: '15px'}}
+        style={{ marginBottom: '15px' }}
       >
         <option value="">Seleccioná una etapa</option>
         <option value="fuerza">Fuerza</option>
@@ -43,6 +38,8 @@ function Stage1GroupDetails({ groupData, setGroupData, groupNameConflictError, s
         <option value="rehabilitacion">Rehabilitación</option>
         <option value="sin etapa">Sin Etapa</option>
       </Select>
+
+      {/* Nombre del grupo */}
       <Label htmlFor="name">Nombre del Grupo</Label>
       <Input
         id="name"
@@ -51,15 +48,16 @@ function Stage1GroupDetails({ groupData, setGroupData, groupNameConflictError, s
         value={groupData.name || ''}
         onChange={handleInputChange}
         required
-        style={{marginBottom: '15px'}}
+        style={{ marginBottom: '10px' }}
       />
-      {groupNameConflictError && (
+      {/* ✅ Eliminado: El mensaje de error ahora lo maneja el componente padre (Modal) */}
+      {/* {groupNameConflictError && (
         <p style={{ color: '#e74c3c', fontSize: '0.85rem', marginTop: '5px' }}>
           {groupNameConflictError}
         </p>
-      )}
+      )} */}
 
-      {/* Input para el Objetivo del Grupo */}
+      {/* Objetivo del grupo */}
       <Label htmlFor="objective" style={{ marginTop: '15px' }}>Objetivo</Label>
       <Input
         id="objective"
@@ -68,10 +66,10 @@ function Stage1GroupDetails({ groupData, setGroupData, groupNameConflictError, s
         value={groupData.objective || ''}
         onChange={handleInputChange}
         required
-        style={{marginBottom: '15px'}}
+        style={{ marginBottom: '15px' }}
       />
 
-      {/* Input para la Fecha de Vencimiento */}
+      {/* Fecha de vencimiento */}
       <Label htmlFor="dueDate" style={{ marginTop: '15px' }}>Fecha de Vencimiento</Label>
       <Input
         id="dueDate"
@@ -85,10 +83,15 @@ function Stage1GroupDetails({ groupData, setGroupData, groupNameConflictError, s
 }
 
 Stage1GroupDetails.propTypes = {
-  groupData: PropTypes.object.isRequired,
+  groupData: PropTypes.shape({
+    name: PropTypes.string,
+    objective: PropTypes.string,
+    dueDate: PropTypes.string,
+    stage: PropTypes.string,
+  }).isRequired,
   setGroupData: PropTypes.func.isRequired,
-  groupNameConflictError: PropTypes.string,
-  setGroupNameConflictError: PropTypes.func.isRequired,
+  // ✅ Eliminado: groupNameConflictError: PropTypes.string,
+  // ✅ Eliminado: setGroupNameConflictError: PropTypes.func.isRequired,
 };
 
 export default Stage1GroupDetails;

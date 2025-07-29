@@ -1,214 +1,202 @@
-// src/hooks/useRoutines/useRoutines.js
-import { useState, useEffect, useCallback } from 'react'; // Importamos los hooks específicos
-import { collection, query, onSnapshot, doc, updateDoc, getDoc } from 'firebase/firestore';
-import { db } from '../../config/firebase';
+// src/hooks/useRoutines/useStudentRoutineGroupsData.js
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { collection, query, onSnapshot } from 'firebase/firestore';
+import { db } from '../../config/firebase'; // Asegúrate de que db esté importado
 import { useAuth } from '../../context/authContextBase';
 
+const DEBUG = false; // Cambia a true si quieres ver logs en consola
+
+// Helper para logs de depuración
+const logDebug = (...args) => {
+  if (DEBUG) console.log('[useStudentRoutineGroupsData]', ...args);
+};
+
 /**
- * Hook personalizado para gestionar las rutinas de un usuario (alumno).
- * Escucha cambios en tiempo real en Firestore y proporciona funciones para
- * actualizar el progreso de los ejercicios.
+ * Hook personalizado para gestionar los grupos de rutinas de un alumno específico (desde la vista del coach).
+ * Escucha cambios en tiempo real en Firestore y devuelve la información de la "etapa actual"
+ * (la más reciente entre activas o borradores) y sus grupos asociados.
  *
+ * @param {string} studentId - El ID del alumno del cual cargar los grupos de rutinas.
  * @returns {object} Un objeto con:
- * - routines: Array de rutinas del usuario.
- * - loading: Booleano que indica si se están cargando las rutinas.
+ * - currentStageData: Objeto { stageName: string, groups: Array<RoutineGroup> } de la etapa actual o null.
+ * - loading: Booleano que indica si se están cargando los datos.
  * - error: Booleano que indica si ocurrió un error (true si hay error, false si no).
- * - totalActivedRoutines: Número total de rutinas activas.
- * - completedActivedRoutines: Número de rutinas activas completamente completadas.
- * - toggleRoutineCompleted: Función para marcar/desmarcar una rutina como completada (a nivel de rutina).
- * - toggleExerciseCompleted: Función para marcar/desmarcar un ejercicio como completado.
- * - updateExerciseKilos: Función para actualizar los kilos de un ejercicio.
- * - editExerciseInRoutine: Función placeholder para editar ejercicio (no implementada en Firestore aquí).
- * - deleteExerciseFromRoutine: Función placeholder para eliminar ejercicio (no implementada en Firestore aquí).
+ * - errorMessage: Mensaje de error detallado o null.
  */
-export function useRoutines() {
+export function useStudentRoutineGroupsData(studentId) {
   const { user, loading: authLoading } = useAuth();
-  const [routines, setRoutines] = useState([]);
+  const [allRoutineGroups, setAllRoutineGroups] = useState([]); // Almacena TODOS los grupos
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // 'error' almacena el mensaje de error o null
-  const [totalActivedRoutines, setTotalActivedRoutines] = useState(0);
-  const [completedActivedRoutines, setCompletedActivedRoutines] = useState(0);
+  const [errorMessage, setErrorMessage] = useState(null);
 
-  // Acceso seguro a __app_id
-  const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
+  // Efecto para cargar TODOS los grupos de rutinas desde Firestore en tiempo real
   useEffect(() => {
-    // Si la autenticación está cargando o no hay usuario, esperamos.
-    // Si authLoading termina y no hay usuario, establecemos un error.
+    let isMounted = true; // Flag para controlar si el componente está montado
+
+    // Acceso seguro a __app_id, ahora dentro del useEffect
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
     if (authLoading) {
-      setLoading(true); // Mantener el loading mientras la autenticación se resuelve
-      return;
-    }
-    
-    if (!user) {
-      setError("No hay usuario autenticado para cargar las rutinas.");
-      setLoading(false);
-      setRoutines([]); // Limpiar rutinas si no hay usuario
-      setTotalActivedRoutines(0);
-      setCompletedActivedRoutines(0);
+      logDebug("Auth loading, skipping data fetch.");
       return;
     }
 
-    setLoading(true);
-    setError(null); // Limpiar errores anteriores al iniciar la carga
-
-    // La ruta de la colección de rutinas para el usuario autenticado
-    // Asumimos que las rutinas del alumno están en users/{userId}
-    // Si las rutinas están bajo artifacts/{appId}/users/{userId}/routineGroups, la ruta debería ser ajustada.
-    // Basado en el código original, parece que están directamente en users/{user.uid}
-    const routinesCollectionRef = collection(db, `users/${user.uid}`);
-    const q = query(routinesCollectionRef);
-
-    // Suscripción en tiempo real a las rutinas del usuario
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      try {
-        const fetchedRoutines = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setRoutines(fetchedRoutines);
-        console.log(`[useRoutines] Rutinas del usuario ${user.uid} cargadas/actualizadas:`, fetchedRoutines);
-
-        // Calcular el progreso de las rutinas
-        const total = fetchedRoutines.length;
-        const completed = fetchedRoutines.filter(routine => 
-          routine.exercises && routine.exercises.length > 0 && 
-          routine.exercises.every(ex => ex.completed)
-        ).length;
-
-        setTotalActivedRoutines(total);
-        setCompletedActivedRoutines(completed);
-        setError(null); // Limpiar cualquier error si la carga fue exitosa
-
-      } catch (err) {
-        console.error("[useRoutines] Error al procesar el snapshot de rutinas:", err);
-        setError("Error al cargar tus rutinas. Intenta de nuevo.");
-      } finally {
-        setLoading(false); // Siempre detener la carga al finalizar, sea éxito o error
+    if (!user || !studentId) {
+      if (isMounted) {
+        setErrorMessage("No hay usuario autenticado o ID de alumno no proporcionado.");
+        setLoading(false);
+        setAllRoutineGroups([]);
       }
-    }, (err) => {
-      // Callback de error para onSnapshot
-      console.error("[useRoutines] Error en la suscripción a las rutinas:", err);
-      setError("No se pudieron cargar las rutinas. Posiblemente problemas de permisos de lectura.");
-      setLoading(false);
-    });
-
-    // Función de limpieza para desuscribirse cuando el componente se desmonte o las dependencias cambien
-    return () => unsubscribe();
-  }, [user, authLoading, appId]); // Dependencias: user y authLoading
-
-  /**
-   * Actualiza los campos de un ejercicio específico dentro de una rutina.
-   * @param {string} routineId - ID de la rutina a la que pertenece el ejercicio.
-   * @param {string} exerciseId - ID del ejercicio a actualizar.
-   * @param {object} updates - Objeto con los campos y nuevos valores a actualizar.
-   */
-  const updateExerciseProgress = useCallback(async (routineId, exerciseId, updates) => {
-    if (!user) {
-      console.error("No hay usuario autenticado para actualizar el progreso del ejercicio.");
-      setError("No estás autenticado para guardar el progreso.");
+      logDebug("No user or studentId, returning early.");
       return;
     }
-    try {
-      // Ruta de la rutina: asumiendo que es users/{userId}/{routineId}
-      const routineDocRef = doc(db, `users/${user.uid}`, routineId);
-      
-      const routineSnap = await getDoc(routineDocRef);
-      if (!routineSnap.exists()) {
-        console.error("Rutina no encontrada para actualizar el ejercicio.");
-        setError("Rutina no encontrada.");
-        return;
-      }
-      
-      const currentExercises = routineSnap.data().exercises || []; // Asegurar que sea un array
-      const updatedExercises = currentExercises.map(ex => {
-        if (ex.id === exerciseId) {
-          return { ...ex, ...updates };
+
+    if (isMounted) {
+      setLoading(true);
+      setErrorMessage(null); // Limpiar errores anteriores al iniciar la carga
+    }
+    logDebug("Starting routine groups subscription for studentId:", studentId);
+
+    // La ruta de la colección de grupos de rutinas para el alumno específico
+    const routineGroupsCollectionRef = collection(db, `artifacts/${appId}/users/${studentId}/routineGroups`);
+    const q = query(routineGroupsCollectionRef);
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        if (!isMounted) {
+          logDebug("Component unmounted, skipping setState in snapshot callback.");
+          return; // No actualizar estado si el componente ya no está montado
         }
-        return ex;
-      });
+        try {
+          const fetchedGroups = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
 
-      await updateDoc(routineDocRef, { exercises: updatedExercises });
-      console.log(`Progreso del ejercicio ${exerciseId} en rutina ${routineId} actualizado:`, updates);
-      setError(null); // Limpiar error si la actualización fue exitosa
-    } catch (err) {
-      console.error("Error al actualizar el progreso del ejercicio:", err);
-      setError("Error al guardar tu progreso. Intenta de nuevo.");
-    }
-  }, [user]); // Dependencia: user
+          // Filtramos para mostrar solo grupos activos o borradores asignados por el coach actual
+          const visibleGroups = fetchedGroups.filter(group =>
+            group.status === 'active' || (group.status === 'draft' && group.assignedBy === user.uid)
+          );
+
+          setAllRoutineGroups(visibleGroups);
+          setErrorMessage(null);
+          setLoading(false);
+
+          logDebug("Grupos de rutinas actualizados:", visibleGroups);
+        } catch (err) {
+          console.error("[useStudentRoutineGroupsData] Error al procesar el snapshot de grupos:", err);
+          setErrorMessage("Error al cargar los grupos de rutinas.");
+          setLoading(false);
+        }
+      },
+      (err) => {
+        // Callback de error para onSnapshot
+        if (!isMounted) {
+          logDebug("Component unmounted, skipping setState in error callback.");
+          return; // No actualizar estado si el componente ya no está montado
+        }
+        console.error("[useStudentRoutineGroupsData] Error en la suscripción a grupos de rutinas:", err);
+        setErrorMessage("No se pudieron cargar los grupos de rutinas. Posiblemente problemas de permisos.");
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      unsubscribe(); // Desuscribirse de Firestore
+      isMounted = false; // Marcar el componente como desmontado
+      logDebug("Cleaning up useStudentRoutineGroupsData effect.");
+    };
+  }, [authLoading, user, studentId]); // appId ha sido removido de las dependencias
+  // ya que se declara dentro del efecto y no es una dependencia externa que cambie.
+
 
   /**
-   * Marca/desmarca una rutina como completada. (Actualmente no implementado a nivel de rutina en Firestore)
-   * @param {string} routineId - ID de la rutina.
-   * @param {boolean} completedStatus - Nuevo estado de completado.
+   * Función auxiliar para convertir Firestore Timestamp a Date o usar 0 para fechas inválidas
    */
-  const toggleRoutineCompleted = useCallback((routineId, completedStatus) => {
-    console.log(`[useRoutines] Toggle rutina ${routineId} completada a ${completedStatus} (pendiente de implementar a nivel de rutina en Firestore).`);
-    // Lógica para actualizar el estado 'completed' de la rutina en Firestore, si aplica.
+  const getDateFromField = useCallback((item, field) => {
+    const dateValue = item[field];
+    if (dateValue && typeof dateValue.toDate === 'function') {
+      return dateValue.toDate();
+    }
+    if (dateValue) {
+      const parsedDate = new Date(dateValue);
+      return isNaN(parsedDate.getTime()) ? 0 : parsedDate; // Usar getTime() para validar
+    }
+    return 0; // Si no hay fecha o es inválida, se considera la más antigua
   }, []);
 
   /**
-   * Marca/desmarca un ejercicio individual como completado.
-   * @param {string} routineId - ID de la rutina padre.
-   * @param {string} exerciseId - ID del ejercicio.
+   * Función auxiliar para ordenar grupos por fecha de vencimiento de forma descendente.
    */
-  const toggleExerciseCompleted = useCallback((routineId, exerciseId) => {
-    const routine = routines.find(r => r.id === routineId);
-    if (!routine) {
-      console.warn(`Rutina con ID ${routineId} no encontrada para toggleExerciseCompleted.`);
-      return;
+  const sortByDueDateDesc = useCallback((groups) => {
+    return [...groups].sort((a, b) => {
+      const dateA = getDateFromField(a, 'dueDate');
+      const dateB = getDateFromField(b, 'dueDate');
+      // Asegurarse de que las fechas sean válidas para la resta
+      return (dateB instanceof Date ? dateB.getTime() : 0) - (dateA instanceof Date ? dateA.getTime() : 0);
+    });
+  }, [getDateFromField]);
+
+
+  /**
+   * Calcula y devuelve los datos de la "etapa actual" (la más reciente entre las activas,
+   * o la más reciente entre los borradores si no hay activas).
+   * Devuelve un objeto { stageName: string, groups: Array<RoutineGroup> } o null.
+   */
+  const currentStageData = useMemo(() => {
+    // ⚠️ Validación más explícita de user dentro de useMemo
+    if (!user?.uid) {
+      logDebug("No user UID available in useMemo, returning null for currentStageData.");
+      return null;
     }
-    const exercise = routine.exercises.find(ex => ex.id === exerciseId);
-    if (!exercise) {
-      console.warn(`Ejercicio con ID ${exerciseId} no encontrado en rutina ${routineId} para toggleExerciseCompleted.`);
-      return;
+
+    if (!allRoutineGroups || allRoutineGroups.length === 0) {
+      logDebug("No routine groups available, returning null for currentStageData.");
+      return null; // No hay grupos de rutinas
     }
 
-    updateExerciseProgress(routineId, exerciseId, { completed: !exercise.completed });
-  }, [routines, updateExerciseProgress]); // Dependencia: routines, updateExerciseProgress
+    // 1. Priorizar grupos activos y encontrar el más reciente por dueDate
+    const activeGroups = allRoutineGroups.filter(group => group.status === 'active');
+    const sortedActiveGroups = sortByDueDateDesc(activeGroups); // Usamos la función DRY
 
-  /**
-   * Actualiza los kilos de un ejercicio específico.
-   * @param {string} routineId - ID de la rutina padre.
-   * @param {string} exerciseId - ID del ejercicio.
-   * @param {string|number} newKilos - Nuevo valor de kilos.
-   */
-  const updateExerciseKilos = useCallback((routineId, exerciseId, newKilos) => {
-    // Convertir a número, si no es un número válido, usar 0
-    updateExerciseProgress(routineId, exerciseId, { kilos: Number(newKilos) || 0 });
-  }, [updateExerciseProgress]); // Dependencia: updateExerciseProgress
+    if (sortedActiveGroups.length > 0) {
+      const latestActiveGroup = sortedActiveGroups[0];
+      const stageName = latestActiveGroup.stage || 'Sin Etapa';
+      // Recopilar TODOS los grupos que pertenecen a esta etapa (activos y borradores)
+      const groupsInThisStage = allRoutineGroups.filter(group => (group.stage || 'Sin Etapa') === stageName);
+      logDebug("Found active stage data:", { stageName, groups: groupsInThisStage });
+      return { stageName, groups: groupsInThisStage };
+    }
 
-  /**
-   * Función placeholder para editar un ejercicio dentro de una rutina.
-   * @param {string} routineId - ID de la rutina padre.
-   * @param {string} exerciseId - ID del ejercicio.
-   * @param {object} updatedFields - Campos a actualizar.
-   */
-  const editExerciseInRoutine = useCallback((routineId, exerciseId, updatedFields) => {
-    console.log(`[useRoutines] Edit ejercicio ${exerciseId} en rutina ${routineId} con ${JSON.stringify(updatedFields)} (pendiente de implementar en Firestore, ahora se usa updateExerciseProgress).`);
-    // Si se necesita una lógica de edición más compleja que solo progreso, se implementaría aquí.
-  }, []);
+    // 2. Si no hay grupos activos, considerar borradores y encontrar el más reciente por dueDate
+    const draftGroups = allRoutineGroups.filter(group => group.status === 'draft' && group.assignedBy === user.uid);
+    const sortedDraftGroups = sortByDueDateDesc(draftGroups); // Usamos la función DRY
 
-  /**
-   * Función placeholder para eliminar un ejercicio de una rutina.
-   * @param {string} routineId - ID de la rutina padre.
-   * @param {string} exerciseId - ID del ejercicio.
-   */
-  const deleteExerciseFromRoutine = useCallback((routineId, exerciseId) => {
-    console.log(`[useRoutines] Delete ejercicio ${exerciseId} de rutina ${routineId} (pendiente de implementar en Firestore).`);
-    // Lógica para eliminar el ejercicio de la subcolección o array en Firestore.
-  }, []);
+    if (sortedDraftGroups.length > 0) {
+      const latestDraftGroup = sortedDraftGroups[0];
+      const stageName = latestDraftGroup.stage || 'Sin Etapa';
+      // Recopilar TODOS los grupos (activos y borradores) que pertenecen a esta etapa
+      const groupsInThisStage = allRoutineGroups.filter(group => (group.stage || 'Sin Etapa') === stageName);
+      logDebug("Found draft stage data:", { stageName, groups: groupsInThisStage });
+      return { stageName, groups: groupsInThisStage };
+    }
 
+    logDebug("No active or valid draft groups found, returning null for currentStageData.");
+    return null; // No se encontraron grupos activos ni borradores válidos
+  }, [allRoutineGroups, user?.uid, sortByDueDateDesc]); // Dependencia: allRoutineGroups y user.uid para filtrar borradores
+
+
+  // Las funciones de actualización de progreso de ejercicios y toggles
+  // se eliminaron de aquí ya que este hook se enfoca en la obtención de grupos.
+  // Si necesitas estas funciones para la vista del alumno, deberán ir en otro hook
+  // o directamente en el componente de la HomePage.
+
+  // Devolvemos solo la data relevante para la vista del coach
   return {
-    routines,
+    currentStageData,
     loading,
-    error: !!error, // Se mantiene como booleano para compatibilidad con componentes existentes
-    totalActivedRoutines,
-    completedActivedRoutines,
-    toggleRoutineCompleted,
-    toggleExerciseCompleted,
-    updateExerciseKilos,
-    editExerciseInRoutine,
-    deleteExerciseFromRoutine,
+    error: !!errorMessage, // Convertimos el mensaje de error a booleano
+    errorMessage, // Devolvemos el mensaje de error para mostrarlo si es necesario
   };
 }
