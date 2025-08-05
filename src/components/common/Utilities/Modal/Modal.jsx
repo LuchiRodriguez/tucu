@@ -1,37 +1,44 @@
-import { useEffect, useRef } from 'react';
-import PropTypes from 'prop-types';
+import { useEffect, useRef } from "react";
+import PropTypes from "prop-types";
 import {
   StyledModalOverlay,
   StyledModalContent,
   StyledModalHeader,
-  StyledCloseButton,
-  StyledModalTitle
-} from '../Modal/StyledModal';
+  StyledModalTitle,
+} from "../Modal/StyledModal";
+import CloseModalButton from "../../Buttons/CloseModalButton/CloseModalButton";
 
-function Modal({ isOpen, onClose, title, children }) {
+function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  updateSelectedRoutine,
+  warmUpExercises,
+}) {
   const modalRef = useRef(null);
 
   // Manejar foco y bloqueo scroll
   useEffect(() => {
     if (isOpen) {
       // Bloquear scroll en body
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
 
       // Poner foco en modal
       modalRef.current?.focus();
 
       // Manejar tecla ESC para cerrar
       const handleKeyDown = (e) => {
-        if (e.key === 'Escape') {
+        if (e.key === "Escape") {
           onClose();
         }
       };
 
-      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener("keydown", handleKeyDown);
 
       return () => {
-        document.body.style.overflow = '';
-        window.removeEventListener('keydown', handleKeyDown);
+        document.body.style.overflow = "";
+        window.removeEventListener("keydown", handleKeyDown);
       };
     }
   }, [isOpen, onClose]);
@@ -46,13 +53,25 @@ function Modal({ isOpen, onClose, title, children }) {
   };
 
   return (
-    <StyledModalOverlay onClick={handleOverlayClick} tabIndex={-1} ref={modalRef} aria-modal="true" role="dialog" aria-labelledby="modal-title">
+    <StyledModalOverlay
+      onClick={handleOverlayClick}
+      tabIndex={-1}
+      ref={modalRef}
+      aria-modal="true"
+      role="dialog"
+      aria-labelledby="modal-title"
+    >
       <StyledModalContent>
         <StyledModalHeader>
           <StyledModalTitle id="modal-title">{title}</StyledModalTitle>
-          <StyledCloseButton aria-label="Cerrar modal" onClick={onClose}>&times;</StyledCloseButton>
+          <CloseModalButton
+            onClose={onClose}
+            updateSelectedRoutine={updateSelectedRoutine}
+            warmUpExercises={warmUpExercises}
+          />
         </StyledModalHeader>
-        {children}      </StyledModalContent>
+        {children}{" "}
+      </StyledModalContent>
     </StyledModalOverlay>
   );
 }
@@ -61,7 +80,9 @@ Modal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   title: PropTypes.string.isRequired,
-  children: PropTypes.node
+  children: PropTypes.node,
+  updateSelectedRoutine: PropTypes.func,
+  warmUpExercises: PropTypes.array,
 };
 
 export default Modal;

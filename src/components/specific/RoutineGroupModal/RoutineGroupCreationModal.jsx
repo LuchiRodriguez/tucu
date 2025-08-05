@@ -115,7 +115,9 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId }) => {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Crear nuevo grupo de rutinas"
+      title="Nuevo grupo de rutinas"
+      updateSelectedRoutine={updateSelectedRoutine}
+      warmUpExercises={groupData.warmUpExercises}
     >
       {(isSaving || isPublishing) && (
         <div

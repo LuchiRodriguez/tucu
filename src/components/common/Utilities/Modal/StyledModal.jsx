@@ -1,6 +1,5 @@
 // src/components/common/Modal/StyledModal.js
-import styled from 'styled-components';
-import Button from '../../Buttons/Button/Button'; // Importamos el componente Button genérico
+import styled from "styled-components";
 
 // --- Contenedores y Estructura del Modal ---
 export const StyledModalOverlay = styled.div`
@@ -9,7 +8,12 @@ export const StyledModalOverlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.75); /* Fondo oscuro semitransparente de la paleta */
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.75
+  ); /* Fondo oscuro semitransparente de la paleta */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -17,7 +21,7 @@ export const StyledModalOverlay = styled.div`
 `;
 
 export const StyledModalContent = styled.div`
-  background-color: #FFFFFF; /* Blanco Puro de la paleta */
+  background-color: #ffffff; /* Blanco Puro de la paleta */
   margin: 10px;
   padding: 25px;
   border-radius: 12px;
@@ -47,33 +51,7 @@ export const StyledModalHeader = styled.div`
 
 export const StyledModalTitle = styled.h3`
   margin: 0;
-  color: #0F0F0F; /* Negro Profundo de la paleta */
+  color: #0f0f0f; /* Negro Profundo de la paleta */
   font-size: 1.5rem;
   font-weight: 700;
-`;
-
-// StyledCloseButton ahora extiende el componente Button genérico
-export const StyledCloseButton = styled(Button)`
-  background: none; /* No queremos fondo en este botón */
-  border: none; /* No queremos borde */
-  color: #202020; /* Gris Oscuro de la paleta para el icono */
-  font-size: 2rem; /* Tamaño de icono más grande */
-  padding: 0;
-  line-height: 1; /* Para alinear verticalmente el 'x' */
-  box-shadow: none; /* No queremos sombra por defecto */
-  width: 40px; /* Ancho fijo para que sea un círculo perfecto */
-  height: 40px; /* Alto fijo */
-  border-radius: 50%; /* Redondo */
-
-  &:hover {
-    color: #E74C3C; /* Rojo de Advertencia en hover */
-    background-color: rgba(231, 76, 60, 0.1); /* Fondo rojo muy suave en hover */
-    transform: none; /* Desactivamos la transformación de hover del Button base */
-    box-shadow: none;
-  }
-
-  &:active {
-    transform: none; /* Desactivamos la transformación de active del Button base */
-    box-shadow: none;
-  }
 `;

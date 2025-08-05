@@ -18,11 +18,25 @@ function Stage2RoutineDetails({ currentRoutine, setCurrentRoutine }) {
   );
 
   const handleInputChange = ({ target: { id, value } }) => {
-    console.log("Cambiando:", id, value);
-    setCurrentRoutine((prev) => ({
-      ...prev,
-      [id]: id === "name" ? value.trimStart() : value,
-    }));
+    setCurrentRoutine((prev) => {
+      const updated = {
+        ...prev,
+        [id]: id === "name" ? value.trimStart() : value,
+      };
+
+      if (id === "warmUp") {
+        const selectedWarmUp = warmUpExercises.find((ex) => ex.name === value);
+
+        if (selectedWarmUp?.type === "reps_sets") {
+          delete updated.warmUpTime;
+        } else if (selectedWarmUp?.type === "timed") {
+          delete updated.warmUpSets;
+          delete updated.warmUpReps;
+        }
+      }
+
+      return updated;
+    });
   };
 
   console.log("🧠 currentRoutine:", currentRoutine);
