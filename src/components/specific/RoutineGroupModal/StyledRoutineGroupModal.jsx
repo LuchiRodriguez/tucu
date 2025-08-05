@@ -1,6 +1,6 @@
 // src/components/specific/RoutineGroupModal/StyledRoutineGroupModal.jsx
-import styled from 'styled-components';
-import { StyledInputBase } from '../../common/Forms/Input/StyledInput';
+import styled from "styled-components";
+import { StyledInputBase } from "../../common/Forms/Input/StyledInput";
 
 // --- Contenedores específicos del Modal de Grupo de Rutinas ---
 // NOTA: StyledModalOverlay, StyledModalContent, StyledModalHeader, StyledModalTitle, StyledCloseButton
@@ -25,8 +25,8 @@ export const StyledButtonContainer = styled.div`
 `;
 
 export const StyledCurrentRoutineInfo = styled.p`
-  background-color: #F8F8F8; /* Gris Muy Claro de la paleta */
-  border-left: 4px solid #5DD62C; /* Verde Vibrante para el borde izquierdo */
+  background-color: #f8f8f8; /* Gris Muy Claro de la paleta */
+  border-left: 4px solid #5dd62c; /* Verde Vibrante para el borde izquierdo */
   padding: 10px 15px;
   border-radius: 8px;
   font-size: 0.9rem;
@@ -36,22 +36,32 @@ export const StyledCurrentRoutineInfo = styled.p`
 
   span {
     font-weight: bold;
-    color: #0F0F0F; /* Negro Profundo para los valores */
+    color: #0f0f0f; /* Negro Profundo para los valores */
   }
 `;
 
 export const StyledStageCard = styled.div`
-  background-color: ${props => (props.$isSelected ? '#E8F6FD' : '#F8F8F8')}; /* Azul claro o Gris Muy Claro */
-  color: ${props => (props.$isSelected ? '#0F0F0F' : '#202020')}; /* Negro Profundo o Gris Oscuro */
+  background-color: ${(props) =>
+    props.$isSelected
+      ? "#E8F6FD"
+      : "#F8F8F8"}; /* Azul claro o Gris Muy Claro */
+  color: ${(props) =>
+    props.$isSelected
+      ? "#0F0F0F"
+      : "#202020"}; /* Negro Profundo o Gris Oscuro */
   padding: 10px 15px;
   border-radius: 8px;
   margin-bottom: 10px;
   cursor: pointer;
-  font-weight: ${props => props.$isSelected ? 'bold' : 'normal'};
+  font-weight: ${(props) => (props.$isSelected ? "bold" : "normal")};
   text-align: center;
   transition: all 0.2s ease-in-out;
-  box-shadow: ${props => props.$isSelected ? '0 4px 10px rgba(93, 214, 44, 0.2)' : '0 2px 5px rgba(0, 0, 0, 0.05)'}; /* Sombra verde si seleccionado */
-  border: 2px solid ${props => props.$isSelected ? '#5DD62C' : 'transparent'}; /* Borde verde si seleccionado */
+  box-shadow: ${(props) =>
+    props.$isSelected
+      ? "0 4px 10px rgba(93, 214, 44, 0.2)"
+      : "0 2px 5px rgba(0, 0, 0, 0.05)"}; /* Sombra verde si seleccionado */
+  border: 2px solid
+    ${(props) => (props.$isSelected ? "#5DD62C" : "transparent")}; /* Borde verde si seleccionado */
 
   &:hover {
     transform: translateY(-2px);
@@ -63,13 +73,13 @@ export const StyledExerciseItem = styled.li`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #FFFFFF; /* Blanco Puro */
-  border: 1px solid #F8F8F8; /* Gris Muy Claro */
+  background-color: #ffffff; /* Blanco Puro */
+  border: 1px solid #f8f8f8; /* Gris Muy Claro */
   border-radius: 8px;
   padding: 10px 15px;
   margin-bottom: 10px;
   font-size: 1rem;
-  color: #0F0F0F; /* Negro Profundo */
+  color: #0f0f0f; /* Negro Profundo */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   cursor: grab; /* Indica que es arrastrable */
 
@@ -83,7 +93,8 @@ export const StyledExerciseInputGroup = styled.div`
   flex-direction: column;
   margin-bottom: 15px;
 
-  ${StyledInputBase} { /* Usamos el StyledInputBase importado */
+  ${StyledInputBase} {
+    /* Usamos el StyledInputBase importado */
     padding: 8px;
     font-size: 0.9rem;
   }
@@ -99,10 +110,10 @@ export const StyledExerciseListContainer = styled.ul`
   margin: 0 0 10px;
   flex-grow: 1;
   overflow-y: auto;
-  border: 1px solid #BDC3C7; /* Gris Neutro */
+  border: 1px solid #bdc3c7; /* Gris Neutro */
   border-radius: 8px;
   padding: 10px;
-  background-color: #F8F8F8; /* Gris Muy Claro */
+  background-color: #f8f8f8; /* Gris Muy Claro */
 `;
 
 export const StyledLoadingOverlay = styled.div`
@@ -114,7 +125,7 @@ export const StyledLoadingOverlay = styled.div`
   justify-content: center;
   border-radius: 12px;
   z-index: 10; /* Para que esté por encima del contenido del modal */
-  color: #0F0F0F; /* Negro Profundo para el texto de carga */
+  color: #0f0f0f; /* Negro Profundo para el texto de carga */
   font-weight: bold;
 `;
 
@@ -127,7 +138,7 @@ export const StyledExerciseSelectionItem = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 8px 0;
-  border-bottom: 1px dashed #F8F8F8; /* Gris Muy Claro para el borde punteado */
+  border-bottom: 1px dashed #f8f8f8; /* Gris Muy Claro para el borde punteado */
 
   &:last-child {
     border-bottom: none;
@@ -137,16 +148,16 @@ export const StyledExerciseSelectionItem = styled.div`
 export const StyledExerciseSelectionList = styled.div`
   max-height: 300px;
   overflow-y: auto;
-  border: 1px solid #BDC3C7; /* Gris Neutro */
+  border: 1px solid #bdc3c7; /* Gris Neutro */
   border-radius: 8px;
   padding: 10px;
-  background-color: #FFFFFF; /* Blanco Puro */
+  background-color: #ffffff; /* Blanco Puro */
 `;
 
 export const StyledSummarySection = styled.div`
   margin-top: 20px;
   padding-top: 15px;
-  border-top: 1px solid #F8F8F8; /* Gris Muy Claro */
+  border-top: 1px solid #f8f8f8; /* Gris Muy Claro */
 `;
 
 export const StyledSummaryList = styled.ul`
@@ -172,5 +183,10 @@ export const StyledModalFooter = styled.div`
   display: flex;
   justify-content: space-between;
   margin-top: 20px;
-  align-self: end;
+
+  ${({ stage }) =>
+    stage === 1 &&
+    `
+    align-self: end;
+  `}
 `;

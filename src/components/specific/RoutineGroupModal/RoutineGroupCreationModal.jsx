@@ -152,7 +152,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId }) => {
 
       {renderStage()}
 
-      <StyledModalFooter>
+      <StyledModalFooter stage={stage}>
         {stage > 1 && (
           <ChevronIcon
             direction="left"
