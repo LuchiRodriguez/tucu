@@ -1,12 +1,12 @@
 // src/context/AuthContext.jsx
-import { useEffect, useState, useMemo, useCallback } from 'react';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import PropTypes from 'prop-types';
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import PropTypes from "prop-types";
 
-import { auth, db } from '../config/firebase';
-import { AuthContext } from './authContextBase';
-import LoadingGif from '../components/common/Utilities/LoadingGif/LoadingGif';
+import { auth, db } from "../config/firebase";
+import { AuthContext } from "./authContextBase";
+import LoadingGif from "../components/common/Utilities/LoadingGif/LoadingGif";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -17,20 +17,22 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserData = useCallback(async (firebaseUser) => {
     try {
-      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+      const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
       if (userDoc.exists()) {
         const data = userDoc.data();
-        setRole(data.role || 'student');
-        setUserName(data.name || firebaseUser.email?.split('@')[0] || 'Usuario');
+        setRole(data.role || "student");
+        setUserName(
+          data.name || firebaseUser.email?.split("@")[0] || "Usuario"
+        );
       } else {
-        console.warn('Usuario no encontrado en Firestore:', firebaseUser.uid);
-        setRole('unknown');
-        setUserName(firebaseUser.email?.split('@')[0] || 'Usuario');
+        console.warn("Usuario no encontrado en Firestore:", firebaseUser.uid);
+        setRole("unknown");
+        setUserName(firebaseUser.email?.split("@")[0] || "Usuario");
       }
       setUser(firebaseUser);
     } catch (err) {
-      console.error('Error al obtener datos del usuario:', err);
-      setError('Error al cargar la información del usuario.');
+      console.error("Error al obtener datos del usuario:", err);
+      setError("Error al cargar la información del usuario.");
       setUser(firebaseUser);
       setRole(null);
       setUserName(null);
@@ -40,47 +42,48 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-    setLoading(true);
-    setError(null);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setLoading(true);
+      setError(null);
 
-    if (currentUser) {
-      await fetchUserData(currentUser);
-    } else {
-      setUser(null);
-      setRole(null);
-      setUserName(null);
-      setLoading(false);
-    }
-  });
+      if (currentUser) {
+        await fetchUserData(currentUser);
+      } else {
+        setUser(null);
+        setRole(null);
+        setUserName(null);
+        setTimeout(() => setLoading(false), 200);
+      }
+    });
 
-  return unsubscribe;
-}, [fetchUserData]);
+    return unsubscribe;
+  }, [fetchUserData]);
 
   const logout = useCallback(async () => {
     setError(null);
     try {
       await signOut(auth);
     } catch (err) {
-      console.error('Error al cerrar sesión:', err);
-      setError('Error al cerrar sesión.');
+      console.error("Error al cerrar sesión:", err);
+      setError("Error al cerrar sesión.");
     }
   }, []);
 
-  const value = useMemo(() => ({
-    user,
-    role,
-    userName,
-    loading,
-    error,
-    logout,
-  }), [user, role, userName, loading, error, logout]);
+  const value = useMemo(
+    () => ({
+      user,
+      role,
+      userName,
+      loading,
+      error,
+      logout,
+    }),
+    [user, role, userName, loading, error, logout]
+  );
 
   return (
     <AuthContext.Provider value={value}>
-      <RenderContent loading={loading}>
-        {children}
-      </RenderContent>
+      <RenderContent loading={loading}>{children}</RenderContent>
     </AuthContext.Provider>
   );
 };

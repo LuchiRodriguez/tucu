@@ -234,10 +234,10 @@ function StudentPage() {
       <Navbar loading={false} type={navbarType} studentName={navbarStudentName} isCoachDashboard={false} userName={coachName} />
       <StyledStudentPageContent style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
         <div>
-          <Title as="h2">{student?.name || student?.email?.split('@')[0] || 'Alumno'}</Title> {/* Título principal con el nombre del alumno */}
+          <Title as="h2">{student?.name || student?.email?.split('@')[0] || 'Alumno'}</Title>
           <Subtitle style={{ marginBottom: '20px' }}>Objetivo: <span>{student?.objective || 'No definido'}</span></Subtitle>
         </div>
-        <div>
+        <StyledRoutineGroupsWrapper>
           {showNoRoutinesMessage ? (
             <Subtitle style={{ marginTop: 0, fontSize: '0.9rem', color: '#7f8c8d', textAlign: 'center' }}>
               Este alumno aún no tiene<br />grupos de rutinas asignados.
@@ -349,7 +349,7 @@ function StudentPage() {
               </StyledRoutineGroupsWrapper>
             </>
           )}
-        </div>
+        </StyledRoutineGroupsWrapper>
 
         <StyledAddRoutineGroupButtonWrapper>
           <Button

@@ -35,7 +35,8 @@ export const StyledStudentPageContent = styled.div`
 
 export const StyledRoutineGroupsWrapper = styled.div`
   width: 100%;
-  padding: 10px; /* Padding para el contenedor de los grupos de rutinas */
+  height: 100%;
+  padding: 0 10px;
   box-sizing: border-box;
 `;
 
