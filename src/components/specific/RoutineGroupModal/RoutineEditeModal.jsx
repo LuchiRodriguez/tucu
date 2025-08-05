@@ -1,16 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
+import { useState, useEffect, useCallback } from "react";
+import PropTypes from "prop-types";
 
-import { useEditRoutineGroup } from '../../../hooks/useRoutineGroup/useEditRoutineGroup';
-import Stage1GroupDetails from './Stages/Stage1GroupDetails';
-import Stage2RoutineDetails from './Stages/Stage2RoutineDetails';
-import Stage3AddExercises from './Stages/Stage3AddExercises';
-import Stage4AssignSetsReps from './Stages/Stage4AssignSetsReps';
+import Stage1GroupDetails from "./Stages/Stage1GroupDetails";
+import Stage2RoutineDetails from "./Stages/Stage2RoutineDetails";
+import Stage3AddExercises from "./Stages/Stage3AddExercises";
+import Stage4AssignSetsReps from "./Stages/Stage4AssignSetsReps";
 
-import { Modal } from '../../common/Modal/Modal';
-import ErrorMessage from '../../common/Messages/ErrorMessage/ErrorMessage';
-import ChevronIcon from '../../common/Icons/ChevronIcon/ChevronIcon';
-import { StyledModalFooter } from './StyledRoutineGroupModal';
+import ErrorMessage from "../../common/Messages/ErrorMessage/ErrorMessage";
+import ChevronIcon from "../../common/Icons/ChevronIcon/ChevronIcon";
+import { StyledModalFooter } from "./StyledRoutineGroupModal";
+import { useEditRoutineGroup } from "../../../hooks/useRoutines/useEditRoutineGroup";
+import Modal from "../../common/Utilities/Modal/Modal";
 
 const RoutineEditModal = ({ isOpen, onClose, groupId, studentId }) => {
   const [localError, setLocalError] = useState(null);
@@ -73,7 +73,12 @@ const RoutineEditModal = ({ isOpen, onClose, groupId, studentId }) => {
   const renderStage = () => {
     switch (stage) {
       case 1:
-        return <Stage1GroupDetails groupData={groupData} setGroupData={setGroupData} />;
+        return (
+          <Stage1GroupDetails
+            groupData={groupData}
+            setGroupData={setGroupData}
+          />
+        );
       case 2:
         return (
           <Stage2RoutineDetails
@@ -111,22 +116,22 @@ const RoutineEditModal = ({ isOpen, onClose, groupId, studentId }) => {
         <div
           className="saving-overlay"
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(255, 255, 255, 0.7)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            fontWeight: 'bold',
-            fontSize: '1.1rem',
+            backgroundColor: "rgba(255, 255, 255, 0.7)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            fontWeight: "bold",
+            fontSize: "1.1rem",
             zIndex: 10,
-            borderRadius: '0.5rem',
+            borderRadius: "0.5rem",
           }}
         >
-          <p>{isSaving ? 'Guardando cambios...' : 'Cargando datos...'}</p>
+          <p>{isSaving ? "Guardando cambios..." : "Cargando datos..."}</p>
         </div>
       )}
 
@@ -150,7 +155,7 @@ const RoutineEditModal = ({ isOpen, onClose, groupId, studentId }) => {
             <button
               onClick={addRoutine}
               disabled={isActionDisabled || !canSave}
-              style={{ marginRight: '1rem' }}
+              style={{ marginRight: "1rem" }}
               type="button"
             >
               Añadir otra rutina

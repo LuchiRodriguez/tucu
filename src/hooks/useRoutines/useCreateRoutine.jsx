@@ -1,14 +1,14 @@
 // src/hooks/useRoutineGroup/useCreateRoutineGroupForm.js
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../config/firebase'; // Asumiendo que db se exporta desde firebase.js
-import { useAuth } from '../../context/authContextBase';
-import { v4 as uuidv4 } from 'uuid';
+import { useState, useEffect, useCallback, useRef } from "react";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "../../config/firebase"; // Asumiendo que db se exporta desde firebase.js
+import { useAuth } from "../../context/authContextBase";
+import { v4 as uuidv4 } from "uuid";
 
 // Helper para limpiar objetos para Firestore
 // Esta función es crucial para asegurar que los datos sean válidos para Firestore
 export const cleanObjectForFirestore = (obj) => {
-  if (obj === null || typeof obj !== 'object') {
+  if (obj === null || typeof obj !== "object") {
     return obj;
   }
 
@@ -21,7 +21,7 @@ export const cleanObjectForFirestore = (obj) => {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
       const value = obj[key];
       // Elimina propiedades con valor 'undefined' o que son funciones
-      if (value !== undefined && typeof value !== 'function') {
+      if (value !== undefined && typeof value !== "function") {
         newObj[key] = cleanObjectForFirestore(value);
       }
     }
@@ -35,32 +35,29 @@ const generateRoutineId = () => uuidv4();
 // Valores iniciales para una nueva rutina
 const initialNewRoutine = {
   id: generateRoutineId(),
-  name: '',
-  description: '',
-  warmUp: '',
-  coolDown: '',
-  restTime: 60, // segundos
+  name: "",
   rir: 2, // Reps in Reserve
-  type: 'strength', // 'strength', 'cardio', 'flexibility', 'other'
+  restTime: 60, // segundos
+  warmUp: "",
   exercises: [],
-  notes: '',
 };
 
-export const useCreateRoutineGroup = (studentId) => {
+export const useCreateRoutineGroup = (studentId, isInitialized) => {
   const { user } = useAuth();
   const coachId = user?.uid;
+  const stableStudentIdRef = useRef(studentId);
 
   // Acceso seguro a __app_id, ahora dentro del hook
-  const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+  const appId = typeof __app_id !== "undefined" ? __app_id : "default-app-id";
 
   // Estados del formulario para el grupo de rutinas
   const [groupData, setGroupData] = useState(() => ({
     id: uuidv4(), // ID para el nuevo grupo (generado al inicio de la creación)
-    name: '',
-    objective: '',
-    dueDate: '',
-    stage: 'planning', // Etapa de planificación inicial
-    status: 'draft', // Estado inicial como borrador
+    name: "",
+    objective: "",
+    dueDate: "",
+    stage: "planning", // Etapa de planificación inicial
+    status: "draft", // Estado inicial como borrador
     createdAt: null, // Se asignará serverTimestamp() la primera vez que se guarde
   }));
   // Estado para las rutinas dentro del grupo
@@ -80,11 +77,19 @@ export const useCreateRoutineGroup = (studentId) => {
   const saveTimeoutRef = useRef(null);
 
   // Función para actualizar una rutina específica dentro del array de rutinas
-  const updateSelectedRoutine = useCallback((updatedRoutine) => {
-    setRoutines((prevRoutines) =>
-      prevRoutines.map((r) => (r.id === updatedRoutine.id ? updatedRoutine : r))
-    );
-  }, []);
+  const updateSelectedRoutine = useCallback(
+    (updater) => {
+      setRoutines((prevRoutines) => {
+        const currentRoutine = prevRoutines[selectedRoutineIndex];
+        const updatedRoutine = updater(currentRoutine);
+
+        return prevRoutines.map((r, i) =>
+          i === selectedRoutineIndex ? updatedRoutine : r
+        );
+      });
+    },
+    [selectedRoutineIndex]
+  );
 
   // Función para añadir una nueva rutina al grupo
   const addRoutine = useCallback(() => {
@@ -97,27 +102,31 @@ export const useCreateRoutineGroup = (studentId) => {
   }, []);
 
   // Función para eliminar una rutina del grupo
-  const removeRoutine = useCallback((routineId) => {
-    setRoutines((prevRoutines) => {
-      const updatedRoutines = prevRoutines.filter((r) => r.id !== routineId);
+  const removeRoutine = useCallback(
+    (routineId) => {
+      setRoutines((prevRoutines) => {
+        const updatedRoutines = prevRoutines.filter((r) => r.id !== routineId);
 
-      if (updatedRoutines.length === 0) {
-        // Si no quedan rutinas, añade una nueva para evitar un estado vacío
-        setSelectedRoutineIndex(0);
-        return [initialNewRoutine];
-      }
+        if (updatedRoutines.length === 0) {
+          // Si no quedan rutinas, añade una nueva para evitar un estado vacío
+          setSelectedRoutineIndex(0);
+          return [initialNewRoutine];
+        }
 
-      // Ajusta el índice de la rutina seleccionada si la eliminada era la actual
-      // o si el índice actual está fuera de los límites del nuevo array
-      if (selectedRoutineIndex >= updatedRoutines.length) {
-        setSelectedRoutineIndex(updatedRoutines.length - 1);
-      } else if (selectedRoutineIndex < 0) { // Asegura que el índice no sea negativo
-        setSelectedRoutineIndex(0);
-      }
+        // Ajusta el índice de la rutina seleccionada si la eliminada era la actual
+        // o si el índice actual está fuera de los límites del nuevo array
+        if (selectedRoutineIndex >= updatedRoutines.length) {
+          setSelectedRoutineIndex(updatedRoutines.length - 1);
+        } else if (selectedRoutineIndex < 0) {
+          // Asegura que el índice no sea negativo
+          setSelectedRoutineIndex(0);
+        }
 
-      return updatedRoutines;
-    });
-  }, [selectedRoutineIndex]);
+        return updatedRoutines;
+      });
+    },
+    [selectedRoutineIndex]
+  );
 
   // Navegación a la siguiente etapa del formulario
   const goToNextStage = useCallback(() => {
@@ -131,8 +140,11 @@ export const useCreateRoutineGroup = (studentId) => {
 
   // Función para guardar el borrador del grupo de rutinas en Firestore (con debounce)
   const saveDraft = useCallback(async () => {
-    if (!coachId || !studentId) {
-      setSaveError('Faltan IDs de coach o estudiante para guardar el borrador.');
+    const fixedStudentId = stableStudentIdRef.current;
+    if (!coachId || !fixedStudentId) {
+      setSaveError(
+        "Faltan IDs de coach o estudiante para guardar el borrador."
+      );
       return;
     }
 
@@ -142,7 +154,7 @@ export const useCreateRoutineGroup = (studentId) => {
     try {
       const routineGroupRef = doc(
         db,
-        `artifacts/${appId}/users/${studentId}/routineGroups`,
+        `artifacts/${appId}/users/${fixedStudentId}/routineGroups`,
         groupData.id
       );
 
@@ -159,43 +171,45 @@ export const useCreateRoutineGroup = (studentId) => {
 
       // Si createdAt se acaba de establecer, actualiza el estado local de groupData
       if (!groupData.createdAt) {
-          setGroupData(prev => ({ ...prev, createdAt: dataToSave.createdAt }));
+        setGroupData((prev) => ({ ...prev, createdAt: dataToSave.createdAt }));
       }
 
       setIsSaving(false);
     } catch (error) {
-      console.error('Error al guardar borrador:', error);
-      setSaveError('Error al guardar borrador: ' + error.message);
+      console.error("Error al guardar borrador:", error);
+      setSaveError("Error al guardar borrador: " + error.message);
       setIsSaving(false);
     }
-  }, [coachId, studentId, groupData, routines, appId]);
+  }, [coachId, groupData, routines, appId]);
 
   // Efecto para el auto-guardado con debounce: se activa cada vez que groupData o routines cambian
   useEffect(() => {
+    if (!isInitialized) return;
+
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
+
     saveTimeoutRef.current = setTimeout(() => {
       saveDraft();
-    }, 1500); // Guardar después de 1.5 segundos de inactividad
+    }, 1500);
 
-    // Función de limpieza: se ejecuta cuando el componente se desmonta o las dependencias cambian
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [groupData, routines, saveDraft]); // Dependencias que disparan el auto-guardado
+  }, [groupData, routines, saveDraft, isInitialized]); // Dependencias que disparan el auto-guardado
 
   // Función para reiniciar completamente el formulario a su estado inicial
   const resetForm = useCallback(() => {
     setGroupData({
       id: uuidv4(),
-      name: '',
-      objective: '',
-      dueDate: '',
-      stage: 'planning',
-      status: 'draft',
+      name: "",
+      objective: "",
+      dueDate: "",
+      stage: "planning",
+      status: "draft",
       createdAt: null, // Reinicia createdAt a null
     });
     setRoutines([initialNewRoutine]);
@@ -212,7 +226,7 @@ export const useCreateRoutineGroup = (studentId) => {
   // ✅ NUEVO: Función de validación final antes de publicar el grupo de rutinas
   // Retorna un mensaje de error si la validación falla, o null si es exitosa.
   const validateBeforePublish = useCallback(() => {
-    if (!user) return 'No hay usuario autenticado para publicar la rutina.';
+    if (!user) return "No hay usuario autenticado para publicar la rutina.";
     // Validar detalles del grupo
     if (
       !groupData.name?.trim() ||
@@ -220,7 +234,7 @@ export const useCreateRoutineGroup = (studentId) => {
       !groupData.dueDate ||
       !groupData.stage
     ) {
-      return 'Por favor, completa todos los detalles del grupo de rutinas.';
+      return "Por favor, completa todos los detalles del grupo de rutinas.";
     }
     // Validar que haya al menos una rutina significativa
     if (
@@ -229,21 +243,24 @@ export const useCreateRoutineGroup = (studentId) => {
         (r) => !r.name?.trim() && !r.warmUp?.trim() && r.exercises.length === 0
       )
     ) {
-      return 'Debes agregar al menos una rutina significativa al grupo.';
+      return "Debes agregar al menos una rutina significativa al grupo.";
     }
     // Validar ejercicios dentro de cada rutina
     const invalidExercise = routines.some((r) =>
       r.exercises.some((ex) => {
-        if (ex.sets === undefined || ex.sets <= 0 || isNaN(ex.sets)) return true; // Series deben ser > 0
-        if (ex.type === 'timed') return ex.time === undefined || ex.time <= 0 || isNaN(ex.time); // Tiempo debe ser > 0 para tipo 'timed'
+        if (ex.sets === undefined || ex.sets <= 0 || isNaN(ex.sets))
+          return true; // Series deben ser > 0
+        if (ex.type === "timed")
+          return ex.time === undefined || ex.time <= 0 || isNaN(ex.time); // Tiempo debe ser > 0 para tipo 'timed'
         return ex.reps === undefined || ex.reps < 0 || isNaN(ex.reps); // Reps deben ser >= 0
       })
     );
     if (invalidExercise)
-      return 'Por favor, asigna al menos 1 serie y un valor válido (>=0 para reps, >0 para sets/tiempo) a todos los ejercicios.';
+      return "Por favor, asigna al menos 1 serie y un valor válido (>=0 para reps, >0 para sets/tiempo) a todos los ejercicios.";
     // Validar que todas las rutinas tengan una descripción de calentamiento
-    const missingWarmUp = routines.some(r => !r.warmUp?.trim());
-    if (missingWarmUp) return 'Por favor, agrega una descripción para el calentamiento en todas las rutinas.';
+    const missingWarmUp = routines.some((r) => !r.warmUp?.trim());
+    if (missingWarmUp)
+      return "Por favor, agrega una descripción para el calentamiento en todas las rutinas.";
 
     return null; // No hay errores de validación
   }, [user, groupData, routines]);
@@ -263,7 +280,7 @@ export const useCreateRoutineGroup = (studentId) => {
 
       const routineGroupRef = doc(
         db,
-        `artifacts/${appId}/users/${studentId}/routineGroups`,
+        `artifacts/${appId}/users/${stableStudentIdRef.current}/routineGroups`,
         groupData.id
       );
 
@@ -271,7 +288,7 @@ export const useCreateRoutineGroup = (studentId) => {
       // (El auto-guardado ya debería haberlo hecho, pero esta es una última garantía)
       // Podríamos llamar a saveDraft() aquí, pero para evitar un doble guardado si no hay cambios
       // y solo queremos cambiar el status, lo hacemos directo.
-      
+
       // 3. Actualiza el documento del grupo para cambiar su status a 'active'
       // Incluye todos los datos actuales del grupo y rutinas para asegurar que estén completos
       // y actualiza el timestamp.
@@ -281,7 +298,7 @@ export const useCreateRoutineGroup = (studentId) => {
         updatedAt: serverTimestamp(),
         assignedBy: coachId,
         routines: routines.map(cleanObjectForFirestore),
-        status: 'active', // ¡Cambio de estado a activo!
+        status: "active", // ¡Cambio de estado a activo!
       });
 
       await setDoc(routineGroupRef, dataToPublish, { merge: true });
@@ -289,11 +306,11 @@ export const useCreateRoutineGroup = (studentId) => {
       setIsPublishing(false);
       return { success: true }; // Retorna éxito
     } catch (error) {
-      console.error('Error al publicar grupo de rutinas:', error);
+      console.error("Error al publicar grupo de rutinas:", error);
       setIsPublishing(false);
-      return { error: 'Error al publicar: ' + error.message }; // Retorna error de Firebase
+      return { error: "Error al publicar: " + error.message }; // Retorna error de Firebase
     }
-  }, [appId, studentId, groupData, routines, validateBeforePublish, coachId]); // Dependencias para useCallback
+  }, [appId, groupData, routines, validateBeforePublish, coachId]); // Dependencias para useCallback
 
   // Retorna todos los estados y funciones que el componente UI necesita
   return {

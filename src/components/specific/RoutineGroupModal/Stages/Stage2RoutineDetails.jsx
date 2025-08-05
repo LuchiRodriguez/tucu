@@ -1,10 +1,10 @@
 // src/components/specific/RoutineGroupModal/Stages/Stage2RoutineDetails.jsx
-import PropTypes from 'prop-types';
-import warmUpExercises from '../../../../data/warmUpExercises';
+import PropTypes from "prop-types";
+import warmUpExercises from "../../../../data/warmUpExercises";
 
-import Input from '../../../../components/common/Forms/Input/Input';
-import Label from '../../../../components/common/Forms/Label/Label';
-import Select from '../../../../components/common/Forms/Select/Select';
+import Input from "../../../../components/common/Forms/Input/Input";
+import Label from "../../../../components/common/Forms/Label/Label";
+import Select from "../../../../components/common/Forms/Select/Select";
 
 /**
  * Componente de la segunda etapa para ingresar los detalles de una rutina individual.
@@ -18,11 +18,14 @@ function Stage2RoutineDetails({ currentRoutine, setCurrentRoutine }) {
   );
 
   const handleInputChange = ({ target: { id, value } }) => {
-    setCurrentRoutine((prevRoutine) => ({
-      ...prevRoutine,
-      [id]: id === 'name' ? value.trimStart() : value,
+    console.log("Cambiando:", id, value);
+    setCurrentRoutine((prev) => ({
+      ...prev,
+      [id]: id === "name" ? value.trimStart() : value,
     }));
   };
+
+  console.log("🧠 currentRoutine:", currentRoutine);
 
   // Asegurarse de que currentRoutine no sea null antes de acceder a sus propiedades
   if (!currentRoutine) {
@@ -37,7 +40,7 @@ function Stage2RoutineDetails({ currentRoutine, setCurrentRoutine }) {
         id="name"
         type="text"
         placeholder="Ej. Día 1 - Dominante de cadera"
-        value={currentRoutine.name || ''}
+        value={currentRoutine.name || ""}
         onChange={handleInputChange}
         required
         style={{ marginBottom: 15 }}
@@ -50,7 +53,7 @@ function Stage2RoutineDetails({ currentRoutine, setCurrentRoutine }) {
         type="number"
         min="0"
         max="10"
-        value={currentRoutine.rir || ''}
+        value={currentRoutine.rir || ""}
         onChange={handleInputChange}
         required
         style={{ marginBottom: 15 }}
@@ -62,7 +65,7 @@ function Stage2RoutineDetails({ currentRoutine, setCurrentRoutine }) {
         id="restTime"
         type="number"
         min="0"
-        value={currentRoutine.restTime || ''}
+        value={currentRoutine.restTime || ""}
         onChange={handleInputChange}
         required
         style={{ marginBottom: 15 }}
@@ -72,7 +75,7 @@ function Stage2RoutineDetails({ currentRoutine, setCurrentRoutine }) {
       <Label htmlFor="warmUp">Calentamiento</Label>
       <Select
         id="warmUp"
-        value={currentRoutine.warmUp || ''}
+        value={currentRoutine.warmUp || ""}
         onChange={handleInputChange}
         required
         style={{ marginBottom: 15 }}
@@ -86,14 +89,14 @@ function Stage2RoutineDetails({ currentRoutine, setCurrentRoutine }) {
       </Select>
 
       {/* Inputs específicos según tipo calentamiento */}
-      {selectedWarmUp && selectedWarmUp.type === 'reps_sets' && (
+      {selectedWarmUp && selectedWarmUp.type === "reps_sets" && (
         <>
           <Label htmlFor="warmUpSets">Series calentamiento</Label>
           <Input
             id="warmUpSets"
             type="number"
             min="1"
-            value={currentRoutine.warmUpSets || ''}
+            value={currentRoutine.warmUpSets || ""}
             onChange={handleInputChange}
             required
             style={{ marginBottom: 15 }}
@@ -104,7 +107,7 @@ function Stage2RoutineDetails({ currentRoutine, setCurrentRoutine }) {
             id="warmUpReps"
             type="number"
             min="1"
-            value={currentRoutine.warmUpReps || ''}
+            value={currentRoutine.warmUpReps || ""}
             onChange={handleInputChange}
             required
             style={{ marginBottom: 15 }}
@@ -112,14 +115,14 @@ function Stage2RoutineDetails({ currentRoutine, setCurrentRoutine }) {
         </>
       )}
 
-      {selectedWarmUp && selectedWarmUp.type === 'timed' && (
+      {selectedWarmUp && selectedWarmUp.type === "timed" && (
         <>
           <Label htmlFor="warmUpTime">Tiempo calentamiento (segundos)</Label>
           <Input
             id="warmUpTime"
             type="number"
             min="1"
-            value={currentRoutine.warmUpTime || ''}
+            value={currentRoutine.warmUpTime || ""}
             onChange={handleInputChange}
             required
             style={{ marginBottom: 15 }}
