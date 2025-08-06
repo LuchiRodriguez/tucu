@@ -4,6 +4,10 @@ import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../config/firebase"; // Asumiendo que db se exporta desde firebase.js
 import { useAuth } from "../../context/authContextBase";
 import { v4 as uuidv4 } from "uuid";
+import Stage1GroupDetails from "../../components/specific/RoutineGroupModal/Stages/Stage1GroupDetails";
+import Stage2RoutineDetails from "../../components/specific/RoutineGroupModal/Stages/Stage2RoutineDetails";
+import Stage3AddExercises from "../../components/specific/RoutineGroupModal/Stages/Stage3AddExercises";
+import Stage4AssignSetsReps from "../../components/specific/RoutineGroupModal/Stages/Stage4AssignSetsReps";
 
 // Helper para limpiar objetos para Firestore
 // Esta función es crucial para asegurar que los datos sean válidos para Firestore
@@ -72,6 +76,7 @@ export const useCreateRoutineGroup = (studentId, isInitialized) => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [isPublishing, setIsPublishing] = useState(false); // NUEVO: Estado para la publicación final
+  const isActionDisabled = isPublishing || isSaving;
 
   // Ref para manejar el debounce del auto-guardado
   const saveTimeoutRef = useRef(null);
@@ -142,14 +147,13 @@ export const useCreateRoutineGroup = (studentId, isInitialized) => {
   const saveDraft = useCallback(async () => {
     const fixedStudentId = stableStudentIdRef.current;
     if (!coachId || !fixedStudentId) {
-      setSaveError(
-        "Faltan IDs de coach o estudiante para guardar el borrador."
-      );
-      return;
+      return {
+        success: false,
+        error: "Faltan IDs de coach o estudiante para guardar el borrador.",
+      };
     }
 
     setIsSaving(true);
-    setSaveError(null);
 
     try {
       const routineGroupRef = doc(
@@ -158,27 +162,27 @@ export const useCreateRoutineGroup = (studentId, isInitialized) => {
         groupData.id
       );
 
-      // Manejo de createdAt: Asigna serverTimestamp() solo si es null
       const dataToSave = cleanObjectForFirestore({
         ...groupData,
         createdAt: groupData.createdAt || serverTimestamp(),
-        updatedAt: serverTimestamp(), // Siempre actualiza la fecha de modificación
+        updatedAt: serverTimestamp(),
         assignedBy: coachId,
-        routines: routines.map(cleanObjectForFirestore), // Limpia cada rutina antes de guardar
+        routines: routines.map(cleanObjectForFirestore),
       });
 
-      await setDoc(routineGroupRef, dataToSave, { merge: true }); // Usa merge para actualizar el borrador existente
+      await setDoc(routineGroupRef, dataToSave, { merge: true });
 
-      // Si createdAt se acaba de establecer, actualiza el estado local de groupData
       if (!groupData.createdAt) {
         setGroupData((prev) => ({ ...prev, createdAt: dataToSave.createdAt }));
       }
 
       setIsSaving(false);
+
+      return { success: true, error: null };
     } catch (error) {
-      console.error("Error al guardar borrador:", error);
-      setSaveError("Error al guardar borrador: " + error.message);
       setIsSaving(false);
+      console.error("Error al guardar borrador:", error);
+      return { success: false, error: error.message || "Error desconocido" };
     }
   }, [coachId, groupData, routines, appId]);
 
@@ -265,6 +269,8 @@ export const useCreateRoutineGroup = (studentId, isInitialized) => {
     return null; // No hay errores de validación
   }, [user, groupData, routines]);
 
+  const canPublishOrAddRoutine = !isActionDisabled && !validateBeforePublish();
+
   // ✅ NUEVO: Función para publicar el grupo de rutinas (cambiar su estado a 'active' en Firestore)
   const publishRoutineGroup = useCallback(async () => {
     setIsPublishing(true); // Activa el estado de publicación
@@ -312,7 +318,46 @@ export const useCreateRoutineGroup = (studentId, isInitialized) => {
     }
   }, [appId, groupData, routines, validateBeforePublish, coachId]); // Dependencias para useCallback
 
-  // Retorna todos los estados y funciones que el componente UI necesita
+  const stageList = [
+    {
+      id: 1,
+      name: "Detalles del grupo",
+      component: (
+        <Stage1GroupDetails groupData={groupData} setGroupData={setGroupData} />
+      ),
+    },
+    {
+      id: 2,
+      name: "Detalles de la rutina",
+      component: (
+        <Stage2RoutineDetails
+          currentRoutine={selectedRoutine}
+          setCurrentRoutine={updateSelectedRoutine}
+        />
+      ),
+    },
+    {
+      id: 3,
+      name: "Agregar ejercicios",
+      component: (
+        <Stage3AddExercises
+          currentRoutine={selectedRoutine}
+          setCurrentRoutine={updateSelectedRoutine}
+        />
+      ),
+    },
+    {
+      id: 4,
+      name: "Asignar sets y reps",
+      component: (
+        <Stage4AssignSetsReps
+          currentRoutine={selectedRoutine}
+          setCurrentRoutine={updateSelectedRoutine}
+        />
+      ),
+    },
+  ];
+
   return {
     stage,
     setStage,
@@ -330,8 +375,12 @@ export const useCreateRoutineGroup = (studentId, isInitialized) => {
     resetForm,
     isSaving,
     saveError,
-    isPublishing, // ✅ NUEVO: Estado de publicación
-    validateBeforePublish, // Exportamos la función de validación
-    publishRoutineGroup, // Exportamos la función de publicación
+    isPublishing,
+    validateBeforePublish,
+    publishRoutineGroup,
+    canPublishOrAddRoutine,
+    isActionDisabled,
+    stageList,
+    currentStage: stageList[stage - 1],
   };
 };

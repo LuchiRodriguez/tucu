@@ -1,7 +1,10 @@
 // src/components/common/Utilities/LoadingGif/LoadingGif.jsx
-import loadingGif from '../../../../assets/loading.gif'; // Ajusta esta ruta si es necesario
+import loadingGif from "../../../../assets/loading.gif"; // Ajusta esta ruta si es necesario
 
-import { StyledLoadingGifWrapper, StyledLoadingImage } from './StyledLoadingGif';
+import {
+  StyledLoadingGifWrapper,
+  StyledLoadingImage,
+} from "./StyledLoadingGif";
 
 function LoadingGif() {
   return (

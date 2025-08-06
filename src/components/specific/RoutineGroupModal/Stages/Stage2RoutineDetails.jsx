@@ -5,6 +5,7 @@ import warmUpExercises from "../../../../data/warmUpExercises";
 import Input from "../../../../components/common/Forms/Input/Input";
 import Label from "../../../../components/common/Forms/Label/Label";
 import Select from "../../../../components/common/Forms/Select/Select";
+import { StyledModalBody } from "../StyledRoutineGroupModal";
 
 /**
  * Componente de la segunda etapa para ingresar los detalles de una rutina individual.
@@ -47,7 +48,7 @@ function Stage2RoutineDetails({ currentRoutine, setCurrentRoutine }) {
   }
 
   return (
-    <div style={{ flexGrow: 1 }}>
+    <StyledModalBody>
       {/* Nombre rutina */}
       <Label htmlFor="name">Nombre de rutina</Label>
       <Input
@@ -131,7 +132,7 @@ function Stage2RoutineDetails({ currentRoutine, setCurrentRoutine }) {
 
       {selectedWarmUp && selectedWarmUp.type === "timed" && (
         <>
-          <Label htmlFor="warmUpTime">Tiempo calentamiento (segundos)</Label>
+          <Label htmlFor="warmUpTime">Tiempo calentamiento (minutos)</Label>
           <Input
             id="warmUpTime"
             type="number"
@@ -143,7 +144,7 @@ function Stage2RoutineDetails({ currentRoutine, setCurrentRoutine }) {
           />
         </>
       )}
-    </div>
+    </StyledModalBody>
   );
 }
 

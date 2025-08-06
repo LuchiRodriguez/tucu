@@ -67,8 +67,8 @@ function StudentPage() {
   const [studentError, setStudentError] = useState(null);
 
   const [isRoutineGroupModalOpen, setIsRoutineGroupModalOpen] = useState(false);
-  const [editingDraftId, setEditingDraftId] = useState(null); // Estado para el ID del grupo/borrador a editar
-  const [editingRoutineData, setEditingRoutineData] = useState(null); // Estado para los datos de la rutina individual a editar
+  const [editingDraftId, setEditingDraftId] = useState(null);
+  const [editingRoutineData, setEditingRoutineData] = useState(null);
 
   // Usamos el hook que devuelve datos del stage y grupos para este alumno
   const {
@@ -125,8 +125,8 @@ function StudentPage() {
 
   const handleCloseRoutineGroupModal = useCallback(() => {
     setIsRoutineGroupModalOpen(false);
-    setEditingDraftId(null); // Limpiar al cerrar
-    setEditingRoutineData(null); // Limpiar al cerrar
+    setEditingDraftId(null);
+    setEditingRoutineData(null);
   }, [setIsRoutineGroupModalOpen, setEditingDraftId, setEditingRoutineData]);
 
   const handleEditRoutineGroup = useCallback((groupId) => {
@@ -330,7 +330,7 @@ function StudentPage() {
           {showNoRoutinesMessage ? (
             <Subtitle
               style={{
-                marginTop: 0,
+                marginTop: "120px",
                 fontSize: "0.9rem",
                 color: "#7f8c8d",
                 textAlign: "center",

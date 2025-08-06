@@ -5,7 +5,6 @@ import closeIcon from "../../../../assets/close.png";
 
 function CloseModalButton({ onClose, updateSelectedRoutine, warmUpExercises }) {
   const handleClose = () => {
-    // Limpiar rutina si se proveen props
     if (updateSelectedRoutine && warmUpExercises) {
       updateSelectedRoutine((routine) => {
         const selectedWarmUp = warmUpExercises.find(
@@ -25,7 +24,7 @@ function CloseModalButton({ onClose, updateSelectedRoutine, warmUpExercises }) {
       });
     }
 
-    onClose(); // Cerrar el modal
+    onClose();
   };
 
   return (

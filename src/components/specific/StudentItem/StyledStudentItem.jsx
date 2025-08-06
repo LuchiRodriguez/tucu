@@ -1,19 +1,21 @@
 // src/components/specific/StudentItem/StyledStudentItem.js
-import styled from 'styled-components';
-import Button from '../../common/Buttons/Button/Button'; // Importamos el componente Button común
+import styled from "styled-components";
+import Button from "../../common/Buttons/Button/Button"; // Importamos el componente Button común
 
 export const StyledStudentItemContainer = styled.li`
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
-  background-color: ${props => props.$isSelected ? '#E8F6FD' : '#FFFFFF'}; /* Azul claro si seleccionado, Blanco Puro por defecto */
-  border: 1px solid ${props => props.$isSelected ? '#5DD62C' : '#F8F8F8'}; /* Borde verde si seleccionado, Gris Muy Claro por defecto */
+  background-color: ${(props) =>
+    props.$isSelected
+      ? "#E8F6FD"
+      : "#FFFFFF"}; /* Azul claro si seleccionado, Blanco Puro por defecto */
+  border: 1px solid ${(props) => (props.$isSelected ? "#5DD62C" : "#F8F8F8")}; /* Borde verde si seleccionado, Gris Muy Claro por defecto */
   border-radius: 12px;
   margin-bottom: 10px; /* Espacio entre ítems */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
   flex-wrap: wrap; /* Permite que los elementos se envuelvan en pantallas pequeñas */
 
   &:hover {
@@ -39,7 +41,7 @@ export const StyledStudentItemContainer = styled.li`
 export const StyledStudentName = styled.h4`
   font-size: 1.1rem;
   font-weight: 600;
-  color: #0F0F0F; /* Negro Profundo de la paleta */
+  color: #0f0f0f; /* Negro Profundo de la paleta */
   margin: 0;
 `;
 
@@ -50,8 +52,8 @@ export const StyledStudentEmail = styled.p`
 `;
 
 export const StyledViewButton = styled(Button)`
-  background-color: #5DD62C; /* Verde Vibrante de la paleta */
-  color: #FFFFFF; /* Blanco Puro */
+  background-color: #5dd62c; /* Verde Vibrante de la paleta */
+  color: #ffffff; /* Blanco Puro */
   border: none;
   border-radius: 8px;
   padding: 8px 15px;

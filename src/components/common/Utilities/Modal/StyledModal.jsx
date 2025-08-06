@@ -27,7 +27,7 @@ export const StyledModalContent = styled.div`
   border-radius: 12px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   width: 90%;
-  height: 70vh;
+  height: 80vh;
   max-width: 550px;
   max-height: 90vh; /* Limitar altura para scroll */
   overflow-y: auto; /* Habilitar scroll si el contenido excede la altura */
@@ -45,8 +45,7 @@ export const StyledModalHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #eee; /* Un gris muy claro para el separador */
-  padding-bottom: 15px;
-  margin-bottom: 15px;
+  padding-bottom: 10px;
 `;
 
 export const StyledModalTitle = styled.h3`

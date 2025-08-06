@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import Input from "../../../../components/common/Forms/Input/Input";
 import Label from "../../../../components/common/Forms/Label/Label";
 import Select from "../../../../components/common/Forms/Select/Select";
+import { StyledModalBody } from "../StyledRoutineGroupModal";
 
 /**
  * Componente de la primera etapa para ingresar los detalles del grupo de rutinas.
@@ -20,7 +21,7 @@ function Stage1GroupDetails({ groupData, setGroupData }) {
   };
 
   return (
-    <div style={{ flexGrow: 1 }}>
+    <StyledModalBody>
       {/* Etapa del grupo */}
       <Label htmlFor="stage">Etapa</Label>
       <Select
@@ -76,7 +77,7 @@ function Stage1GroupDetails({ groupData, setGroupData }) {
         onChange={handleInputChange}
         required
       />
-    </div>
+    </StyledModalBody>
   );
 }
 

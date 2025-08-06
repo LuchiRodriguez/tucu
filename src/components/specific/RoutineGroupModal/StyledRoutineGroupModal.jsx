@@ -2,18 +2,12 @@
 import styled from "styled-components";
 import { StyledInputBase } from "../../common/Forms/Input/StyledInput";
 
-// --- Contenedores específicos del Modal de Grupo de Rutinas ---
-// NOTA: StyledModalOverlay, StyledModalContent, StyledModalHeader, StyledModalTitle, StyledCloseButton
-// fueron movidos a src/components/common/Modal/StyledModal.js
-
 export const StyledModalBody = styled.div`
   flex-grow: 1;
-  padding-top: 15px;
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
   overflow-y: auto;
-  gap: 15px; /* Espacio entre los grupos de input/secciones */
 `;
 
 export const StyledButtonContainer = styled.div`
@@ -100,9 +94,6 @@ export const StyledExerciseInputGroup = styled.div`
   }
 `;
 
-// NOTA: StyledAddExerciseButton fue movido a src/components/common/AddExerciseButton/StyledAddExerciseButton.js (si lo creaste)
-// NOTA: StyledRemoveExerciseButton fue movido a src/components/common/RemoveExerciseButton/StyledRemoveExerciseButton.js
-
 export const StyledExerciseListContainer = styled.ul`
   list-style: none;
   height: 30vh; /* Altura fija para la lista de ejercicios */
@@ -129,10 +120,6 @@ export const StyledLoadingOverlay = styled.div`
   font-weight: bold;
 `;
 
-// NOTA: StyledErrorMessage y StyledSuccessMessage
-// fueron movidos a src/components/common/ErrorMessage/StyledErrorMessage.js
-// y src/components/common/SuccessMessage/StyledSuccessMessage.js
-
 export const StyledExerciseSelectionItem = styled.div`
   display: flex;
   align-items: center;
@@ -148,10 +135,6 @@ export const StyledExerciseSelectionItem = styled.div`
 export const StyledExerciseSelectionList = styled.div`
   max-height: 300px;
   overflow-y: auto;
-  border: 1px solid #bdc3c7; /* Gris Neutro */
-  border-radius: 8px;
-  padding: 10px;
-  background-color: #ffffff; /* Blanco Puro */
 `;
 
 export const StyledSummarySection = styled.div`
