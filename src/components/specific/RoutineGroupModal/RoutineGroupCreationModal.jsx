@@ -65,7 +65,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId }) => {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={groupData.name !== "" ? groupData.name : "Nuevo grupo de rutinas"}
+      title={currentStage?.title ?? "Nuevo grupo de rutinas"}
       updateSelectedRoutine={updateSelectedRoutine}
       warmUpExercises={groupData.warmUpExercises}
     >

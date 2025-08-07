@@ -124,14 +124,11 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
   return (
     <StyledModalBody>
       <SectionTitle style={{ borderBottom: "0", marginTop: "10px" }}>
-        {routine.name || "Nueva Rutina"}
-      </SectionTitle>
-      <SubSectionTitle style={{ margin: "0" }}>
         Descanso: <span>{routine.restTime || 0}s</span> | RIR:
         <span>{routine.rir || 0}</span>
         <br />
         Calentamiento: <span>{routine.warmUp || "N/A"}</span>
-      </SubSectionTitle>
+      </SectionTitle>
 
       <SubSectionTitle>Seleccionar Ejercicios:</SubSectionTitle>
       <Input

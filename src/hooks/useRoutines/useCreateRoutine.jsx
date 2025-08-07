@@ -322,6 +322,7 @@ export const useCreateRoutineGroup = (studentId, isInitialized) => {
     {
       id: 1,
       name: "Detalles del grupo",
+      title: groupData.name !== "" ? groupData.name : "Nuevo grupo de rutinas",
       component: (
         <Stage1GroupDetails groupData={groupData} setGroupData={setGroupData} />
       ),
@@ -329,6 +330,7 @@ export const useCreateRoutineGroup = (studentId, isInitialized) => {
     {
       id: 2,
       name: "Detalles de la rutina",
+      title: groupData.name !== "" ? groupData.name : "Nueva rutina",
       component: (
         <Stage2RoutineDetails
           currentRoutine={selectedRoutine}
@@ -339,6 +341,7 @@ export const useCreateRoutineGroup = (studentId, isInitialized) => {
     {
       id: 3,
       name: "Agregar ejercicios",
+      title: selectedRoutine.name || "Nueva Rutina",
       component: (
         <Stage3AddExercises
           currentRoutine={selectedRoutine}
@@ -349,6 +352,7 @@ export const useCreateRoutineGroup = (studentId, isInitialized) => {
     {
       id: 4,
       name: "Asignar sets y reps",
+      title: selectedRoutine.name || "Nueva Rutina",
       component: (
         <Stage4AssignSetsReps
           currentRoutine={selectedRoutine}
