@@ -6,7 +6,6 @@ import localExercisesData from "../../../../data/exercises.json"; // Asegúrate 
 import CollapsibleCard from "../../../common/Utilities/CollapsibleCard/CollapsibleCard";
 import Input from "../../../common/Forms/Input/Input";
 import RemoveExerciseButton from "../../../common/Buttons/RemoveExerciseButton/RemoveExerciseButton";
-import SectionTitle from "../../../common/Messages/SectionTitle/SectionTitle";
 import SubSectionTitle from "../../../common/Messages/SubSectionTitle/SubSectionTitle";
 import Checkbox from "../../../common/Utilities/Checkbox/Checkbox";
 import Subtitle from "../../../common/Messages/Subtitle/Subtitle";
@@ -123,14 +122,16 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
 
   return (
     <StyledModalBody>
-      <SectionTitle style={{ borderBottom: "0", marginTop: "10px" }}>
+      <SubSectionTitle style={{ margin: "10px 0 0" }}>
         Descanso: <span>{routine.restTime || 0}s</span> | RIR:
         <span>{routine.rir || 0}</span>
         <br />
         Calentamiento: <span>{routine.warmUp || "N/A"}</span>
-      </SectionTitle>
+      </SubSectionTitle>
 
-      <SubSectionTitle>Seleccionar Ejercicios:</SubSectionTitle>
+      <SubSectionTitle style={{ margin: "10px 0" }}>
+        Seleccionar Ejercicios:
+      </SubSectionTitle>
       <Input
         type="text"
         value={exerciseSearchText}
@@ -148,7 +149,7 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
             : "No hay ejercicios disponibles para seleccionar."}
         </Subtitle>
       ) : (
-        <StyledExerciseSelectionList>
+        <StyledExerciseSelectionList style={{ flexGrow: 1 }}>
           {Object.entries(groupedExercises).map(([categoryName, exercises]) => (
             <CollapsibleCard
               key={categoryName}
@@ -176,48 +177,54 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
       )}
 
       <SubSectionTitle>Ejercicios en la Rutina:</SubSectionTitle>
-      {exercisesInRoutine.length === 0 ? (
-        <Subtitle
-          style={{ textAlign: "center", margin: "20px 0", color: "#7f8c8d" }}
-        >
-          Selecciona ejercicios de la lista de arriba.
-        </Subtitle>
-      ) : (
-        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          {exercisesInRoutine
-            .slice() // Crea una copia para no mutar el array original antes de ordenar
-            .sort((a, b) => a.order - b.order) // Asegura el orden visual
-            .map((exercise, index) => (
-              <StyledExerciseItem
-                key={exercise.id}
-                draggable // Habilita el arrastre
-                onDragStart={(e) => handleDragStart(e, index)}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, index)}
-              >
-                <span>
-                  {index + 1}. {exercise.name}
-                </span>
-                <RemoveExerciseButton onClick={() => toggleExercise(exercise)}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+      <StyledExerciseSelectionList
+        style={{ minHeight: "60px", maxHeight: "60px" }}
+      >
+        {exercisesInRoutine.length === 0 ? (
+          <Subtitle
+            style={{ textAlign: "center", margin: "20px 0", color: "#7f8c8d" }}
+          >
+            Selecciona ejercicios de la lista de arriba.
+          </Subtitle>
+        ) : (
+          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+            {exercisesInRoutine
+              .slice() // Crea una copia para no mutar el array original antes de ordenar
+              .sort((a, b) => a.order - b.order) // Asegura el orden visual
+              .map((exercise, index) => (
+                <StyledExerciseItem
+                  key={exercise.id}
+                  draggable // Habilita el arrastre
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, index)}
+                >
+                  <span>
+                    {index + 1}. {exercise.name}
+                  </span>
+                  <RemoveExerciseButton
+                    onClick={() => toggleExercise(exercise)}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
-                </RemoveExerciseButton>
-              </StyledExerciseItem>
-            ))}
-        </ul>
-      )}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </RemoveExerciseButton>
+                </StyledExerciseItem>
+              ))}
+          </ul>
+        )}
+      </StyledExerciseSelectionList>
     </StyledModalBody>
   );
 };

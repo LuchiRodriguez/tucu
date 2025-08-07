@@ -40,8 +40,6 @@ function Stage2RoutineDetails({ currentRoutine, setCurrentRoutine }) {
     });
   };
 
-  console.log("🧠 currentRoutine:", currentRoutine);
-
   // Asegurarse de que currentRoutine no sea null antes de acceder a sus propiedades
   if (!currentRoutine) {
     return <p>Cargando detalles de rutina...</p>; // O un mensaje de error/placeholder

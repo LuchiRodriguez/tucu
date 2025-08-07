@@ -133,7 +133,6 @@ export const StyledExerciseSelectionItem = styled.div`
 `;
 
 export const StyledExerciseSelectionList = styled.div`
-  max-height: 300px;
   overflow-y: auto;
 `;
 
