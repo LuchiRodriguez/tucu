@@ -1,30 +1,33 @@
 // src/pages/StudentPage/StyledStudentPage.js
-import styled from 'styled-components';
-import { StyledSubtitleBase } from '../../components/common/Messages/Subtitle/StyledSubtitle'; // Para anidar estilos de Subtitle
-import { StyledTitleBase } from '../../components/common/Messages/Title/StyledTitle'; // Para anidar estilos de Title
-import CollapsibleCard from '../../components/common/Utilities/CollapsibleCard/CollapsibleCard';
-
-// NOTA: StyledCoachPageContainer fue reemplazado por common/PageContainer
-// NOTA: StyledAppMessage fue reemplazado por common/Subtitle o common/ErrorMessage
-// NOTA: StyledFormButton fue reemplazado por common/Button
+import styled from "styled-components";
+import { StyledSubtitleBase } from "../../components/common/Messages/Subtitle/StyledSubtitle"; // Para anidar estilos de Subtitle
+import { StyledTitleBase } from "../../components/common/Messages/Title/StyledTitle"; // Para anidar estilos de Title
+import CollapsibleCard from "../../components/common/Utilities/CollapsibleCard/CollapsibleCard";
 
 export const StyledStudentPageContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
   width: 100%;
+  min-height: 570px;
+  max-height: 570px;
   padding: 0 0 20px;
-  background-color: #FFFFFF; /* Blanco Puro */
+  background-color: #ffffff; /* Blanco Puro */
   border-radius: 12px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Sombra para el Card principal */
   box-sizing: border-box;
 
-  ${StyledTitleBase} { /* Estilo para el título principal del alumno */
+  ${StyledTitleBase} {
+    /* Estilo para el título principal del alumno */
     text-align: center;
     margin: 0;
     padding-top: 20px;
     padding-bottom: 10px;
-    color: #0F0F0F; /* Negro Profundo */
+    color: #0f0f0f; /* Negro Profundo */
   }
 
-  ${StyledSubtitleBase} { /* Estilo para el objetivo del alumno */
+  ${StyledSubtitleBase} {
+    /* Estilo para el objetivo del alumno */
     text-align: center;
     margin-top: 5px;
     margin-bottom: 20px;
@@ -34,25 +37,29 @@ export const StyledStudentPageContent = styled.div`
 `;
 
 export const StyledRoutineGroupsWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
   width: 100%;
-  height: 100%;
+  max-height: 390px;
   padding: 0 10px;
   box-sizing: border-box;
+  overflow-y: auto;
 `;
 
 export const StyledGroupCard = styled(CollapsibleCard)`
-  border: 1px solid #BDC3C7;
+  border: 1px solid #bdc3c7;
   border-radius: 8px;
   padding: 15px;
   margin-bottom: 15px;
-  background-color: #F8F8F8;
+  background-color: #f8f8f8;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 
   &.draft {
-    border-left: 5px solid #F39C12;
+    border-left: 5px solid #f39c12;
   }
   &.active {
-    border-left: 5px solid #5DD62C;
+    border-left: 5px solid #5dd62c;
   }
 `;
 
@@ -64,11 +71,12 @@ export const StyledGroupHeader = styled.div`
   flex-wrap: wrap; /* Permite que los elementos se envuelvan */
   gap: 10px; /* Espacio entre elementos del header */
 
-  ${StyledTitleBase} { /* Título del grupo de rutina */
+  ${StyledTitleBase} {
+    /* Título del grupo de rutina */
     margin: 0;
     font-size: 1.2rem;
     font-weight: bold;
-    color: #0F0F0F; /* Negro Profundo */
+    color: #0f0f0f; /* Negro Profundo */
     flex-grow: 1; /* Permite que el título crezca */
   }
 `;
@@ -78,8 +86,9 @@ export const StyledGroupStatus = styled.span`
   font-weight: 600;
   padding: 4px 8px;
   border-radius: 5px;
-  color: #FFFFFF; /* Blanco Puro */
-  background-color: ${props => props.$isDraft ? '#F39C12' : '#5DD62C'}; /* Naranja o Verde */
+  color: #ffffff; /* Blanco Puro */
+  background-color: ${(props) =>
+    props.$isDraft ? "#F39C12" : "#5DD62C"}; /* Naranja o Verde */
   margin-left: 10px;
   flex-shrink: 0; /* Evita que se encoja */
 `;
@@ -97,14 +106,14 @@ export const StyledGroupDetailText = styled.p`
 
   span {
     font-weight: bold;
-    color: #0F0F0F; /* Negro Profundo para los valores */
+    color: #0f0f0f; /* Negro Profundo para los valores */
   }
 `;
 
 export const StyledRoutineSubtitle = styled.h4`
   font-size: 1.1rem;
   font-weight: 600;
-  color: #0F0F0F; /* Negro Profundo */
+  color: #0f0f0f; /* Negro Profundo */
   margin-top: 20px;
   margin-bottom: 10px;
 `;
@@ -125,7 +134,7 @@ export const StyledExerciseDetailItem = styled.li`
   line-height: 1.4;
 
   strong {
-    color: #0F0F0F; /* Negro Profundo */
+    color: #0f0f0f; /* Negro Profundo */
   }
 `;
 
@@ -146,5 +155,5 @@ export const StyledAddRoutineGroupButtonWrapper = styled.div`
   justify-content: center;
   margin-top: 20px;
   padding-top: 10px;
-  border-top: 1px solid #F8F8F8; /* Separador */
+  border-top: 1px solid #f8f8f8; /* Separador */
 `;

@@ -1,5 +1,5 @@
 // src/components/common/PageContainer/StyledPageContainer.js
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const StyledPageContainerBase = styled.div`
   height: 100%;
@@ -8,9 +8,9 @@ export const StyledPageContainerBase = styled.div`
   align-items: center;
   justify-content: center;
   gap: 15px;
-  background-color: #F8F8F8;
+  background-color: #f8f8f8;
   padding: 15px;
-  padding-top: 80px; /* <= Ajuste para evitar que el contenido se esconda bajo el navbar */
+  padding-top: 80px;
   box-sizing: border-box;
 
   @media (min-width: 768px) {

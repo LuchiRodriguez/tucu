@@ -309,40 +309,26 @@ function StudentPage() {
         isCoachDashboard={false}
         userName={coachName}
       />
-      <StyledStudentPageContent
-        style={{
-          flexGrow: 1,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-        }}
-      >
+      <StyledStudentPageContent>
         <div>
           <Title as="h2">
             {student?.name || student?.email?.split("@")[0] || "Alumno"}
           </Title>
-          <Subtitle style={{ marginBottom: "20px" }}>
+          <Subtitle style={{ margin: "0" }}>
             Objetivo: <span>{student?.objective || "No definido"}</span>
           </Subtitle>
         </div>
-        <StyledRoutineGroupsWrapper>
+        <StyledRoutineGroupsWrapper style={{ justifyContent: "center" }}>
           {showNoRoutinesMessage ? (
-            <Subtitle
-              style={{
-                marginTop: "120px",
-                fontSize: "0.9rem",
-                color: "#7f8c8d",
-                textAlign: "center",
-              }}
-            >
+            <Subtitle style={{ color: "#7f8c8d" }}>
               Este alumno aún no tiene
               <br />
-              grupos de rutinas asignados.
+              rutinas asignadas.
             </Subtitle>
           ) : (
             <>
               {/* Etapa actual como subtítulo fijo */}
-              <SectionTitle style={{ marginTop: "25px", marginBottom: "15px" }}>
+              <SectionTitle style={{ marginTop: "20px", marginBottom: "15px" }}>
                 Etapa:{" "}
                 {currentStageData.stageName.charAt(0).toUpperCase() +
                   currentStageData.stageName.slice(1)}
