@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setRole(null);
         setUserName(null);
-        setTimeout(() => setLoading(false), 200);
+        setLoading(false);
       }
     });
 
@@ -88,10 +88,9 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-const RenderContent = ({ loading, children }) => {
-  if (loading) return <LoadingGif />;
-  return children;
-};
+const RenderContent = ({ loading, children }) => (
+  <>{loading ? <LoadingGif /> : children}</>
+);
 
 RenderContent.propTypes = {
   loading: PropTypes.bool.isRequired,

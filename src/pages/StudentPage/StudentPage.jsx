@@ -16,7 +16,6 @@ import Button from "../../components/common/Buttons/Button/Button";
 import ErrorMessage from "../../components/common/Messages/ErrorMessage/ErrorMessage";
 import EditIcon from "../../components/common/Icons/EditIcon/EditIcon";
 import DeleteIcon from "../../components/common/Icons/DeleteIcon/DeleteIcon";
-import LoadingGif from "../../components/common/Utilities/LoadingGif/LoadingGif";
 
 import { useAuth } from "../../context/authContextBase";
 import { useStudentRoutineGroupsData } from "../../hooks/useRoutines/useRoutines";
@@ -225,7 +224,7 @@ function StudentPage() {
     student?.name || student?.email?.split("@")[0] || "Este Alumno";
 
   if (loadingStudent || loadingRoutineGroups) {
-    return <LoadingGif />;
+    return null;
   }
 
   if (studentError) {
