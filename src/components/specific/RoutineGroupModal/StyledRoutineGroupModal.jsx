@@ -124,7 +124,7 @@ export const StyledExerciseSelectionItem = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 0;
+  padding: 5px 0;
   border-bottom: 1px dashed #f8f8f8; /* Gris Muy Claro para el borde punteado */
 
   &:last-child {

@@ -14,7 +14,6 @@ import Subtitle from "../../../common/Messages/Subtitle/Subtitle";
 import {
   StyledModalBody,
   StyledExerciseItem,
-  StyledCurrentRoutineInfo,
   StyledExerciseSelectionItem,
   StyledExerciseSelectionList,
 } from "../StyledRoutineGroupModal";
@@ -87,12 +86,12 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
       }
 
       // Reordenar para mantener orden consistente y actualizar la rutina en el hook padre
-      setCurrentRoutine({
-        ...routine,
+      setCurrentRoutine((prevRoutine) => ({
+        ...prevRoutine,
         exercises: reorderWithOrder(updatedExercises),
-      });
+      }));
     },
-    [exercisesInRoutine, routine, setCurrentRoutine]
+    [exercisesInRoutine, setCurrentRoutine]
   ); // Dependencias para useCallback
 
   // Drag & Drop para reordenar ejercicios
@@ -128,7 +127,7 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
         {routine.name || "Nueva Rutina"}
       </SectionTitle>
       <SubSectionTitle style={{ margin: "0" }}>
-        Descanso: <span>{routine.restTime || 0}s</span> | RIR:{" "}
+        Descanso: <span>{routine.restTime || 0}s</span> | RIR:
         <span>{routine.rir || 0}</span>
         <br />
         Calentamiento: <span>{routine.warmUp || "N/A"}</span>

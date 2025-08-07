@@ -16,8 +16,6 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId }) => {
   const {
     stage,
     groupData,
-    setGroupData,
-    selectedRoutine,
     updateSelectedRoutine,
     addRoutine,
     goToNextStage,
@@ -25,12 +23,12 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId }) => {
     isSaving,
     saveError,
     isPublishing,
-    validateBeforePublish, // Función de validación del hook
-    publishRoutineGroup, // Función de publicación del hook
+    validateBeforePublish,
+    publishRoutineGroup,
     canPublishOrAddRoutine,
     currentStage,
     isActionDisabled,
-  } = useCreateRoutineGroup(studentId, isInitialized); // Asumiendo que el hook se llama useCreateRoutineGroup
+  } = useCreateRoutineGroup(studentId, isInitialized);
 
   useEffect(() => {
     if (isOpen) {
@@ -61,7 +59,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId }) => {
 
   if (!isOpen) return null;
 
-  const canGoNextStage = !isActionDisabled; // Por ahora, solo si no está guardando/publicando
+  const canGoNextStage = !isActionDisabled;
 
   return (
     <Modal
@@ -84,7 +82,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId }) => {
           <ChevronIcon
             direction="left"
             onClick={goToPreviousStage}
-            disabled={isActionDisabled} // Usa la nueva variable
+            disabled={isActionDisabled}
           />
         )}
 
@@ -92,7 +90,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId }) => {
           <>
             <button
               onClick={addRoutine}
-              disabled={isActionDisabled || !canPublishOrAddRoutine} // Deshabilita si no puede publicar/añadir
+              disabled={isActionDisabled || !canPublishOrAddRoutine}
               style={{ marginRight: "1rem" }}
               type="button"
             >
@@ -100,7 +98,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId }) => {
             </button>
             <button
               onClick={handlePublishRoutineGroup}
-              disabled={isActionDisabled || !canPublishOrAddRoutine} // Deshabilita si no puede publicar/añadir
+              disabled={isActionDisabled || !canPublishOrAddRoutine}
               type="button"
             >
               Guardar y Publicar Grupo
@@ -110,7 +108,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId }) => {
           <ChevronIcon
             direction="right"
             onClick={goToNextStage}
-            disabled={isActionDisabled || !canGoNextStage} // Usa la nueva variable
+            disabled={isActionDisabled || !canGoNextStage}
           />
         )}
       </StyledModalFooter>
