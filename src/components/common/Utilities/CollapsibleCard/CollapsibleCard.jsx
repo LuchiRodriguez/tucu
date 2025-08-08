@@ -18,7 +18,7 @@ function CollapsibleCard({ title, subtitle, children, defaultOpen = false }) {
 
   return (
     // Usamos el componente Card con un estilo para el margen inferior
-    <Card style={{ marginBottom: "12px" }}>
+    <Card>
       {/* Encabezado de la tarjeta con el título y el botón de chevron */}
       {/* Usamos StyledCollapsibleHeader para manejar el clic y los estilos de flexbox */}
       <StyledCollapsibleHeader $isOpen={isOpen} onClick={toggleOpen}>

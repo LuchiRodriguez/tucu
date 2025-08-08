@@ -1,8 +1,15 @@
 // src/components/common/Card/StyledCard.jsx
 import styled from "styled-components";
-import { StyledCardBase } from "./StyledCardBase"; // Importamos la base de la tarjeta
 import Button from "../../Buttons/Button/Button"; // Importamos el componente Button
 import Input from "../../Forms/Input/Input"; // Importamos el componente Input
+
+const StyledCardBase = styled.div`
+  background-color: #ffffff; /* Blanco Puro para el fondo de la tarjeta */
+  border-radius: 12px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08); /* Sombra suave */
+  padding: 16px; /* Padding interno por defecto */
+  margin-bottom: 12px; /* Margen inferior por defecto */
+`;
 
 // 1. Componente div estilizado para el contenedor de la Card
 // Extiende StyledCardBase y añade estilos específicos de flexbox
@@ -12,7 +19,6 @@ export const StyledCardContainer = styled(StyledCardBase).withConfig({
   display: flex;
   flex-direction: ${(props) => props.$flexDirection || "column"};
   align-items: center;
-  /* Otros estilos específicos de CardContainer si los hubiera, aquí */
 `;
 
 export const StyledCardTitle = styled.p`
