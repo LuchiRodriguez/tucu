@@ -343,6 +343,13 @@ function StudentPage() {
                     <CollapsibleCard
                       key={group.id}
                       title={group.name}
+                      subtitle={
+                        group.dueDate instanceof Date
+                          ? group.dueDate.toLocaleDateString("es-AR")
+                          : group.dueDate?.toDate
+                          ? group.dueDate.toDate().toLocaleDateString("es-AR")
+                          : group.dueDate
+                      }
                       defaultOpen={false}
                       $isDraft={group.status === "draft"}
                     >
@@ -366,20 +373,6 @@ function StudentPage() {
                           />
                         </StyledGroupActions>
                       </StyledGroupHeader>
-
-                      <StyledGroupDetailText>
-                        Objetivo del grupo: <span>{group.objective}</span>
-                      </StyledGroupDetailText>
-                      <StyledGroupDetailText>
-                        Vencimiento:{" "}
-                        <span>
-                          {group.dueDate instanceof Date
-                            ? group.dueDate.toLocaleDateString("es-AR")
-                            : group.dueDate?.toDate
-                            ? group.dueDate.toDate().toLocaleDateString("es-AR")
-                            : group.dueDate}
-                        </span>
-                      </StyledGroupDetailText>
 
                       <StyledRoutineSubtitle>
                         Rutinas en este Grupo:

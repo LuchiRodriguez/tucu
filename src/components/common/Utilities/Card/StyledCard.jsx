@@ -1,27 +1,34 @@
 // src/components/common/Card/StyledCard.jsx
-import styled from 'styled-components';
-import { StyledCardBase } from './StyledCardBase'; // Importamos la base de la tarjeta
-import Button from '../../Buttons/Button/Button'; // Importamos el componente Button
-import Input from '../../Forms/Input/Input'; // Importamos el componente Input
+import styled from "styled-components";
+import { StyledCardBase } from "./StyledCardBase"; // Importamos la base de la tarjeta
+import Button from "../../Buttons/Button/Button"; // Importamos el componente Button
+import Input from "../../Forms/Input/Input"; // Importamos el componente Input
 
 // 1. Componente div estilizado para el contenedor de la Card
 // Extiende StyledCardBase y añade estilos específicos de flexbox
 export const StyledCardContainer = styled(StyledCardBase).withConfig({
-  shouldForwardProp: (prop) => !['flexDirection'].includes(prop),
+  shouldForwardProp: (prop) => !["flexDirection"].includes(prop),
 })`
   display: flex;
-  flex-direction: ${props => props.$flexDirection || 'column'}; 
+  flex-direction: ${(props) => props.$flexDirection || "column"};
   align-items: center;
   /* Otros estilos específicos de CardContainer si los hubiera, aquí */
 `;
 
-// 2. Componente p estilizado para el título (EXPORTADO)
-// Utiliza los colores de la paleta
 export const StyledCardTitle = styled.p`
+  display: flex;
+  flex-direction: column;
+  textalign: "left";
+  margin: 0;
   font-size: 1.2rem;
   font-weight: bold;
-  color: #0F0F0F; /* Negro Profundo de la paleta */
+  color: #0f0f0f; /* Negro Profundo de la paleta */
   flex-grow: 1;
+
+  span {
+    font-size: 1rem;
+    color: #7f8c8d;
+  }
 `;
 
 // 3. Input estilizado para los kilos
@@ -34,7 +41,7 @@ export const StyledKilosInput = styled(Input)`
   border-color: #202020; /* Gris Oscuro para el borde */
 
   &:focus {
-    border-color: #5DD62C; /* Verde Vibrante en enfoque */
+    border-color: #5dd62c; /* Verde Vibrante en enfoque */
     box-shadow: 0 0 0 3px rgba(93, 214, 44, 0.2); /* Sombra verde en enfoque */
   }
 `;
@@ -51,7 +58,7 @@ export const StyledChevronButton = styled(Button)`
   height: auto; /* Alto automático */
 
   &:hover {
-    color: #5DD62C; /* Verde Vibrante en hover */
+    color: #5dd62c; /* Verde Vibrante en hover */
     transform: none; /* Desactivamos la transformación de hover del Button base */
     box-shadow: none;
   }
@@ -59,5 +66,4 @@ export const StyledChevronButton = styled(Button)`
     transform: none; /* Desactivamos la transformación de active del Button base */
     box-shadow: none;
   }
-
 `;
