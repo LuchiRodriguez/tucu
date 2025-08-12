@@ -25,9 +25,7 @@ function CollapsibleCard({ title, subtitle, children, defaultOpen = false }) {
         <StyledCardTitle>
           {title} <span>{subtitle}</span>
         </StyledCardTitle>
-        {/* Usamos StyledChevronButton para el botón del icono */}
         <StyledChevronButton type="button">
-          {/* Pasamos la dirección 'down' si está abierto, 'right' si está cerrado */}
           <ChevronIcon direction={isOpen ? "down" : "right"} />
         </StyledChevronButton>
       </StyledCollapsibleHeader>

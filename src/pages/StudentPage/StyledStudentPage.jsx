@@ -44,7 +44,6 @@ export const StyledRoutineGroupsWrapper = styled.div`
   max-height: 390px;
   padding: 0 10px;
   box-sizing: border-box;
-  overflow-y: auto;
 `;
 
 export const StyledGroupCard = styled(CollapsibleCard)`

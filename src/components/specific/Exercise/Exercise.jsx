@@ -15,7 +15,6 @@ const Exercise = ({
 }) => {
   return (
     <StyledExerciseItem>
-      {/* Usamos el componente estilizado para el li */}
       <Card
         id={exercise.id} // El ID único de este ejercicio dentro de la rutina (generado por useRoutines)
         name={exercise.name}

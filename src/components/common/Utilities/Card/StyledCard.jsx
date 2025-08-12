@@ -8,7 +8,7 @@ const StyledCardBase = styled.div`
   border-radius: 12px;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08); /* Sombra suave */
   padding: 16px; /* Padding interno por defecto */
-  margin-bottom: 12px; /* Margen inferior por defecto */
+  // margin-bottom: 12px; /* Margen inferior por defecto */
 `;
 
 // 1. Componente div estilizado para el contenedor de la Card
