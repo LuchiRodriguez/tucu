@@ -18,6 +18,7 @@ export const StyledCardContainer = styled(StyledCardBase).withConfig({
 })`
   display: flex;
   flex-direction: ${(props) => props.$flexDirection || "column"};
+  justify-content: ${(props) => props.$justifyContent || "space-between"};
   align-items: center;
 `;
 
@@ -30,6 +31,7 @@ export const StyledCardTitle = styled.p`
   font-weight: bold;
   color: #0f0f0f; /* Negro Profundo de la paleta */
   flex-grow: 1;
+  gap: 5px;
 
   span {
     font-size: 1rem;

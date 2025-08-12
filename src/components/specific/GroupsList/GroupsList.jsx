@@ -30,7 +30,7 @@ const GroupsList = ({ allSortedStages, onSelectGroup }) => {
                       : group.dueDate || "Sin fecha"}
                   </span>
                 </StyledCardTitle>
-                <StyledGroupStatus>
+                <StyledGroupStatus $isDraft={group.status === "draft"}>
                   {group.status === "draft" ? "Borrador" : "Activo"}
                 </StyledGroupStatus>
               </Card>

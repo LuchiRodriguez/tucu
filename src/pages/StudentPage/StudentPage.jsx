@@ -23,9 +23,8 @@ import {
   StyledRoutineGroupsWrapper,
   StyledAddRoutineGroupButtonWrapper,
 } from "./StyledStudentPage";
-import Card from "../../components/common/Utilities/Card/Card";
-import { StyledCardTitle } from "../../components/common/Utilities/Card/StyledCard";
 import GroupsList from "../../components/specific/GroupsList/GroupsList";
+import CollapsibleCard from "../../components/common/Utilities/CollapsibleCard/CollapsibleCard";
 
 function StudentPage() {
   const { studentId } = useParams();
@@ -199,9 +198,52 @@ function StudentPage() {
               <Divider title={selectedGroup.name} />
               <StyledRoutineGroupsWrapper style={{ gap: "10px" }}>
                 {selectedGroup.routines.map((routine) => (
-                  <Card key={routine.id} flexDirection={"row"}>
-                    <StyledCardTitle>{routine.name}</StyledCardTitle>
-                  </Card>
+                  <CollapsibleCard
+                    key={routine.id}
+                    flexDirection={"row"}
+                    title={routine.name}
+                    subtitle={
+                      "Descanso: " +
+                        routine.restTime +
+                        "s - RIR: " +
+                        routine.rir || 0
+                    }
+                  >
+                    {routine.exercises.length === 0 ? (
+                      <p>Aún no hay ejercicios en esta rutina</p>
+                    ) : (
+                      <ul
+                        style={{
+                          listStyle: "none",
+                          padding: 0,
+                          margin: "10px 0",
+                        }}
+                      >
+                        {routine.warmUp && (
+                          <li key="warm-up" style={{ marginBottom: "5px" }}>
+                            <strong>Calentamiento:</strong>
+                            <br />
+                            {routine.warmUp}
+                            {routine.warmUpSets &&
+                              ` - Sets: ${routine.warmUpSets}`}
+                            {routine.warmUpReps &&
+                              ` - Reps: ${routine.warmUpReps}`}
+                            {routine.warmUpTime &&
+                              ` - ${routine.warmUpTime} min`}
+                          </li>
+                        )}
+                        {routine.exercises.map((exercise) => (
+                          <li key={exercise.id} style={{ marginBottom: "5px" }}>
+                            <strong>{exercise.name}</strong>
+                            {exercise.type === "reps_sets"
+                              ? ` (${exercise.sets} Series, ${exercise.reps} Reps)`
+                              : ` (${exercise.sets} Series, ${exercise.time} min de trabajo)`}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {console.log("Routine: ", routine)}
+                  </CollapsibleCard>
                 ))}
               </StyledRoutineGroupsWrapper>
             </StyledRoutineGroupsWrapper>
