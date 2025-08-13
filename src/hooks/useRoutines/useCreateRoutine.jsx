@@ -156,17 +156,14 @@ export const useCreateRoutineGroup = (studentId, isInitialized) => {
     setIsSaving(true);
 
     try {
-      const routineGroupRef = doc(
-        db,
-        `artifacts/${appId}/users/${fixedStudentId}/routineGroups`,
-        groupData.id
-      );
+      const routineGroupRef = doc(db, `routineGroups`, groupData.id);
 
       const dataToSave = cleanObjectForFirestore({
         ...groupData,
         createdAt: groupData.createdAt || serverTimestamp(),
         updatedAt: serverTimestamp(),
         assignedBy: coachId,
+        assignedTo: [stableStudentIdRef.current],
         routines: routines.map(cleanObjectForFirestore),
       });
 
@@ -284,11 +281,7 @@ export const useCreateRoutineGroup = (studentId, isInitialized) => {
         return { error: validationError }; // Retorna el error si la validación falla
       }
 
-      const routineGroupRef = doc(
-        db,
-        `artifacts/${appId}/users/${stableStudentIdRef.current}/routineGroups`,
-        groupData.id
-      );
+      const routineGroupRef = doc(db, `routineGroups/${groupData.id}`);
 
       // 2. Asegúrate de que el borrador esté guardado con los últimos datos
       // (El auto-guardado ya debería haberlo hecho, pero esta es una última garantía)
@@ -303,6 +296,7 @@ export const useCreateRoutineGroup = (studentId, isInitialized) => {
         createdAt: groupData.createdAt || serverTimestamp(), // Asegura createdAt si no se asignó antes
         updatedAt: serverTimestamp(),
         assignedBy: coachId,
+        assignedTo: [stableStudentIdRef.current],
         routines: routines.map(cleanObjectForFirestore),
         status: "active", // ¡Cambio de estado a activo!
       });

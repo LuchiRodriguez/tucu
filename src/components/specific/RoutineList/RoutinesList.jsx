@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 
-import Subtitle from "../../common/Messages/Subtitle/Subtitle";
 import ErrorMessage from "../../common/Messages/ErrorMessage/ErrorMessage";
 
 import Routine2 from "../Routine/Routine2";
