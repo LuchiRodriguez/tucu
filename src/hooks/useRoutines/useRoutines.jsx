@@ -1,10 +1,17 @@
-// src/hooks/useRoutines/useStudentRoutineGroupsData.js
+// src/hooks/useRoutines/useRoutines.js
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { collection, query, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  query,
+  onSnapshot,
+  doc,
+  where,
+  getDoc,
+} from "firebase/firestore";
 import { db } from "../../config/firebase";
 import { useAuth } from "../../context/authContextBase";
 
-export function useStudentRoutineGroupsData(studentId) {
+const useRoutines = (studentId) => {
   const { user, loading: authLoading } = useAuth();
   const [allRoutineGroups, setAllRoutineGroups] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,11 +19,12 @@ export function useStudentRoutineGroupsData(studentId) {
 
   // Efecto: suscripción a Firestore
   useEffect(() => {
+    let q;
     let isMounted = true;
-    const appId = typeof __app_id !== "undefined" ? __app_id : "default-app-id";
+    // const appId = typeof __app_id !== "undefined" ? __app_id : "default-app-id";
 
     if (authLoading) return;
-    if (!user || !studentId) {
+    if (!user) {
       if (isMounted) {
         setErrorMessage(
           "No hay usuario autenticado o ID de alumno no proporcionado."
@@ -30,45 +38,70 @@ export function useStudentRoutineGroupsData(studentId) {
     setLoading(true);
     setErrorMessage(null);
 
-    const routineGroupsCollectionRef = collection(
-      db,
-      `artifacts/${appId}/users/${studentId}/routineGroups`
-    );
-    const q = query(routineGroupsCollectionRef);
+    if (studentId) {
+      const studentRef = doc(db, `users/${studentId}`);
+      q = query(
+        collection(db, `routineGroups`),
+        where("studentId", "==", studentRef)
+      );
+    } else {
+      q = query(collection(db, `routines`));
+    }
 
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
         if (!isMounted) return;
         try {
-          const fetchedGroups = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
+          if (studentId) {
+            const fetchedGroups = snapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
 
-          const visibleGroups = fetchedGroups.filter(
-            (group) =>
-              group.status === "active" ||
-              (group.status === "draft" && group.assignedBy === user.uid)
-          );
+            const visibleGroups = fetchedGroups.filter(
+              (group) =>
+                group.status === "active" ||
+                (group.status === "draft" && group.assignedBy === user.uid)
+            );
 
-          setAllRoutineGroups(visibleGroups);
-          setLoading(false);
+            const fetchDataAndSetState = async () => {
+              const routineRefs = visibleGroups.flatMap(
+                (group) => group.routines
+              );
+
+              const routineDocs = await Promise.all(
+                routineRefs.map((routineRef) => getDoc(routineRef))
+              );
+
+              const routinesData = routineDocs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+              }));
+
+              setAllRoutineGroups(routinesData);
+              setLoading(false);
+            };
+
+            fetchDataAndSetState();
+          } else {
+            const fetchedGroups = snapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+
+            setAllRoutineGroups(fetchedGroups);
+            setLoading(false);
+          }
         } catch (err) {
-          console.error(
-            "[useStudentRoutineGroupsData] Error procesando snapshot:",
-            err
-          );
+          console.error("[useRoutines] Error procesando snapshot:", err);
           setErrorMessage("Error al cargar los grupos de rutinas.");
           setLoading(false);
         }
       },
       (err) => {
         if (!isMounted) return;
-        console.error(
-          "[useStudentRoutineGroupsData] Error en la suscripción:",
-          err
-        );
+        console.error("[useRoutines] Error en la suscripción:", err);
         setErrorMessage(
           "No se pudieron cargar los grupos de rutinas. Revisa permisos."
         );
@@ -100,10 +133,15 @@ export function useStudentRoutineGroupsData(studentId) {
       return [...groups].sort((a, b) => {
         const dateA = getDateFromField(a, "dueDate");
         const dateB = getDateFromField(b, "dueDate");
-        return (
-          (dateB instanceof Date ? dateB.getTime() : 0) -
-          (dateA instanceof Date ? dateA.getTime() : 0)
-        );
+        if (dateA instanceof Date && dateB instanceof Date) {
+          return dateB.getTime() - dateA.getTime();
+        } else if (dateA instanceof Date) {
+          return -1;
+        } else if (dateB instanceof Date) {
+          return 1;
+        } else {
+          return 0;
+        }
       });
     },
     [getDateFromField]
@@ -136,4 +174,6 @@ export function useStudentRoutineGroupsData(studentId) {
     error: !!errorMessage,
     errorMessage,
   };
-}
+};
+
+export default useRoutines;

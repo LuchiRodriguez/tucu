@@ -13,7 +13,7 @@ const GroupsList = ({ allSortedStages, onSelectGroup }) => {
       {allSortedStages.map((stageObj, index) => (
         <StyledRoutineGroupsWrapper key={index}>
           <Divider title={"Etapa: " + stageObj.stage} />
-          <StyledRoutineGroupsWrapper>
+          <StyledRoutineGroupsWrapper style={{ padding: "0" }}>
             {stageObj.groups.map((group) => (
               <Card
                 key={group.id}

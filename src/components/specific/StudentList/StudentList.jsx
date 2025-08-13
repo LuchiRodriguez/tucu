@@ -6,19 +6,16 @@ import StudentItem from "../StudentItem/StudentItem";
 import Subtitle from "../../common/Messages/Subtitle/Subtitle"; // Para mensajes generales
 import ErrorMessage from "../../common/Messages/ErrorMessage/ErrorMessage"; // Para mensajes de error
 
-import {
-  StyledStudentListUL,
-  StyledStudentListMessageWrapper,
-} from "./StyledStudentList";
+import { StyledStudentListUL } from "./StyledStudentList";
 
-function StudentList({
+const StudentList = ({
   students = [],
   loading,
   error = null,
   searchText = "",
   onSelectStudent,
   selectedStudentId = null,
-}) {
+}) => {
   return (
     <StyledStudentListUL>
       {loading ? (
@@ -53,7 +50,7 @@ function StudentList({
       )}
     </StyledStudentListUL>
   );
-}
+};
 
 StudentList.propTypes = {
   students: PropTypes.arrayOf(

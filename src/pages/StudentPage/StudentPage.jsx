@@ -16,7 +16,7 @@ import ErrorMessage from "../../components/common/Messages/ErrorMessage/ErrorMes
 import Divider from "../../components/common/Utilities/Divider/Divider";
 
 import { useAuth } from "../../context/authContextBase";
-import { useStudentRoutineGroupsData } from "../../hooks/useRoutines/useRoutines";
+import useRoutines from "../../hooks/useRoutines/useRoutines";
 
 import {
   StyledStudentPageContent,
@@ -46,7 +46,7 @@ function StudentPage() {
     loading: loadingRoutineGroups,
     error: routineGroupsError,
     errorMessage: routineGroupsErrorMessage,
-  } = useStudentRoutineGroupsData(studentId);
+  } = useRoutines(studentId);
 
   console.log("All Sorted Stages:", allSortedStages);
 

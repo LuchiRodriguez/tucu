@@ -20,6 +20,7 @@ export const StyledCardContainer = styled(StyledCardBase).withConfig({
   flex-direction: ${(props) => props.$flexDirection || "column"};
   justify-content: ${(props) => props.$justifyContent || "space-between"};
   align-items: center;
+  gap: 10px;
 `;
 
 export const StyledCardTitle = styled.p`
