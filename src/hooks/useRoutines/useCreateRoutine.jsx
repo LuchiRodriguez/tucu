@@ -51,9 +51,6 @@ export const useCreateRoutineGroup = (studentId, isInitialized) => {
   const coachId = user?.uid;
   const stableStudentIdRef = useRef(studentId);
 
-  // Acceso seguro a __app_id, ahora dentro del hook
-  const appId = typeof __app_id !== "undefined" ? __app_id : "default-app-id";
-
   // Estados del formulario para el grupo de rutinas
   const [groupData, setGroupData] = useState(() => ({
     id: uuidv4(), // ID para el nuevo grupo (generado al inicio de la creación)
@@ -181,9 +178,8 @@ export const useCreateRoutineGroup = (studentId, isInitialized) => {
       console.error("Error al guardar borrador:", error);
       return { success: false, error: error.message || "Error desconocido" };
     }
-  }, [coachId, groupData, routines, appId]);
+  }, [coachId, groupData, routines]);
 
-  // Efecto para el auto-guardado con debounce: se activa cada vez que groupData o routines cambian
   useEffect(() => {
     if (!isInitialized) return;
 
@@ -199,8 +195,9 @@ export const useCreateRoutineGroup = (studentId, isInitialized) => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
+      saveDraft();
     };
-  }, [groupData, routines, saveDraft, isInitialized]); // Dependencias que disparan el auto-guardado
+  }, [groupData, routines, saveDraft, isInitialized]);
 
   // Función para reiniciar completamente el formulario a su estado inicial
   const resetForm = useCallback(() => {
@@ -310,7 +307,7 @@ export const useCreateRoutineGroup = (studentId, isInitialized) => {
       setIsPublishing(false);
       return { error: "Error al publicar: " + error.message }; // Retorna error de Firebase
     }
-  }, [appId, groupData, routines, validateBeforePublish, coachId]); // Dependencias para useCallback
+  }, [groupData, routines, validateBeforePublish, coachId]); // Dependencias para useCallback
 
   const stageList = [
     {

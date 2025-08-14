@@ -15,8 +15,6 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId }) => {
 
   const {
     stage,
-    groupData,
-    updateSelectedRoutine,
     addRoutine,
     goToNextStage,
     goToPreviousStage,
@@ -66,8 +64,6 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId }) => {
       isOpen={isOpen}
       onClose={onClose}
       title={currentStage?.title ?? "Nuevo grupo de rutinas"}
-      updateSelectedRoutine={updateSelectedRoutine}
-      warmUpExercises={groupData.warmUpExercises}
     >
       {(isSaving || isPublishing) && <p>Cargando...</p>}
 

@@ -8,14 +8,7 @@ import {
 } from "../Modal/StyledModal";
 import CloseModalButton from "../../Buttons/CloseModalButton/CloseModalButton";
 
-function Modal({
-  isOpen,
-  onClose,
-  title,
-  children,
-  updateSelectedRoutine,
-  warmUpExercises,
-}) {
+function Modal({ isOpen, onClose, title, children }) {
   const modalRef = useRef(null);
 
   // Manejar foco y bloqueo scroll
@@ -64,11 +57,7 @@ function Modal({
       <StyledModalContent>
         <StyledModalHeader>
           <StyledModalTitle id="modal-title">{title}</StyledModalTitle>
-          <CloseModalButton
-            onClose={onClose}
-            updateSelectedRoutine={updateSelectedRoutine}
-            warmUpExercises={warmUpExercises}
-          />
+          <CloseModalButton onClose={onClose} />
         </StyledModalHeader>
         {children}{" "}
       </StyledModalContent>
