@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 
-import { useCreateRoutineGroup } from "../../../hooks/useRoutines/useCreateRoutine";
+import { useCreateRoutine } from "../../../hooks/useRoutines/useCreateRoutine";
 
 import Modal from "../../common/Utilities/Modal/Modal";
 import ErrorMessage from "../../common/Messages/ErrorMessage/ErrorMessage";
@@ -26,7 +26,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId }) => {
     canPublishOrAddRoutine,
     currentStage,
     isActionDisabled,
-  } = useCreateRoutineGroup(studentId, isInitialized);
+  } = useCreateRoutine(studentId, isInitialized);
 
   useEffect(() => {
     if (isOpen) {
