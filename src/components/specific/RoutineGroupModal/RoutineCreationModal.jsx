@@ -1,4 +1,4 @@
-// src/components/specific/RoutineGroupModal/RoutineGroupCreationModal.jsx
+// src/components/specific/RoutineGroupModal/RoutineCreationModal.jsx
 import { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 
@@ -9,24 +9,22 @@ import ErrorMessage from "../../common/Messages/ErrorMessage/ErrorMessage";
 import ChevronIcon from "../../common/Icons/ChevronIcon/ChevronIcon";
 import { StyledModalFooter } from "./StyledRoutineGroupModal";
 
-const RoutineGroupCreationModal = ({ isOpen, onClose, studentId }) => {
+const RoutineCreationModal = ({ isOpen, onClose }) => {
   const [localError, setLocalError] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
   const {
     stage,
-    addRoutine,
     goToNextStage,
     goToPreviousStage,
     isSaving,
     saveError,
     isPublishing,
     validateBeforePublish,
-    publishRoutineGroup,
-    canPublishOrAddRoutine,
     currentStage,
     isActionDisabled,
-  } = useCreateRoutine(studentId, isInitialized);
+    publishRoutine,
+  } = useCreateRoutine(isInitialized);
 
   useEffect(() => {
     if (isOpen) {
@@ -36,7 +34,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId }) => {
     }
   }, [isOpen]);
 
-  const handlePublishRoutineGroup = useCallback(async () => {
+  const handlePublishRoutine = useCallback(async () => {
     setLocalError(null);
 
     // ✅ Usamos la validación del hook, que es la fuente de verdad
@@ -46,14 +44,10 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId }) => {
       return;
     }
 
-    const result = await publishRoutineGroup();
-    if (result?.error) {
-      setLocalError(result.error);
-      return;
-    }
+    publishRoutine();
 
     onClose();
-  }, [onClose, publishRoutineGroup, validateBeforePublish]);
+  }, [onClose, validateBeforePublish, publishRoutine]);
 
   if (!isOpen) return null;
 
@@ -63,7 +57,7 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId }) => {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={currentStage?.title ?? "Nuevo grupo de rutinas"}
+      title={currentStage?.title ?? "Nueva rutina"}
     >
       {(isSaving || isPublishing) && <p>Cargando...</p>}
 
@@ -82,22 +76,14 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId }) => {
           />
         )}
 
-        {stage === 4 ? (
+        {stage === 2 ? (
           <>
             <button
-              onClick={addRoutine}
-              disabled={isActionDisabled || !canPublishOrAddRoutine}
-              style={{ marginRight: "1rem" }}
+              onClick={handlePublishRoutine}
+              disabled={isActionDisabled}
               type="button"
             >
-              Añadir otra rutina
-            </button>
-            <button
-              onClick={handlePublishRoutineGroup}
-              disabled={isActionDisabled || !canPublishOrAddRoutine}
-              type="button"
-            >
-              Guardar y Publicar Grupo
+              Guardar
             </button>
           </>
         ) : (
@@ -112,10 +98,9 @@ const RoutineGroupCreationModal = ({ isOpen, onClose, studentId }) => {
   );
 };
 
-RoutineGroupCreationModal.propTypes = {
+RoutineCreationModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  studentId: PropTypes.string.isRequired,
 };
 
-export default RoutineGroupCreationModal;
+export default RoutineCreationModal;
