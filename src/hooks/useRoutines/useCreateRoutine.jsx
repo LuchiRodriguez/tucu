@@ -1,4 +1,4 @@
-// src/hooks/useRoutineGroup/useCreateRoutine.jsx
+// src/hooks/useRoutines/useCreateRoutine.jsx
 import { useState, useEffect, useCallback, useRef } from "react";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../config/firebase"; // Asumiendo que db se exporta desde firebase.js

@@ -13,9 +13,12 @@ const RoutinesList = ({
   searchText = "",
   onSelectRoutine,
   selectedRoutineId = null,
+  onOpenModal, // <-- 1. Recibimos la nueva prop
 }) => {
   const { allSortedStages, loading, error, errorMessage } = useRoutines();
 
+  // Esta línea parece tener un error, si stage.groups no existe.
+  // Revisa la estructura de los datos que devuelve tu useRoutines
   const routines = allSortedStages.flatMap((stage) => stage.groups);
 
   return (
@@ -38,7 +41,10 @@ const RoutinesList = ({
               style={{ border: "none", boxShadow: "none" }}
             >
               <p>¡Todavía no tenés rutinas!</p>
-              <Button primary>Crear nueva rutina</Button>
+              {/* 2. Le pasamos el handler al botón */}
+              <Button primary onClick={onOpenModal}>
+                Crear nueva rutina
+              </Button>
             </Card>
           )}
         </li>
@@ -60,6 +66,7 @@ RoutinesList.propTypes = {
   searchText: PropTypes.string,
   onSelectRoutine: PropTypes.func,
   selectedRoutineId: PropTypes.string,
+  onOpenModal: PropTypes.func, // <-- 3. Validamos la nueva prop
 };
 
 export default RoutinesList;
