@@ -1,4 +1,4 @@
-// src/components/specific/RoutineGroupModal/Stages/Stage4AssignSetsReps.jsx
+// src/components/specific/RoutineGroupModal/Stages/Stage3AssignSetsReps.jsx
 import { useMemo, useCallback } from "react";
 import PropTypes from "prop-types";
 
@@ -17,14 +17,14 @@ import {
 } from "../StyledRoutineGroupModal";
 
 /**
- * Componente de la cuarta etapa para asignar series, repeticiones y kilos a los ejercicios.
+ * Componente de la tercera etapa para asignar series, repeticiones y kilos a los ejercicios.
  * Este componente es puramente presentacional.
  *
  * @param {object} props - Las props del componente.
  * @param {object} props.currentRoutine - El objeto de la rutina actual que se está editando.
  * @param {function} props.setCurrentRoutine - Función para actualizar la rutina en el hook padre.
  */
-const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine }) => {
+const Stage3AssignSetsReps = ({ currentRoutine, setCurrentRoutine }) => {
   const safeCurrentRoutine = useMemo(
     () => currentRoutine || {},
     [currentRoutine]
@@ -154,9 +154,9 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine }) => {
   );
 };
 
-Stage4AssignSetsReps.propTypes = {
+Stage3AssignSetsReps.propTypes = {
   currentRoutine: PropTypes.object.isRequired,
   setCurrentRoutine: PropTypes.func.isRequired,
 };
 
-export default Stage4AssignSetsReps;
+export default Stage3AssignSetsReps;

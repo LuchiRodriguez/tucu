@@ -2,15 +2,15 @@ import { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 
 import Stage1GroupDetails from "./Stages/Stage1GroupDetails";
-import Stage2RoutineDetails from "./Stages/Stage2RoutineDetails";
-import Stage3AddExercises from "./Stages/Stage3AddExercises";
-import Stage4AssignSetsReps from "./Stages/Stage4AssignSetsReps";
 
 import ErrorMessage from "../../common/Messages/ErrorMessage/ErrorMessage";
 import ChevronIcon from "../../common/Icons/ChevronIcon/ChevronIcon";
 import { StyledModalFooter } from "./StyledRoutineGroupModal";
 import { useEditRoutineGroup } from "../../../hooks/useRoutines/useEditRoutineGroup";
 import Modal from "../../common/Utilities/Modal/Modal";
+import Stage1RoutineDetails from "./RoutineStages/Stage1RoutineDetails";
+import Stage2AddExercises from "./RoutineStages/Stage2AddExercises";
+import Stage3AssignSetsReps from "./RoutineStages/Stage3AssignSetsReps";
 
 const RoutineEditModal = ({ isOpen, onClose, groupId, studentId }) => {
   const [localError, setLocalError] = useState(null);
@@ -81,21 +81,21 @@ const RoutineEditModal = ({ isOpen, onClose, groupId, studentId }) => {
         );
       case 2:
         return (
-          <Stage2RoutineDetails
+          <Stage1RoutineDetails
             currentRoutine={selectedRoutine}
             setCurrentRoutine={updateSelectedRoutine}
           />
         );
       case 3:
         return (
-          <Stage3AddExercises
+          <Stage2AddExercises
             currentRoutine={selectedRoutine}
             setCurrentRoutine={updateSelectedRoutine}
           />
         );
       case 4:
         return (
-          <Stage4AssignSetsReps
+          <Stage3AssignSetsReps
             currentRoutine={selectedRoutine}
             setCurrentRoutine={updateSelectedRoutine}
           />

@@ -1,7 +1,7 @@
-// src/components/specific/RoutineGroupModal/Stages/Stage3AddExercises.jsx
-import { useState, useMemo, useCallback } from "react"; // Importamos useCallback
+// src/components/specific/RoutineGroupModal/Stages/Stage2AddExercises.jsx
+import { useState, useMemo, useCallback } from "react";
 import PropTypes from "prop-types";
-import localExercisesData from "../../../../data/exercises.json"; // Asegúrate de que esta ruta sea correcta
+import localExercisesData from "../../../../data/exercises.json";
 
 import CollapsibleCard from "../../../common/Utilities/CollapsibleCard/CollapsibleCard";
 import Input from "../../../common/Forms/Input/Input";
@@ -22,24 +22,17 @@ const reorderWithOrder = (exercises) =>
   exercises.map((ex, idx) => ({ ...ex, order: idx }));
 
 /**
- * Componente de la tercera etapa para seleccionar y organizar ejercicios en una rutina.
- * Este componente es puramente presentacional.
- *
- * @param {object} props - Las props del componente.
- * @param {object} props.currentRoutine - El objeto de la rutina actual que se está editando.
- * @param {function} props.setCurrentRoutine - Función para actualizar la rutina en el hook padre.
+ * Componente de la segunda etapa para seleccionar ejercicios en una rutina.
  */
-const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
+const Stage2AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
   const [exerciseSearchText, setExerciseSearchText] = useState("");
 
-  // Siempre usar objeto seguro para currentRoutine
   const routine = useMemo(() => currentRoutine || {}, [currentRoutine]);
   const exercisesInRoutine = useMemo(
     () => routine.exercises || [],
     [routine.exercises]
   );
 
-  // Filtrar ejercicios según búsqueda
   const filteredExercises = useMemo(() => {
     if (!exerciseSearchText) return localExercisesData;
     const lowerSearch = exerciseSearchText.toLowerCase();
@@ -48,7 +41,6 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
     );
   }, [exerciseSearchText]);
 
-  // Agrupar ejercicios por categoría
   const groupedExercises = useMemo(() => {
     return filteredExercises.reduce((acc, exercise) => {
       const category = exercise.category || "Otros";
@@ -58,67 +50,36 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
     }, {});
   }, [filteredExercises]);
 
-  // Añadir o quitar ejercicio de la rutina
   const toggleExercise = useCallback(
     (exercise) => {
       const isSelected = exercisesInRoutine.some((ex) => ex.id === exercise.id);
 
       let updatedExercises;
       if (isSelected) {
-        // Quitar ejercicio
         updatedExercises = exercisesInRoutine.filter(
           (ex) => ex.id !== exercise.id
         );
       } else {
-        // Agregar ejercicio con valores por defecto (para creación)
         const newExercise = {
           id: exercise.id,
           name: exercise.name,
-          type: exercise.type || "reps_sets", // Asume 'reps_sets' por defecto si no se especifica
+          type: exercise.type || "reps_sets",
           sets: 0,
           reps: 0,
           time: 0,
           kilos: 0,
-          completed: false, // Por defecto no completado
+          completed: false,
         };
         updatedExercises = [...exercisesInRoutine, newExercise];
       }
 
-      // Reordenar para mantener orden consistente y actualizar la rutina en el hook padre
       setCurrentRoutine((prevRoutine) => ({
         ...prevRoutine,
         exercises: reorderWithOrder(updatedExercises),
       }));
     },
     [exercisesInRoutine, setCurrentRoutine]
-  ); // Dependencias para useCallback
-
-  // Drag & Drop para reordenar ejercicios
-  const handleDragStart = useCallback((e, index) => {
-    e.dataTransfer.setData("exerciseIndex", index);
-  }, []); // Sin dependencias
-
-  const handleDragOver = useCallback((e) => {
-    e.preventDefault();
-  }, []); // Sin dependencias
-
-  const handleDrop = useCallback(
-    (e, dropIndex) => {
-      const dragIndex = e.dataTransfer.getData("exerciseIndex");
-      if (dragIndex === "") return; // Si no hay datos de arrastre, salir
-
-      const newExercises = [...exercisesInRoutine];
-      const [dragged] = newExercises.splice(dragIndex, 1); // Quita el elemento arrastrado
-      newExercises.splice(dropIndex, 0, dragged); // Inserta el elemento en la nueva posición
-
-      // Actualiza la rutina en el hook padre con los ejercicios reordenados
-      setCurrentRoutine({
-        ...routine,
-        exercises: reorderWithOrder(newExercises),
-      });
-    },
-    [exercisesInRoutine, routine, setCurrentRoutine]
-  ); // Dependencias para useCallback
+  );
 
   return (
     <StyledModalBody>
@@ -128,7 +89,6 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
         <br />
         Calentamiento: <span>{routine.warmUp || "N/A"}</span>
       </SubSectionTitle>
-
       <SubSectionTitle style={{ margin: "10px 0" }}>
         Seleccionar Ejercicios:
       </SubSectionTitle>
@@ -139,7 +99,6 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
         placeholder="Buscar ejercicio..."
         style={{ marginBottom: 15 }}
       />
-
       {Object.keys(groupedExercises).length === 0 ? (
         <Subtitle
           style={{ textAlign: "center", margin: "20px 0", color: "#7f8c8d" }}
@@ -166,7 +125,7 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
                       id={`select-exercise-${exercise.id}`}
                       label={exercise.name}
                       checked={isSelected}
-                      onChange={() => toggleExercise(exercise)} // Llama a toggleExercise
+                      onChange={() => toggleExercise(exercise)}
                     />
                   </StyledExerciseSelectionItem>
                 );
@@ -175,7 +134,6 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
           ))}
         </StyledExerciseSelectionList>
       )}
-
       <SubSectionTitle>Ejercicios en la Rutina:</SubSectionTitle>
       <StyledExerciseSelectionList
         style={{ minHeight: "60px", maxHeight: "60px" }}
@@ -189,19 +147,14 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
         ) : (
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
             {exercisesInRoutine
-              .slice() // Crea una copia para no mutar el array original antes de ordenar
-              .sort((a, b) => a.order - b.order) // Asegura el orden visual
+              .slice()
+              .sort((a, b) => a.order - b.order)
               .map((exercise, index) => (
-                <StyledExerciseItem
-                  key={exercise.id}
-                  draggable // Habilita el arrastre
-                  onDragStart={(e) => handleDragStart(e, index)}
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, index)}
-                >
+                <StyledExerciseItem key={exercise.id}>
                   <span>
                     {index + 1}. {exercise.name}
                   </span>
+
                   <RemoveExerciseButton
                     onClick={() => toggleExercise(exercise)}
                   >
@@ -224,14 +177,14 @@ const Stage3AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
               ))}
           </ul>
         )}
-      </StyledExerciseSelectionList>
+      </StyledExerciseSelectionList>{" "}
     </StyledModalBody>
   );
 };
 
-Stage3AddExercises.propTypes = {
+Stage2AddExercises.propTypes = {
   currentRoutine: PropTypes.object.isRequired,
   setCurrentRoutine: PropTypes.func.isRequired,
 };
 
-export default Stage3AddExercises;
+export default Stage2AddExercises;

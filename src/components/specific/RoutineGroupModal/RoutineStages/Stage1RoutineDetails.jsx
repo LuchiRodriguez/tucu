@@ -1,18 +1,18 @@
-// src/components/specific/RoutineGroupModal/Stages/Stage2RoutineDetails.jsx
+// src/components/specific/RoutineGroupModal/RoutineStages/Stage1RoutineDetails.jsx
 import PropTypes from "prop-types";
 import warmUpExercises from "../../../../data/warmUpExercises";
 
-import Input from "../../../../components/common/Forms/Input/Input";
-import Label from "../../../../components/common/Forms/Label/Label";
-import Select from "../../../../components/common/Forms/Select/Select";
+import Input from "../../../common/Forms/Input/Input";
+import Label from "../../../common/Forms/Label/Label";
+import Select from "../../../common/Forms/Select/Select";
 import { StyledModalBody } from "../StyledRoutineGroupModal";
 
 /**
- * Componente de la segunda etapa para ingresar los detalles de una rutina individual.
+ * Componente de la primera etapa para ingresar los detalles de una rutina individual.
  * Este componente es puramente presentacional y recibe los datos de la rutina actual
  * y una función para actualizarla desde su componente padre.
  */
-function Stage2RoutineDetails({ currentRoutine, setCurrentRoutine }) {
+function Stage1RoutineDetails({ currentRoutine, setCurrentRoutine }) {
   // Detectar ejercicio seleccionado en calentamiento
   const selectedWarmUp = warmUpExercises.find(
     (ex) => ex.name === currentRoutine?.warmUp
@@ -146,7 +146,7 @@ function Stage2RoutineDetails({ currentRoutine, setCurrentRoutine }) {
   );
 }
 
-Stage2RoutineDetails.propTypes = {
+Stage1RoutineDetails.propTypes = {
   currentRoutine: PropTypes.shape({
     id: PropTypes.string,
     name: PropTypes.string,
@@ -160,4 +160,4 @@ Stage2RoutineDetails.propTypes = {
   setCurrentRoutine: PropTypes.func.isRequired,
 };
 
-export default Stage2RoutineDetails;
+export default Stage1RoutineDetails;

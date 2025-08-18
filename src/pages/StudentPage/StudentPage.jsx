@@ -5,7 +5,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../config/firebase";
 
 import Navbar from "../../components/common/Navigation/Navbar/Navbar";
-import RoutineCreationModal from "../../components/specific/RoutineGroupModal/RoutineCreationModal";
+import RoutineGroupCreationModal from "../../components/specific/RoutineGroupModal/RoutineCreationModal";
 import RoutineEditModal from "../../components/specific/RoutineGroupModal/RoutineEditeModal";
 import PageContainer from "../../components/layout/PageContainer/PageContainer";
 import ContentSection from "../../components/layout/ContentSection/ContentSection";
@@ -270,7 +270,7 @@ function StudentPage() {
             studentId={studentId}
           />
         ) : (
-          <RoutineCreationModal
+          <RoutineGroupCreationModal
             isOpen={isRoutineGroupModalOpen}
             onClose={handleCloseRoutineGroupModal}
             studentId={studentId}

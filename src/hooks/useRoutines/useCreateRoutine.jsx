@@ -4,8 +4,11 @@ import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../config/firebase"; // Asumiendo que db se exporta desde firebase.js
 import { useAuth } from "../../context/authContextBase";
 import { v4 as uuidv4 } from "uuid";
-import Stage3AddExercises from "../../components/specific/RoutineGroupModal/Stages/Stage3AddExercises";
-import Stage4AssignSetsReps from "../../components/specific/RoutineGroupModal/Stages/Stage4AssignSetsReps";
+
+import Stage1RoutineDetails from "../../components/specific/RoutineGroupModal/RoutineStages/Stage1RoutineDetails";
+import Stage2AddExercises from "../../components/specific/RoutineGroupModal/RoutineStages/Stage2AddExercises";
+import Stage3AssignSetsReps from "../../components/specific/RoutineGroupModal/RoutineStages/Stage3AssignSetsReps";
+import Stage4SummaryAndSave from "../../components/specific/RoutineGroupModal/RoutineStages/Stage4SummaryAndSave";
 
 // Helper para limpiar objetos para Firestore
 // Esta función es crucial para asegurar que los datos sean válidos para Firestore
@@ -162,23 +165,47 @@ export const useCreateRoutine = (isInitialized) => {
   const stageList = [
     {
       id: 1,
-      name: "Agregar ejercicios",
+      name: "Nueva rutina",
       title: routine.name || "Nueva Rutina",
       component: (
-        <Stage3AddExercises
+        <Stage1RoutineDetails
           currentRoutine={routine}
-          updateRoutine={updateRoutine}
+          setCurrentRoutine={updateRoutine}
         />
       ),
     },
     {
       id: 2,
+      name: "Agregar ejercicios",
+      title: routine.name || "Nueva Rutina",
+      component: (
+        <Stage2AddExercises
+          currentRoutine={routine}
+          setCurrentRoutine={updateRoutine}
+        />
+      ),
+    },
+    {
+      id: 3,
       name: "Asignar sets y reps",
       title: routine.name || "Nueva Rutina",
       component: (
-        <Stage4AssignSetsReps
+        <Stage3AssignSetsReps
           currentRoutine={routine}
-          updateRoutine={updateRoutine}
+          setCurrentRoutine={updateRoutine}
+        />
+      ),
+    },
+    {
+      id: 4,
+      name: "Asignar sets y reps",
+      title: routine.name || "Nueva Rutina",
+      component: (
+        <Stage4SummaryAndSave
+          currentRoutine={routine}
+          setCurrentRoutine={updateRoutine}
+          onSaveRoutine={saveDraft}
+          onGoBack={goToPreviousStage}
         />
       ),
     },
