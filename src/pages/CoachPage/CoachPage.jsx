@@ -28,7 +28,8 @@ function CoachPage() {
 
   const { setSearchValue, selectStudent, sincronizeStudents } = statesUpdaters;
 
-  const { selectedExercise, setSelectedExercise, exercises } = useExercises();
+  const { selectedExercise, setSelectedExercise, exercises, onSave } =
+    useExercises();
 
   // 1. Estado para controlar el modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -84,6 +85,7 @@ function CoachPage() {
           <Button
             primary
             onClick={() => handleOpenModal("exercise", null, false)}
+            style={{ margin: "10px auto" }}
           >
             Crear nuevo ejercicio
           </Button>
@@ -99,6 +101,7 @@ function CoachPage() {
           onClose={handleCloseModal}
           exercise={selectedExercise}
           isEditing={isEditing}
+          onSave={onSave}
         />
       )}
     </PageContainer>

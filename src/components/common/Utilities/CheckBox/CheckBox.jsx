@@ -1,6 +1,10 @@
 // src/components/common/CheckBox/CheckBox.jsx
-import PropTypes from 'prop-types';
-import { StyledCheckboxContainer, StyledCheckboxInput, StyledCheckboxLabel } from './StyledCheckBox';
+import PropTypes from "prop-types";
+import {
+  StyledCheckboxContainer,
+  StyledCheckboxInput,
+  StyledCheckboxLabel,
+} from "./StyledCheckBox";
 
 /**
  * Componente CheckBox genérico para toda la aplicación.
@@ -14,7 +18,17 @@ import { StyledCheckboxContainer, StyledCheckboxInput, StyledCheckboxLabel } fro
  * @param {object} [props.style] - Estilos en línea adicionales para el contenedor.
  * @param {string} [props.className] - Clases CSS adicionales para el contenedor.
  */
-const CheckBox = ({ id, label, checked, onChange, disabled = false, style, className, ...rest }) => {
+const CheckBox = ({
+  id,
+  label,
+  checked,
+  onChange,
+  disabled = false,
+  style,
+  className,
+  value,
+  ...rest
+}) => {
   return (
     <StyledCheckboxContainer style={style} className={className} {...rest}>
       <StyledCheckboxInput
@@ -23,12 +37,9 @@ const CheckBox = ({ id, label, checked, onChange, disabled = false, style, class
         checked={checked}
         onChange={onChange}
         disabled={disabled}
+        value={value}
       />
-      {label && (
-        <StyledCheckboxLabel htmlFor={id}>
-          {label}
-        </StyledCheckboxLabel>
-      )}
+      {label && <StyledCheckboxLabel htmlFor={id}>{label}</StyledCheckboxLabel>}
     </StyledCheckboxContainer>
   );
 };
@@ -37,6 +48,7 @@ CheckBox.propTypes = {
   id: PropTypes.string.isRequired,
   label: PropTypes.node, // Puede ser texto o ReactNode (ej. un span con icono)
   checked: PropTypes.bool,
+  value: PropTypes.string,
   onChange: PropTypes.func,
   disabled: PropTypes.bool,
   style: PropTypes.object,

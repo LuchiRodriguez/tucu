@@ -6,6 +6,7 @@ import Input from "../../common/Forms/Input/Input";
 import CollapsibleCard from "../../common/Utilities/CollapsibleCard/CollapsibleCard";
 import Subtitle from "../../common/Messages/Subtitle/Subtitle";
 import { StyledExerciseSelectionList } from "../RoutineGroupModal/StyledRoutineGroupModal";
+import ContentSection from "../../layout/ContentSection/ContentSection";
 
 const ExercisesList = ({
   onClick,
@@ -38,7 +39,7 @@ const ExercisesList = ({
   }, [filteredExercises]);
 
   return (
-    <>
+    <ContentSection style={{ overflowY: "auto" }}>
       <Input
         type="text"
         value={exerciseSearchText}
@@ -83,7 +84,7 @@ const ExercisesList = ({
           ))}
         </StyledExerciseSelectionList>
       )}
-    </>
+    </ContentSection>
   );
 };
 

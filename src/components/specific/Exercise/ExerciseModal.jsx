@@ -6,8 +6,18 @@ import Label from "../../common/Forms/Label/Label";
 import { useEffect, useState } from "react";
 import CheckBox from "../../common/Utilities/CheckBox/CheckBox"; // Asegúrate de importar CheckBox
 import Select from "../../common/Forms/Select/Select";
+import { StyledModalFooter } from "../RoutineGroupModal/StyledRoutineGroupModal";
+import Button from "../../common/Buttons/Button/Button";
+import Card from "../../common/Utilities/Card/Card";
 
-const ExerciseModal = ({ isOpen, onClose, exercise, isEditing, exercises }) => {
+const ExerciseModal = ({
+  isOpen,
+  onClose,
+  exercise,
+  isEditing,
+  exercises,
+  onSave,
+}) => {
   // 1. Estado para guardar el ejercicio que vamos a editar
   const [editableExercise, setEditableExercise] = useState(exercise);
 
@@ -63,7 +73,7 @@ const ExerciseModal = ({ isOpen, onClose, exercise, isEditing, exercises }) => {
       />
 
       <Label htmlFor="muscleGroup">Grupo muscular</Label>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+      <Card style={{ alignItems: "start", overflowY: "auto" }}>
         {uniqueMuscleGroups.map((group) => (
           <CheckBox
             key={group}
@@ -74,9 +84,11 @@ const ExerciseModal = ({ isOpen, onClose, exercise, isEditing, exercises }) => {
             onChange={handleCheckboxChange}
           />
         ))}
-      </div>
+      </Card>
 
-      <Label htmlFor="type">Tipo (tiempo/reps)</Label>
+      <Label htmlFor="type" style={{ marginTop: "10px" }}>
+        Tipo (tiempo/reps)
+      </Label>
       <Select
         id="type"
         value={editableExercise?.type || ""}
@@ -88,6 +100,11 @@ const ExerciseModal = ({ isOpen, onClose, exercise, isEditing, exercises }) => {
         <option value="timed">Tiempo</option>
         <option value="reps_sets">Repeticiones</option>
       </Select>
+      <StyledModalFooter style={{ alignSelf: "center", margin: "10px" }}>
+        <Button onClick={() => onSave(editableExercise)} primary>
+          Guardar ejercicio
+        </Button>
+      </StyledModalFooter>
     </Modal>
   );
 };
@@ -98,6 +115,7 @@ ExerciseModal.propTypes = {
   exercise: exerciseShape,
   isEditing: PropTypes.bool.isRequired,
   exercises: PropTypes.arrayOf(exerciseShape).isRequired,
+  onSave: PropTypes.func.isRequired,
 };
 
 export default ExerciseModal;

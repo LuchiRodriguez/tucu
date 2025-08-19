@@ -109,10 +109,33 @@ const useRoutines = () => {
   }, [user, role, authLoading, studentId]);
 
   const allSortedStages = useMemo(() => {
-    if (!allRoutineGroups) {
+    if (!allRoutineGroups || allRoutineGroups.length === 0) {
       return [];
     }
-    return allRoutineGroups.sort((a, b) => a.order - b.order);
+
+    // 1. Agrupar las rutinas por etapa
+    const groupedByStage = allRoutineGroups.reduce((acc, routineGroup) => {
+      const { stage } = routineGroup;
+
+      if (!acc[stage]) {
+        // Si la etapa no existe, la creamos con un array vacío
+        acc[stage] = {
+          stage,
+          groups: [],
+        };
+      }
+      // 2. Agregamos el grupo de rutina a su etapa correspondiente
+      acc[stage].groups.push(routineGroup);
+
+      return acc;
+    }, {}); // El valor inicial es un objeto vacío
+
+    // 3. Convertir el objeto de etapas en un array y ordenarlo
+    const sortedStages = Object.values(groupedByStage).sort((a, b) =>
+      a.stage.localeCompare(b.stage)
+    );
+
+    return sortedStages;
   }, [allRoutineGroups]);
 
   return {

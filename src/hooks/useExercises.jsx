@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { addDoc, collection, doc, getDocs, setDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
 
 const useExercises = () => {
@@ -10,6 +10,29 @@ const useExercises = () => {
   const [error, setError] = useState(null); // Estado para el ejercicio seleccionado (para el modal de edición)
 
   const [selectedExercise, setSelectedExercise] = useState(null); // Aquí irá la lógica para obtener los ejercicios de Firestore
+
+  const onSave = async (newExercise) => {
+    const isDuplicated = exercises.filter(
+      (ex) => ex.id !== newExercise.id && ex.name === newExercise.name
+    );
+    if (isDuplicated.length > 0) {
+      alert("Este ejercicio ya está creado");
+    } else {
+      if (newExercise.id) {
+        const exerciseRef = doc(db, "exercises", newExercise.id);
+        await setDoc(exerciseRef, {
+          ...newExercise,
+        });
+        return { success: true, error: null };
+      } else {
+        await addDoc(collection(db, "exercises"), {
+          name: newExercise.name,
+          type: newExercise.type,
+          muscleGroups: newExercise.muscleGroups,
+        });
+      }
+    }
+  };
 
   useEffect(() => {
     const fetchExercises = async () => {
@@ -40,6 +63,7 @@ const useExercises = () => {
     error,
     selectedExercise,
     setSelectedExercise,
+    onSave,
   };
 };
 
