@@ -13,13 +13,14 @@ import CollapsibleCard from "../../components/common/Utilities/CollapsibleCard/C
 import RoutinesList from "../../components/specific/RoutineList/RoutinesList";
 import RoutineCreationModal from "../../components/specific/RoutineGroupModal/RoutineCreationModal";
 import ExercisesList from "../../components/specific/ExerciseList/ExercisesList";
-import EditExerciseModal from "../../components/specific/Exercise/EditExerciseModal";
 import useExercises from "../../hooks/useExercises";
+import Button from "../../components/common/Buttons/Button/Button";
+import ExerciseModal from "../../components/specific/Exercise/ExerciseModal";
 
 function CoachPage() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-
+  const [isEditing, setIsEditing] = useState(false);
   const { states, statesUpdaters } = useStudents(user, authLoading);
 
   const { loading, error, searchedStudents, searchValue, selectedStudentId } =
@@ -34,7 +35,8 @@ function CoachPage() {
   const [modalType, setModalType] = useState("");
 
   // 2. Handlers para abrir y cerrar el modal
-  const handleOpenModal = (modalType, exercise) => {
+  const handleOpenModal = (modalType, exercise, editing) => {
+    setIsEditing(editing);
     setModalType(modalType);
     setIsModalOpen(true);
     setSelectedExercise(exercise);
@@ -75,20 +77,28 @@ function CoachPage() {
         </CollapsibleCard>
         <CollapsibleCard title="Ejercicios">
           <ExercisesList
-            onClick={(exercise) => handleOpenModal("exercise", exercise)}
+            onClick={(exercise) => handleOpenModal("exercise", exercise, true)}
             showCheckbox={false}
             exercises={exercises}
           />
+          <Button
+            primary
+            onClick={() => handleOpenModal("exercise", null, false)}
+          >
+            Crear nuevo ejercicio
+          </Button>
         </CollapsibleCard>
       </ContentSection>
       {isModalOpen && modalType === "routine" && (
         <RoutineCreationModal isOpen={isModalOpen} onClose={handleCloseModal} />
       )}
       {isModalOpen && modalType === "exercise" && (
-        <EditExerciseModal
+        <ExerciseModal
+          exercises={exercises}
           isOpen={isModalOpen}
           onClose={handleCloseModal}
           exercise={selectedExercise}
+          isEditing={isEditing}
         />
       )}
     </PageContainer>

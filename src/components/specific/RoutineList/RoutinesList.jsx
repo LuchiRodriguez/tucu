@@ -48,9 +48,6 @@ const RoutinesList = ({
               style={{ border: "none", boxShadow: "none" }}
             >
               <p>¡Todavía no tenés rutinas!</p>
-              <Button primary onClick={onOpenModal}>
-                Crear nueva rutina
-              </Button>
             </Card>
           )}
         </li>
@@ -64,6 +61,9 @@ const RoutinesList = ({
           />
         ))
       )}
+      <Button primary onClick={onOpenModal}>
+        Crear nueva rutina
+      </Button>
     </StyledRoutineListUL>
   );
 };
