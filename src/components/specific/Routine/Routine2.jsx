@@ -21,7 +21,7 @@ const Routine2 = ({ routine, onSelectRoutine, isSelected = false }) => {
           <StyledRoutineDescription>{description}</StyledRoutineDescription>
         )}
       </div>
-      <StyledViewButton>Ver Detalles</StyledViewButton>
+      <StyledViewButton>Ver detalles</StyledViewButton>
     </StyledRoutineItemContainer>
   );
 };

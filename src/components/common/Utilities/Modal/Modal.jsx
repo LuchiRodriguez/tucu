@@ -71,7 +71,6 @@ Modal.propTypes = {
   title: PropTypes.string.isRequired,
   children: PropTypes.node,
   updateSelectedRoutine: PropTypes.func,
-  warmUpExercises: PropTypes.array,
 };
 
 export default Modal;

@@ -1,4 +1,4 @@
-// src/components/common/Card/Card.jsx
+// src/components/common/Utilities/Card/Card.jsx
 import PropTypes from "prop-types";
 import { StyledCardContainer } from "./StyledCard"; // Importamos el contenedor estilizado
 

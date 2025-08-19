@@ -1,19 +1,14 @@
 // src/components/specific/RoutineGroupModal/Stages/Stage2AddExercises.jsx
-import { useState, useMemo, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import PropTypes from "prop-types";
-import localExercisesData from "../../../../data/exercises.json";
 
-import CollapsibleCard from "../../../common/Utilities/CollapsibleCard/CollapsibleCard";
-import Input from "../../../common/Forms/Input/Input";
 import RemoveExerciseButton from "../../../common/Buttons/RemoveExerciseButton/RemoveExerciseButton";
 import SubSectionTitle from "../../../common/Messages/SubSectionTitle/SubSectionTitle";
-import Checkbox from "../../../common/Utilities/Checkbox/Checkbox";
 import Subtitle from "../../../common/Messages/Subtitle/Subtitle";
 
 import {
   StyledModalBody,
   StyledExerciseItem,
-  StyledExerciseSelectionItem,
   StyledExerciseSelectionList,
 } from "../StyledRoutineGroupModal";
 
@@ -25,30 +20,11 @@ const reorderWithOrder = (exercises) =>
  * Componente de la segunda etapa para seleccionar ejercicios en una rutina.
  */
 const Stage2AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
-  const [exerciseSearchText, setExerciseSearchText] = useState("");
-
   const routine = useMemo(() => currentRoutine || {}, [currentRoutine]);
   const exercisesInRoutine = useMemo(
     () => routine.exercises || [],
     [routine.exercises]
   );
-
-  const filteredExercises = useMemo(() => {
-    if (!exerciseSearchText) return localExercisesData;
-    const lowerSearch = exerciseSearchText.toLowerCase();
-    return localExercisesData.filter((ex) =>
-      ex.name.toLowerCase().includes(lowerSearch)
-    );
-  }, [exerciseSearchText]);
-
-  const groupedExercises = useMemo(() => {
-    return filteredExercises.reduce((acc, exercise) => {
-      const category = exercise.category || "Otros";
-      acc[category] = acc[category] || [];
-      acc[category].push(exercise);
-      return acc;
-    }, {});
-  }, [filteredExercises]);
 
   const toggleExercise = useCallback(
     (exercise) => {
@@ -92,48 +68,6 @@ const Stage2AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
       <SubSectionTitle style={{ margin: "10px 0" }}>
         Seleccionar Ejercicios:
       </SubSectionTitle>
-      <Input
-        type="text"
-        value={exerciseSearchText}
-        onChange={(e) => setExerciseSearchText(e.target.value)}
-        placeholder="Buscar ejercicio..."
-        style={{ marginBottom: 15 }}
-      />
-      {Object.keys(groupedExercises).length === 0 ? (
-        <Subtitle
-          style={{ textAlign: "center", margin: "20px 0", color: "#7f8c8d" }}
-        >
-          {exerciseSearchText
-            ? "No se encontraron ejercicios con esa búsqueda."
-            : "No hay ejercicios disponibles para seleccionar."}
-        </Subtitle>
-      ) : (
-        <StyledExerciseSelectionList style={{ flexGrow: 1 }}>
-          {Object.entries(groupedExercises).map(([categoryName, exercises]) => (
-            <CollapsibleCard
-              key={categoryName}
-              title={categoryName}
-              defaultOpen={false}
-            >
-              {exercises.map((exercise) => {
-                const isSelected = exercisesInRoutine.some(
-                  (ex) => ex.id === exercise.id
-                );
-                return (
-                  <StyledExerciseSelectionItem key={exercise.id}>
-                    <Checkbox
-                      id={`select-exercise-${exercise.id}`}
-                      label={exercise.name}
-                      checked={isSelected}
-                      onChange={() => toggleExercise(exercise)}
-                    />
-                  </StyledExerciseSelectionItem>
-                );
-              })}
-            </CollapsibleCard>
-          ))}
-        </StyledExerciseSelectionList>
-      )}
       <SubSectionTitle>Ejercicios en la Rutina:</SubSectionTitle>
       <StyledExerciseSelectionList
         style={{ minHeight: "60px", maxHeight: "60px" }}

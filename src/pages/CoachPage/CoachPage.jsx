@@ -12,6 +12,9 @@ import ContentSection from "../../components/layout/ContentSection/ContentSectio
 import CollapsibleCard from "../../components/common/Utilities/CollapsibleCard/CollapsibleCard";
 import RoutinesList from "../../components/specific/RoutineList/RoutinesList";
 import RoutineCreationModal from "../../components/specific/RoutineGroupModal/RoutineCreationModal";
+import ExercisesList from "../../components/specific/ExerciseList/ExercisesList";
+import EditExerciseModal from "../../components/specific/Exercise/EditExerciseModal";
+import useExercises from "../../hooks/useExercises";
 
 function CoachPage() {
   const navigate = useNavigate();
@@ -24,11 +27,18 @@ function CoachPage() {
 
   const { setSearchValue, selectStudent, sincronizeStudents } = statesUpdaters;
 
+  const { selectedExercise, setSelectedExercise, exercises } = useExercises();
+
   // 1. Estado para controlar el modal
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState("");
 
   // 2. Handlers para abrir y cerrar el modal
-  const handleOpenModal = () => setIsModalOpen(true);
+  const handleOpenModal = (modalType, exercise) => {
+    setModalType(modalType);
+    setIsModalOpen(true);
+    setSelectedExercise(exercise);
+  };
   const handleCloseModal = () => setIsModalOpen(false);
 
   const handleSelectStudent = (studentId) => {
@@ -50,7 +60,7 @@ function CoachPage() {
       >
         <CollapsibleCard title="Rutinas">
           {/* 3. Pasamos la función al componente RoutinesList */}
-          <RoutinesList onOpenModal={handleOpenModal} />
+          <RoutinesList onOpenModal={() => handleOpenModal("routine")} />
         </CollapsibleCard>
         <CollapsibleCard title="Alumnos">
           <StudentList
@@ -63,9 +73,24 @@ function CoachPage() {
             onRetrySync={sincronizeStudents}
           />
         </CollapsibleCard>
+        <CollapsibleCard title="Ejercicios">
+          <ExercisesList
+            onClick={(exercise) => handleOpenModal("exercise", exercise)}
+            showCheckbox={false}
+            exercises={exercises}
+          />
+        </CollapsibleCard>
       </ContentSection>
-      {/* 4. Renderizamos el modal, controlando su visibilidad con el estado */}
-      <RoutineCreationModal isOpen={isModalOpen} onClose={handleCloseModal} />
+      {isModalOpen && modalType === "routine" && (
+        <RoutineCreationModal isOpen={isModalOpen} onClose={handleCloseModal} />
+      )}
+      {isModalOpen && modalType === "exercise" && (
+        <EditExerciseModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          exercise={selectedExercise}
+        />
+      )}
     </PageContainer>
   );
 }

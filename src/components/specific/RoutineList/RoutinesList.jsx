@@ -8,18 +8,25 @@ import Button from "../../common/Buttons/Button/Button";
 import Card from "../../common/Utilities/Card/Card";
 
 import useRoutines from "../../../hooks/useRoutines/useRoutines";
+import { useAuth } from "../../../context/authContextBase"; // <-- Importamos useAuth
 
 const RoutinesList = ({
   searchText = "",
   onSelectRoutine,
   selectedRoutineId = null,
-  onOpenModal, // <-- 1. Recibimos la nueva prop
+  onOpenModal,
 }) => {
   const { allSortedStages, loading, error, errorMessage } = useRoutines();
+  const { role } = useAuth(); // <-- Obtenemos el role del usuario // Lógica para obtener las rutinas basándose en el rol
 
-  // Esta línea parece tener un error, si stage.groups no existe.
-  // Revisa la estructura de los datos que devuelve tu useRoutines
-  const routines = allSortedStages.flatMap((stage) => stage.groups);
+  const routines =
+    role === "student"
+      ? allSortedStages.flatMap((stage) => stage.routines) // <-- Corrección: el array se llama "routines" en la data
+      : allSortedStages; // Lógica de filtrado con el searchText
+
+  const filteredRoutines = routines.filter((routine) =>
+    routine.name.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   return (
     <StyledRoutineListUL>
@@ -29,7 +36,7 @@ const RoutinesList = ({
         <li>
           <ErrorMessage isVisible={true}>{errorMessage}</ErrorMessage>
         </li>
-      ) : routines.length === 0 ? (
+      ) : filteredRoutines.length === 0 ? (
         <li>
           {searchText ? (
             <>
@@ -41,7 +48,6 @@ const RoutinesList = ({
               style={{ border: "none", boxShadow: "none" }}
             >
               <p>¡Todavía no tenés rutinas!</p>
-              {/* 2. Le pasamos el handler al botón */}
               <Button primary onClick={onOpenModal}>
                 Crear nueva rutina
               </Button>
@@ -49,7 +55,7 @@ const RoutinesList = ({
           )}
         </li>
       ) : (
-        routines.map((routine) => (
+        filteredRoutines.map((routine) => (
           <Routine2
             key={routine.id}
             routine={routine}

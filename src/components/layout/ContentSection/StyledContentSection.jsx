@@ -7,4 +7,5 @@ export const StyledContentSectionBase = styled.section`
   width: 100%;
   box-sizing: border-box;
   margin-bottom: 20px;
+  overflow-y: auto;
 `;

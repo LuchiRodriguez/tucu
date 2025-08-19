@@ -1,11 +1,11 @@
 // src/components/specific/RoutineGroupModal/RoutineStages/Stage1RoutineDetails.jsx
 import PropTypes from "prop-types";
-import warmUpExercises from "../../../../data/warmUpExercises";
 
 import Input from "../../../common/Forms/Input/Input";
 import Label from "../../../common/Forms/Label/Label";
 import Select from "../../../common/Forms/Select/Select";
 import { StyledModalBody } from "../StyledRoutineGroupModal";
+import useExercises from "../../../../hooks/useExercises";
 
 /**
  * Componente de la primera etapa para ingresar los detalles de una rutina individual.
@@ -13,8 +13,9 @@ import { StyledModalBody } from "../StyledRoutineGroupModal";
  * y una función para actualizarla desde su componente padre.
  */
 function Stage1RoutineDetails({ currentRoutine, setCurrentRoutine }) {
+  const { exercises } = useExercises();
   // Detectar ejercicio seleccionado en calentamiento
-  const selectedWarmUp = warmUpExercises.find(
+  const selectedWarmUp = exercises.find(
     (ex) => ex.name === currentRoutine?.warmUp
   );
 
@@ -26,7 +27,7 @@ function Stage1RoutineDetails({ currentRoutine, setCurrentRoutine }) {
       };
 
       if (id === "warmUp") {
-        const selectedWarmUp = warmUpExercises.find((ex) => ex.name === value);
+        const selectedWarmUp = exercises.find((ex) => ex.name === value);
 
         if (selectedWarmUp?.type === "reps_sets") {
           delete updated.warmUpTime;
@@ -94,7 +95,7 @@ function Stage1RoutineDetails({ currentRoutine, setCurrentRoutine }) {
         style={{ marginBottom: 15 }}
       >
         <option value="">Seleccionar calentamiento</option>
-        {warmUpExercises.map(({ id, name }) => (
+        {exercises.map(({ id, name }) => (
           <option key={id} value={name}>
             {name}
           </option>

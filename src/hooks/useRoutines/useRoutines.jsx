@@ -70,43 +70,32 @@ const useRoutines = () => {
     }
 
     let q;
+    setLoading(true);
+    setError(null);
+
     if (role === "student") {
       q = query(
         collection(db, "routineGroups"),
         where("studentId", "==", studentId)
       );
+    } else if (role === "coach") {
+      // <-- NUEVA LÓGICA
+      q = query(collection(db, "routines"), where("createdBy", "==", user.uid));
     } else {
       setLoading(false);
       setAllRoutineGroups([]);
       return;
-    }
-
-    setLoading(true);
-    setError(null);
+    } // Resto del código de onSnapshot
 
     const unsubscribe = onSnapshot(
       q,
-      async (snapshot) => {
-        const routineGroupsData = snapshot.docs.map((doc) => ({
+      (snapshot) => {
+        // Manejamos la data de routines para el coach
+        const routinesData = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-
-        const finalGroups = await Promise.all(
-          routineGroupsData.map(async (group) => {
-            const routinesPromises = group.routines.map((routineRef) =>
-              getDoc(routineRef)
-            );
-            const routinesDocs = await Promise.all(routinesPromises);
-            const routinesData = routinesDocs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            }));
-            // Aquí es donde cambiamos 'routines' a 'groups' o 'routinesData'
-            return { ...group, routines: routinesData };
-          })
-        );
-        setAllRoutineGroups(finalGroups);
+        setAllRoutineGroups(routinesData); // <-- Ahora setea la data de rutinas directamente
         setLoading(false);
       },
       (firebaseError) => {

@@ -133,6 +133,9 @@ export const StyledExerciseSelectionItem = styled.div`
 `;
 
 export const StyledExerciseSelectionList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   overflow-y: auto;
 `;
 
