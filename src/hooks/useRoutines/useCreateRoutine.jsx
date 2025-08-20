@@ -1,7 +1,7 @@
 // src/hooks/useRoutines/useCreateRoutine.jsx
 import { useState, useEffect, useCallback, useRef } from "react";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "../../config/firebase"; // Asumiendo que db se exporta desde firebase.js
+import { db } from "../../config/firebase";
 import { useAuth } from "../../context/authContextBase";
 import { v4 as uuidv4 } from "uuid";
 
@@ -10,158 +10,167 @@ import Stage2AddExercises from "../../components/specific/RoutineGroupModal/Rout
 import Stage3AssignSetsReps from "../../components/specific/RoutineGroupModal/RoutineStages/Stage3AssignSetsReps";
 import Stage4SummaryAndSave from "../../components/specific/RoutineGroupModal/RoutineStages/Stage4SummaryAndSave";
 
-// Helper para limpiar objetos para Firestore
-// Esta función es crucial para asegurar que los datos sean válidos para Firestore
-export const cleanObjectForFirestore = (obj) => {
-  if (obj === null || typeof obj !== "object") {
-    return obj;
-  }
-
-  if (Array.isArray(obj)) {
-    return obj.map(cleanObjectForFirestore);
-  }
-
-  const newObj = {};
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      const value = obj[key];
-      // Elimina propiedades con valor 'undefined' o que son funciones
-      if (value !== undefined && typeof value !== "function") {
-        newObj[key] = cleanObjectForFirestore(value);
-      }
-    }
-  }
-  return newObj;
-};
-
-// Función para generar un ID de rutina único
+// --- Helpers ---
 const generateRoutineId = () => uuidv4();
 
-// Valores iniciales para una nueva rutina
 const initialNewRoutine = {
   id: generateRoutineId(),
   name: "",
-  rir: 2, // Reps in Reserve
-  restTime: 60, // segundos
+  rir: 2,
+  restTime: 60,
   warmUp: "",
   exercises: [],
+  isDraft: true,
 };
 
+// --- Hook principal ---
 export const useCreateRoutine = (isInitialized) => {
   const { user } = useAuth();
   const coachId = user?.uid;
 
-  // Estado para las rutinas dentro del grupo
-  const [routine, setRoutine] = useState(initialNewRoutine); // Un grupo siempre empieza con al menos una rutina
-
-  // Estado para la etapa actual del formulario (1 a 4)
+  const [routine, setRoutine] = useState(initialNewRoutine);
   const [stage, setStage] = useState(1);
-  // Estados para el proceso de guardado (borrador o publicación)
+
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
-  const [isPublishing, setIsPublishing] = useState(false); // NUEVO: Estado para la publicación fin al
+  const [isPublishing, setIsPublishing] = useState(false);
   const isActionDisabled = isPublishing || isSaving;
 
-  // Ref para manejar el debounce del auto-guardado
+  const [hasUserEdited, setHasUserEdited] = useState(false);
+
   const saveTimeoutRef = useRef(null);
 
+  // --- Update routine con flag de edición ---
   const updateRoutine = useCallback((updater) => {
     setRoutine((prevRoutine) => {
-      const updatedRoutine = updater(prevRoutine);
-      return updatedRoutine;
+      const nextRoutine =
+        typeof updater === "function"
+          ? updater(prevRoutine)
+          : { ...prevRoutine, ...updater };
+
+      if (JSON.stringify(prevRoutine) !== JSON.stringify(nextRoutine)) {
+        setHasUserEdited(true);
+      }
+
+      return nextRoutine;
     });
   }, []);
 
-  // Navegación a la siguiente etapa del formulario
-  const goToNextStage = useCallback(() => {
-    setStage((prev) => Math.min(prev + 1, 4)); // Máximo 4 etapas
-  }, []);
+  // --- Navegación ---
+  const goToNextStage = useCallback(
+    () => setStage((prev) => Math.min(prev + 1, 4)),
+    []
+  );
+  const goToPreviousStage = useCallback(
+    () => setStage((prev) => Math.max(prev - 1, 1)),
+    []
+  );
 
-  // Navegación a la etapa anterior del formulario
-  const goToPreviousStage = useCallback(() => {
-    setStage((prev) => Math.max(prev - 1, 1)); // Mínimo 1 etapa
-  }, []);
+  // --- Función centralizada para guardar en Firestore ---
+  const saveRoutineToFirestore = useCallback(
+    async (isDraft) => {
+      if (!coachId) {
+        return {
+          success: false,
+          error: "Falta coachId para guardar la rutina.",
+        };
+      }
 
-  // Función para guardar el borrador del grupo de rutinas en Firestore (con debounce)
+      try {
+        const routineRef = doc(db, "routines", routine.id);
+        await setDoc(routineRef, {
+          ...routine,
+          isDraft,
+          createdAt: routine.createdAt || serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          createdBy: coachId,
+        });
+
+        setRoutine((prev) => ({ ...prev, isDraft }));
+        return { success: true, error: null };
+      } catch (error) {
+        console.error("Error al guardar rutina:", error);
+        return { success: false, error: error.message || "Error desconocido" };
+      }
+    },
+    [coachId, routine]
+  );
+
+  // --- Guardar borrador ---
   const saveDraft = useCallback(async () => {
-    if (!coachId) {
-      return {
-        success: false,
-        error: "Faltan IDs de coach para guardar el borrador.",
-      };
-    }
-
     setIsSaving(true);
+    const result = await saveRoutineToFirestore(true);
+    setIsSaving(false);
+    if (!result.success) setSaveError(result.error);
+    return result;
+  }, [saveRoutineToFirestore]);
 
-    try {
-      const routineRef = doc(db, "routines", routine.id);
-      await setDoc(routineRef, {
-        ...routine,
-        createdAt: routine.createdAt || serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        createdBy: coachId, // Guardamos quién creó la rutina
-      });
+  // --- Publicar rutina ---
+  const publishRoutine = useCallback(async () => {
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
-      setIsSaving(false);
+    setIsPublishing(true);
+    const result = await saveRoutineToFirestore(false);
+    setIsPublishing(false);
+    if (!result.success) setSaveError(result.error);
+    return result;
+  }, [saveRoutineToFirestore]);
 
-      return { success: true, error: null };
-    } catch (error) {
-      setIsSaving(false);
-      console.error("Error al guardar borrador:", error);
-      return { success: false, error: error.message || "Error desconocido" };
-    }
-  }, [coachId, routine]);
-
+  // --- Auto-save con debounce ---
   useEffect(() => {
-    if (!isInitialized) return;
+    if (!isInitialized || !hasUserEdited) return;
 
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
 
-    saveTimeoutRef.current = setTimeout(() => {
-      saveDraft();
+    saveTimeoutRef.current = setTimeout(async () => {
+      const result = await saveDraft();
+      if (!result.success) {
+        setSaveError(result.error);
+      }
     }, 1500);
 
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
-      saveDraft();
     };
-  }, [routine, isInitialized, saveDraft]);
+  }, [routine, isInitialized, hasUserEdited, saveDraft]);
 
+  // --- Reset form ---
   const resetForm = useCallback(() => {
     setRoutine(initialNewRoutine);
     setIsSaving(false);
     setSaveError(null);
     setIsPublishing(false);
+    setHasUserEdited(false);
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
   }, []);
 
-  // ✅ NUEVO: Función de validación final antes de publicar el grupo de rutinas
-  // Retorna un mensaje de error si la validación falla, o null si es exitosa.
+  // --- Validación final ---
   const validateBeforePublish = useCallback(() => {
     if (!user) return "No hay usuario autenticado para publicar la rutina.";
-    // Validar ejercicios dentro de cada rutina
+
     const invalidExercise = routine.exercises.some((ex) => {
-      if (ex.sets === undefined || ex.sets <= 0 || isNaN(ex.sets)) return true; // Series deben ser > 0
+      if (ex.sets === undefined || ex.sets <= 0 || isNaN(ex.sets)) return true;
       if (ex.type === "timed")
-        return ex.time === undefined || ex.time <= 0 || isNaN(ex.time); // Tiempo debe ser > 0 para tipo 'timed'
-      return ex.reps === undefined || ex.reps < 0 || isNaN(ex.reps); // Reps deben ser >= 0
+        return ex.time === undefined || ex.time <= 0 || isNaN(ex.time);
+      return ex.reps === undefined || ex.reps < 0 || isNaN(ex.reps);
     });
     if (invalidExercise)
       return "Por favor, asigna al menos 1 serie y un valor válido (>=0 para reps, >0 para sets/tiempo) a todos los ejercicios.";
-    // Validar que todas las rutinas tengan una descripción de calentamiento
+
     const missingWarmUp = routine.warmUp?.trim() === "";
     if (missingWarmUp)
       return "Por favor, agrega una descripción para el calentamiento en todas las rutinas.";
 
-    return null; // No hay errores de validación
+    return null;
   }, [user, routine]);
 
+  // --- Lista de etapas ---
   const stageList = [
     {
       id: 1,
@@ -198,7 +207,7 @@ export const useCreateRoutine = (isInitialized) => {
     },
     {
       id: 4,
-      name: "Asignar sets y reps",
+      name: "Resumen y guardar",
       title: routine.name || "Nueva Rutina",
       component: (
         <Stage4SummaryAndSave
@@ -226,6 +235,7 @@ export const useCreateRoutine = (isInitialized) => {
     validateBeforePublish,
     isActionDisabled,
     stageList,
+    publishRoutine,
     currentStage: stageList[stage - 1],
   };
 };

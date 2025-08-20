@@ -2,7 +2,6 @@
 import { useMemo, useCallback } from "react";
 import PropTypes from "prop-types";
 
-import Button from "../../../common/Buttons/Button/Button";
 import SubSectionTitle from "../../../common/Messages/SubSectionTitle/SubSectionTitle";
 import Subtitle from "../../../common/Messages/Subtitle/Subtitle";
 import RemoveExerciseButton from "../../../common/Buttons/RemoveExerciseButton/RemoveExerciseButton";
@@ -19,12 +18,7 @@ const reorderWithOrder = (exercises) =>
 /**
  * Componente de la cuarta y última etapa para mostrar un resumen de la rutina.
  */
-const Stage4SummaryAndSave = ({
-  currentRoutine,
-  setCurrentRoutine,
-  onSaveRoutine, // <-- Prop para guardar en Firestore
-  onGoBack, // <-- Prop para volver al stage anterior
-}) => {
+const Stage4SummaryAndSave = ({ currentRoutine, setCurrentRoutine }) => {
   const routine = useMemo(() => currentRoutine || {}, [currentRoutine]);
   const exercisesInRoutine = useMemo(
     () => routine.exercises || [],
@@ -72,19 +66,12 @@ const Stage4SummaryAndSave = ({
 
   return (
     <StyledModalBody>
-      <SubSectionTitle>Resumen de la Rutina:</SubSectionTitle>
-      <p>
-        <strong>Nombre:</strong> {routine.name || "Sin nombre"}
-      </p>
-      <p>
-        <strong>RIR:</strong> {routine.rir || 0}
-      </p>
-      <p>
-        <strong>Descanso:</strong> {routine.restTime || 0}s
-      </p>
-      <p>
-        <strong>Calentamiento:</strong> {routine.warmUp || "Sin calentamiento"}
-      </p>
+      <SubSectionTitle style={{ margin: "10px 0 0" }}>
+        Descanso: <span>{currentRoutine.restTime || 0}s</span> | RIR:
+        <span>{currentRoutine.rir || 0}</span>
+        <br />
+        Calentamiento: <span>{currentRoutine.warmUp || "N/A"}</span>
+      </SubSectionTitle>
 
       <SubSectionTitle>
         Ejercicios ({exercisesInRoutine.length}):{" "}
@@ -141,22 +128,6 @@ const Stage4SummaryAndSave = ({
           </ul>
         )}
       </StyledExerciseSelectionList>
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginTop: "20px",
-        }}
-      >
-        <Button onClick={onGoBack} secondary>
-          {" "}
-          Volver
-        </Button>
-        <Button onClick={onSaveRoutine} primary>
-          Guardar rutina
-        </Button>
-      </div>
     </StyledModalBody>
   );
 };

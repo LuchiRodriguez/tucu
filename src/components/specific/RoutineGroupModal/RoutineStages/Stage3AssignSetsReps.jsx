@@ -37,26 +37,32 @@ const Stage3AssignSetsReps = ({ currentRoutine, setCurrentRoutine }) => {
   // Handler genérico para cambios en los ejercicios
   const handleExerciseDetailChange = useCallback(
     (exerciseId, field, value) => {
-      const updatedExercises = exercisesInRoutine.map((ex) => {
-        if (ex.id === exerciseId) {
-          // Parsear a número solo si el campo es numérico y el valor no está vacío
-          const parsedValue =
-            (field === "sets" || field === "reps" || field === "time") &&
-            value !== ""
-              ? Number(value)
-              : value;
-          return { ...ex, [field]: parsedValue };
-        }
-        return ex;
-      });
+      // La función 'updater' que espera el hook
+      const updater = (prevRoutine) => {
+        const updatedExercises = prevRoutine.exercises.map((ex) => {
+          if (ex.id === exerciseId) {
+            // ... lógica para parsear el valor
+            const parsedValue =
+              (field === "sets" || field === "reps" || field === "time") &&
+              value !== ""
+                ? Number(value)
+                : value;
+            return { ...ex, [field]: parsedValue };
+          }
+          return ex;
+        });
 
-      setCurrentRoutine((prevRoutine) => ({
-        ...prevRoutine,
-        exercises: updatedExercises,
-      }));
+        return {
+          ...prevRoutine,
+          exercises: updatedExercises,
+        };
+      };
+
+      // Llamamos a setCurrentRoutine con la función 'updater'
+      setCurrentRoutine(updater);
     },
-    [exercisesInRoutine, setCurrentRoutine]
-  ); // Dependencias para useCallback
+    [setCurrentRoutine]
+  );
 
   return (
     <StyledModalBody>
