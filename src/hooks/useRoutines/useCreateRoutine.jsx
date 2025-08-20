@@ -74,7 +74,7 @@ export const useCreateRoutine = (isInitialized) => {
 
   // Navegación a la siguiente etapa del formulario
   const goToNextStage = useCallback(() => {
-    setStage((prev) => Math.min(prev + 1, 2)); // Máximo 2 etapas
+    setStage((prev) => Math.min(prev + 1, 4)); // Máximo 4 etapas
   }, []);
 
   // Navegación a la etapa anterior del formulario

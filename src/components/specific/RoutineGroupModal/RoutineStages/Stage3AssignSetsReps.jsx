@@ -83,7 +83,7 @@ const Stage3AssignSetsReps = ({ currentRoutine, setCurrentRoutine }) => {
               <CollapsibleCard
                 key={exercise.id}
                 title={`${index + 1}. ${exercise.name}`}
-                defaultOpen={true}
+                defaultOpen={false}
               >
                 <div style={{ padding: "10px 0" }}>
                   <StyledExerciseInputGroup>

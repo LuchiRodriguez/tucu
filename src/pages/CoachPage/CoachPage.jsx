@@ -61,10 +61,6 @@ function CoachPage() {
       <ContentSection
         style={{ display: "flex", flexDirection: "column", gap: "20px" }}
       >
-        <CollapsibleCard title="Rutinas">
-          {/* 3. Pasamos la función al componente RoutinesList */}
-          <RoutinesList onOpenModal={() => handleOpenModal("routine")} />
-        </CollapsibleCard>
         <CollapsibleCard title="Alumnos">
           <StudentList
             students={searchedStudents}
@@ -75,6 +71,10 @@ function CoachPage() {
             selectedStudentId={selectedStudentId}
             onRetrySync={sincronizeStudents}
           />
+        </CollapsibleCard>
+        <CollapsibleCard title="Rutinas">
+          {/* 3. Pasamos la función al componente RoutinesList */}
+          <RoutinesList onOpenModal={() => handleOpenModal("routine")} />
         </CollapsibleCard>
         <CollapsibleCard title="Ejercicios">
           <ExercisesList

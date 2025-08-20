@@ -13,25 +13,29 @@ const ExerciseListItem = ({
   onToggle,
 }) => {
   return (
-    <Card id={exercise.id} onClick={onClick} style={{ marginBottom: "10px" }}>
-      <StyledCardTitle style={{ textAlign: "center" }}>
-        {exercise.name}
-        <span>| {exercise.muscleGroups.map((muscle) => muscle + " | ")}</span>
-      </StyledCardTitle>
+    <Card
+      id={exercise.id}
+      onClick={onClick}
+      flexDirection={"row"}
+      style={{ marginBottom: "10px" }}
+    >
       {showCheckbox && (
         <CheckBox
           id={`select-exercise-${exercise.id}`}
-          label={exercise.name}
           checked={isSelected}
           onChange={() => onToggle(exercise)}
         />
       )}
+      <StyledCardTitle style={{ textAlign: "center" }}>
+        {exercise.name}
+        <span>| {exercise.muscleGroups.map((muscle) => muscle + " | ")}</span>
+      </StyledCardTitle>
     </Card>
   );
 };
 
 ExerciseListItem.propTypes = {
-  exercise: exerciseShape.isRequired,
+  exercise: exerciseShape,
   onClick: PropTypes.func.isRequired,
   showCheckbox: PropTypes.bool,
   isSelected: PropTypes.bool,

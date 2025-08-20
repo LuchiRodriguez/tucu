@@ -76,7 +76,7 @@ const RoutineCreationModal = ({ isOpen, onClose }) => {
           />
         )}
 
-        {stage === 2 ? (
+        {stage === 4 ? (
           <>
             <button
               onClick={handlePublishRoutine}

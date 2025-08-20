@@ -5,6 +5,8 @@ import PropTypes from "prop-types";
 import RemoveExerciseButton from "../../../common/Buttons/RemoveExerciseButton/RemoveExerciseButton";
 import SubSectionTitle from "../../../common/Messages/SubSectionTitle/SubSectionTitle";
 import Subtitle from "../../../common/Messages/Subtitle/Subtitle";
+import ExercisesList from "../../ExerciseList/ExercisesList";
+import useExercises from "../../../../hooks/useExercises";
 
 import {
   StyledModalBody,
@@ -20,6 +22,7 @@ const reorderWithOrder = (exercises) =>
  * Componente de la segunda etapa para seleccionar ejercicios en una rutina.
  */
 const Stage2AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
+  const { exercises } = useExercises();
   const routine = useMemo(() => currentRoutine || {}, [currentRoutine]);
   const exercisesInRoutine = useMemo(
     () => routine.exercises || [],
@@ -68,6 +71,12 @@ const Stage2AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
       <SubSectionTitle style={{ margin: "10px 0" }}>
         Seleccionar Ejercicios:
       </SubSectionTitle>
+      <ExercisesList
+        exercises={exercises}
+        exercisesInRoutine={exercisesInRoutine}
+        toggleExercise={toggleExercise}
+        showCheckbox={true}
+      />
       <SubSectionTitle>Ejercicios en la Rutina:</SubSectionTitle>
       <StyledExerciseSelectionList
         style={{ minHeight: "60px", maxHeight: "60px" }}

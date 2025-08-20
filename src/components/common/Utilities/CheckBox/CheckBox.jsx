@@ -46,7 +46,7 @@ const CheckBox = ({
 
 CheckBox.propTypes = {
   id: PropTypes.string.isRequired,
-  label: PropTypes.node, // Puede ser texto o ReactNode (ej. un span con icono)
+  label: PropTypes.node,
   checked: PropTypes.bool,
   value: PropTypes.string,
   onChange: PropTypes.func,

@@ -72,7 +72,7 @@ const ExercisesList = ({
                 return (
                   <ExerciseListItem
                     exercise={exercise}
-                    onClick={() => onClick(exercise)}
+                    onClick={() => onClick && onClick(exercise)}
                     key={exercise.id}
                     showCheckbox={showCheckbox}
                     isSelected={isSelected}
@@ -89,7 +89,7 @@ const ExercisesList = ({
 };
 
 ExercisesList.propTypes = {
-  onClick: PropTypes.func.isRequired,
+  onClick: PropTypes.func,
   exercisesInRoutine: PropTypes.array,
   toggleExercise: PropTypes.func,
   showCheckbox: PropTypes.bool.isRequired,
