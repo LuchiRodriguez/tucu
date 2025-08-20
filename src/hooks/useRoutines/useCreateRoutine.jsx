@@ -16,6 +16,7 @@ const generateRoutineId = () => uuidv4();
 const initialNewRoutine = {
   id: generateRoutineId(),
   name: "",
+  stages: [],
   rir: 2,
   restTime: 60,
   warmUp: "",
@@ -76,12 +77,17 @@ export const useCreateRoutine = (isInitialized) => {
         };
       }
 
+      const routineToSave = { ...routine };
+      if (routineToSave.stages.length === 0) {
+        routineToSave.stages = ["Sin Etapa"];
+      }
+
       try {
-        const routineRef = doc(db, "routines", routine.id);
+        const routineRef = doc(db, "routines", routineToSave.id);
         await setDoc(routineRef, {
-          ...routine,
+          ...routineToSave,
           isDraft,
-          createdAt: routine.createdAt || serverTimestamp(),
+          createdAt: routineToSave.createdAt || serverTimestamp(),
           updatedAt: serverTimestamp(),
           createdBy: coachId,
         });
@@ -90,7 +96,10 @@ export const useCreateRoutine = (isInitialized) => {
         return { success: true, error: null };
       } catch (error) {
         console.error("Error al guardar rutina:", error);
-        return { success: false, error: error.message || "Error desconocido" };
+        return {
+          success: false,
+          error: error.message || "Error desconocido",
+        };
       }
     },
     [coachId, routine]

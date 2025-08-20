@@ -69,11 +69,10 @@ const Stage3AssignSetsReps = ({ currentRoutine, setCurrentRoutine }) => {
       <SubSectionTitle style={{ margin: "10px 0 0" }}>
         Descanso: <span>{currentRoutine.restTime || 0}s</span> | RIR:
         <span>{currentRoutine.rir || 0}</span>
-        <br />
-        Calentamiento: <span>{currentRoutine.warmUp || "N/A"}</span>
       </SubSectionTitle>
-
-      <SubSectionTitle>Asignar Detalles de Ejercicios:</SubSectionTitle>
+      <SubSectionTitle style={{ margin: "10px 0" }}>
+        Asignar detalles a los ejercicios:
+      </SubSectionTitle>
       <StyledExerciseSelectionList style={{ flexGrow: 1 }}>
         {exercisesInRoutine.length === 0 ? (
           <Subtitle

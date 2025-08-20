@@ -69,8 +69,6 @@ const Stage4SummaryAndSave = ({ currentRoutine, setCurrentRoutine }) => {
       <SubSectionTitle style={{ margin: "10px 0 0" }}>
         Descanso: <span>{currentRoutine.restTime || 0}s</span> | RIR:
         <span>{currentRoutine.rir || 0}</span>
-        <br />
-        Calentamiento: <span>{currentRoutine.warmUp || "N/A"}</span>
       </SubSectionTitle>
 
       <SubSectionTitle>
@@ -80,7 +78,7 @@ const Stage4SummaryAndSave = ({ currentRoutine, setCurrentRoutine }) => {
         </span>
       </SubSectionTitle>
 
-      <StyledExerciseSelectionList>
+      <StyledExerciseSelectionList style={{ flexGrow: "1" }}>
         {exercisesInRoutine.length === 0 ? (
           <Subtitle
             style={{ textAlign: "center", margin: "20px 0", color: "#7f8c8d" }}

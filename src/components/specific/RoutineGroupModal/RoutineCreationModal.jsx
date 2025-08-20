@@ -17,9 +17,7 @@ const RoutineCreationModal = ({ isOpen, onClose }) => {
     stage,
     goToNextStage,
     goToPreviousStage,
-    isSaving,
     saveError,
-    isPublishing,
     validateBeforePublish,
     currentStage,
     isActionDisabled,
@@ -59,8 +57,6 @@ const RoutineCreationModal = ({ isOpen, onClose }) => {
       onClose={onClose}
       title={currentStage?.title ?? "Nueva rutina"}
     >
-      {(isSaving || isPublishing) && <p>Cargando...</p>}
-
       {(saveError || localError) && (
         <ErrorMessage isVisible>{saveError || localError}</ErrorMessage>
       )}

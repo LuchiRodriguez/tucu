@@ -65,11 +65,9 @@ const Stage2AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
       <SubSectionTitle style={{ margin: "10px 0 0" }}>
         Descanso: <span>{routine.restTime || 0}s</span> | RIR:
         <span>{routine.rir || 0}</span>
-        <br />
-        Calentamiento: <span>{routine.warmUp || "N/A"}</span>
       </SubSectionTitle>
       <SubSectionTitle style={{ margin: "10px 0" }}>
-        Seleccionar Ejercicios:
+        Seleccionar ejercicios:
       </SubSectionTitle>
       <ExercisesList
         exercises={exercises}
@@ -77,7 +75,7 @@ const Stage2AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
         toggleExercise={toggleExercise}
         showCheckbox={true}
       />
-      <SubSectionTitle>Ejercicios en la Rutina:</SubSectionTitle>
+      <SubSectionTitle>Ejercicios en la rutina:</SubSectionTitle>
       <StyledExerciseSelectionList
         style={{ minHeight: "60px", maxHeight: "60px" }}
       >

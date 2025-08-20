@@ -3,9 +3,9 @@ import PropTypes from "prop-types";
 
 import Input from "../../../common/Forms/Input/Input";
 import Label from "../../../common/Forms/Label/Label";
-import Select from "../../../common/Forms/Select/Select";
 import { StyledModalBody } from "../StyledRoutineGroupModal";
-import useExercises from "../../../../hooks/useExercises";
+import CheckBox from "../../../common/Utilities/CheckBox/CheckBox";
+import Card from "../../../common/Utilities/Card/Card";
 
 /**
  * Componente de la primera etapa para ingresar los detalles de una rutina individual.
@@ -13,11 +13,18 @@ import useExercises from "../../../../hooks/useExercises";
  * y una función para actualizarla desde su componente padre.
  */
 function Stage1RoutineDetails({ currentRoutine, setCurrentRoutine }) {
-  const { exercises } = useExercises();
-  // Detectar ejercicio seleccionado en calentamiento
-  const selectedWarmUp = exercises.find(
-    (ex) => ex.name === currentRoutine?.warmUp
-  );
+  const stages = [
+    "Adaptación",
+    "Rehabilitación",
+    "Hipertrofia",
+    "Fuerza",
+    "Potencia",
+    "Resistencia",
+    "Aeróbica",
+    "Definición",
+    "Mantenimiento",
+    "Peaking",
+  ];
 
   const handleInputChange = ({ target: { id, value } }) => {
     setCurrentRoutine((prev) => {
@@ -26,18 +33,27 @@ function Stage1RoutineDetails({ currentRoutine, setCurrentRoutine }) {
         [id]: id === "name" ? value.trimStart() : value,
       };
 
-      if (id === "warmUp") {
-        const selectedWarmUp = exercises.find((ex) => ex.name === value);
-
-        if (selectedWarmUp?.type === "reps_sets") {
-          delete updated.warmUpTime;
-        } else if (selectedWarmUp?.type === "timed") {
-          delete updated.warmUpSets;
-          delete updated.warmUpReps;
-        }
-      }
-
       return updated;
+    });
+  };
+
+  const handleCheckboxChange = (e) => {
+    const { value, checked } = e.target;
+    setCurrentRoutine((prevRoutine) => {
+      let updatedStages;
+      if (checked) {
+        // Agregar la etapa si está seleccionada
+        updatedStages = [...(prevRoutine.stages || []), value];
+      } else {
+        // Eliminar la etapa si está deseleccionada
+        updatedStages = (prevRoutine.stages || []).filter(
+          (stage) => stage !== value
+        );
+      }
+      return {
+        ...prevRoutine,
+        stages: updatedStages,
+      };
     });
   };
 
@@ -59,6 +75,21 @@ function Stage1RoutineDetails({ currentRoutine, setCurrentRoutine }) {
         required
         style={{ marginBottom: 15 }}
       />
+
+      {/* Etapas */}
+      <Label htmlFor="stages">Etapas</Label>
+      <Card style={{ alignItems: "start", overflowY: "auto" }}>
+        {stages.map((stage) => (
+          <CheckBox
+            key={stage}
+            id={stage}
+            label={stage}
+            value={stage}
+            checked={currentRoutine?.stages?.includes(stage) || false}
+            onChange={handleCheckboxChange}
+          />
+        ))}
+      </Card>
 
       {/* RIR */}
       <Label htmlFor="rir">RIR</Label>
@@ -84,65 +115,6 @@ function Stage1RoutineDetails({ currentRoutine, setCurrentRoutine }) {
         required
         style={{ marginBottom: 15 }}
       />
-
-      {/* Calentamiento */}
-      <Label htmlFor="warmUp">Calentamiento</Label>
-      <Select
-        id="warmUp"
-        value={currentRoutine.warmUp || ""}
-        onChange={handleInputChange}
-        required
-        style={{ marginBottom: 15 }}
-      >
-        <option value="">Seleccionar calentamiento</option>
-        {exercises.map(({ id, name }) => (
-          <option key={id} value={name}>
-            {name}
-          </option>
-        ))}
-      </Select>
-
-      {/* Inputs específicos según tipo calentamiento */}
-      {selectedWarmUp && selectedWarmUp.type === "reps_sets" && (
-        <>
-          <Label htmlFor="warmUpSets">Series calentamiento</Label>
-          <Input
-            id="warmUpSets"
-            type="number"
-            min="1"
-            value={currentRoutine.warmUpSets || ""}
-            onChange={handleInputChange}
-            required
-            style={{ marginBottom: 15 }}
-          />
-
-          <Label htmlFor="warmUpReps">Repeticiones por serie</Label>
-          <Input
-            id="warmUpReps"
-            type="number"
-            min="1"
-            value={currentRoutine.warmUpReps || ""}
-            onChange={handleInputChange}
-            required
-            style={{ marginBottom: 15 }}
-          />
-        </>
-      )}
-
-      {selectedWarmUp && selectedWarmUp.type === "timed" && (
-        <>
-          <Label htmlFor="warmUpTime">Tiempo calentamiento (minutos)</Label>
-          <Input
-            id="warmUpTime"
-            type="number"
-            min="1"
-            value={currentRoutine.warmUpTime || ""}
-            onChange={handleInputChange}
-            required
-            style={{ marginBottom: 15 }}
-          />
-        </>
-      )}
     </StyledModalBody>
   );
 }
@@ -153,10 +125,7 @@ Stage1RoutineDetails.propTypes = {
     name: PropTypes.string,
     rir: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     restTime: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    warmUp: PropTypes.string,
-    warmUpSets: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    warmUpReps: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    warmUpTime: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    stages: PropTypes.array,
   }),
   setCurrentRoutine: PropTypes.func.isRequired,
 };
