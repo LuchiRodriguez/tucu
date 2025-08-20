@@ -12,7 +12,7 @@ const Divider = ({ title }) => {
 };
 
 Divider.propTypes = {
-  title: PropTypes.string.isRequired,
+  title: PropTypes.string,
 };
 
 export default Divider;

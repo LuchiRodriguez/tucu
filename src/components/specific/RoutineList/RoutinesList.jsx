@@ -1,28 +1,35 @@
 import PropTypes from "prop-types";
 import ErrorMessage from "../../common/Messages/ErrorMessage/ErrorMessage";
-import Routine2 from "../Routine/Routine2";
 import { StyledRoutineListUL } from "./StyledRoutinesList";
-import Button from "../../common/Buttons/Button/Button";
-import Card from "../../common/Utilities/Card/Card";
 import useRoutines from "../../../hooks/useRoutines/useRoutines";
+import Subtitle from "../../common/Messages/Subtitle/Subtitle";
+import CollapsibleCard from "../../common/Utilities/CollapsibleCard/CollapsibleCard";
+import RoutineListItem from "../Routine/RoutineListItem";
+import Button from "../../common/Buttons/Button/Button";
 
-const RoutinesList = ({
-  searchText = "",
-  onSelectRoutine,
-  selectedRoutineId = null,
-  onOpenModal,
-}) => {
+const RoutinesList = ({ searchText = "", onOpenModal }) => {
   const { allSortedStages, loading, error, errorMessage } = useRoutines();
 
-  // 1. Definimos las rutinas. Si el array principal está vacío, usamos uno vacío por defecto
-  const routines = allSortedStages || [];
+  // Renombramos para mayor claridad
+  const groupedRoutines = allSortedStages || {};
 
-  // 2. Filtramos las rutinas
-  const filteredRoutines = routines.filter((routine) =>
-    routine.name?.toLowerCase().includes(searchText.toLowerCase())
+  // Filtrar rutinas según searchText
+  const filteredGroupedRoutines = Object.fromEntries(
+    Object.entries(groupedRoutines).map(([stage, routines]) => [
+      stage,
+      routines.filter((routine) =>
+        routine.name?.toLowerCase().includes(searchText.toLowerCase())
+      ),
+    ])
   );
 
-  // 3. Renderizamos el componente
+  // Eliminamos categorías vacías después del filtrado
+  const visibleGroupedRoutines = Object.fromEntries(
+    Object.entries(filteredGroupedRoutines).filter(
+      ([, routines]) => routines.length > 0
+    )
+  );
+
   return (
     <StyledRoutineListUL>
       {loading ? (
@@ -31,29 +38,25 @@ const RoutinesList = ({
         <li>
           <ErrorMessage isVisible={true}>{errorMessage}</ErrorMessage>
         </li>
-      ) : filteredRoutines.length === 0 ? (
-        <li>
-          {searchText ? (
-            <>
-              ¡No hay resultados para: <span>{searchText}</span>!
-            </>
-          ) : (
-            <Card
-              flexDirection="column"
-              style={{ border: "none", boxShadow: "none" }}
-            >
-              <p>¡Todavía no tenés rutinas!</p>
-            </Card>
-          )}
-        </li>
+      ) : Object.keys(visibleGroupedRoutines).length === 0 ? (
+        <Subtitle
+          style={{ textAlign: "center", margin: "20px 0", color: "#7f8c8d" }}
+        >
+          {searchText
+            ? "No se encontraron rutinas con esa búsqueda."
+            : "No hay rutinas disponibles para seleccionar."}
+        </Subtitle>
       ) : (
-        filteredRoutines.map((routine) => (
-          <Routine2
-            key={routine.id}
-            routine={routine}
-            onSelectRoutine={() => onSelectRoutine(routine.id)}
-            isSelected={routine.id === selectedRoutineId}
-          />
+        Object.entries(visibleGroupedRoutines).map(([stageName, routines]) => (
+          <CollapsibleCard
+            key={stageName}
+            title={stageName}
+            defaultOpen={false}
+          >
+            {routines.map((routine) => (
+              <RoutineListItem routine={routine} key={routine.id} />
+            ))}
+          </CollapsibleCard>
         ))
       )}
       <Button primary onClick={onOpenModal}>
@@ -65,8 +68,6 @@ const RoutinesList = ({
 
 RoutinesList.propTypes = {
   searchText: PropTypes.string,
-  onSelectRoutine: PropTypes.func,
-  selectedRoutineId: PropTypes.string,
   onOpenModal: PropTypes.func,
 };
 

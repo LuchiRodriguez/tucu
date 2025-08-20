@@ -19,7 +19,6 @@ const initialNewRoutine = {
   stages: [],
   rir: 2,
   restTime: 60,
-  warmUp: "",
   exercises: [],
   isDraft: true,
 };

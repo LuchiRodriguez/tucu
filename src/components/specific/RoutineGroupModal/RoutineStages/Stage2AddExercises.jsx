@@ -40,9 +40,7 @@ const Stage2AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
         );
       } else {
         const newExercise = {
-          id: exercise.id,
-          name: exercise.name,
-          type: exercise.type || "reps_sets",
+          ...exercise,
           sets: 0,
           reps: 0,
           time: 0,

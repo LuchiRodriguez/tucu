@@ -12,6 +12,10 @@ const ExerciseListItem = ({
   isSelected,
   onToggle,
 }) => {
+  const muscleGroupsText =
+    exercise.muscleGroups?.map((muscle) => muscle).join(" | ") ||
+    "Sin grupo muscular";
+
   return (
     <Card
       id={exercise.id}
@@ -26,9 +30,9 @@ const ExerciseListItem = ({
           onChange={() => onToggle(exercise)}
         />
       )}
+
       <StyledCardTitle style={{ textAlign: "center" }}>
-        {exercise.name}
-        <span>| {exercise.muscleGroups.map((muscle) => muscle + " | ")}</span>
+        {exercise.name} <span>| {muscleGroupsText}</span>
       </StyledCardTitle>
     </Card>
   );
@@ -36,7 +40,7 @@ const ExerciseListItem = ({
 
 ExerciseListItem.propTypes = {
   exercise: exerciseShape,
-  onClick: PropTypes.func.isRequired,
+  onClick: PropTypes.func,
   showCheckbox: PropTypes.bool,
   isSelected: PropTypes.bool,
   onToggle: PropTypes.func,

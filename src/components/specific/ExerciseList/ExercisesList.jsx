@@ -92,7 +92,7 @@ ExercisesList.propTypes = {
   onClick: PropTypes.func,
   exercisesInRoutine: PropTypes.array,
   toggleExercise: PropTypes.func,
-  showCheckbox: PropTypes.bool.isRequired,
+  showCheckbox: PropTypes.bool,
   exercises: PropTypes.array.isRequired,
 };
 
