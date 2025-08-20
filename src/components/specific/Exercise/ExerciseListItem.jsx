@@ -11,11 +11,8 @@ const ExerciseListItem = ({
   showCheckbox,
   isSelected,
   onToggle,
+  spanText,
 }) => {
-  const muscleGroupsText =
-    exercise.muscleGroups?.map((muscle) => muscle).join(" | ") ||
-    "Sin grupo muscular";
-
   return (
     <Card
       id={exercise.id}
@@ -32,7 +29,7 @@ const ExerciseListItem = ({
       )}
 
       <StyledCardTitle style={{ textAlign: "center" }}>
-        {exercise.name} <span>| {muscleGroupsText}</span>
+        {exercise.name} <span>{spanText}</span>
       </StyledCardTitle>
     </Card>
   );
@@ -44,6 +41,7 @@ ExerciseListItem.propTypes = {
   showCheckbox: PropTypes.bool,
   isSelected: PropTypes.bool,
   onToggle: PropTypes.func,
+  spanText: PropTypes.string,
 };
 
 export default ExerciseListItem;

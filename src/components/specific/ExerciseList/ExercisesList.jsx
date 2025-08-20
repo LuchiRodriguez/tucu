@@ -77,6 +77,10 @@ const ExercisesList = ({
                     showCheckbox={showCheckbox}
                     isSelected={isSelected}
                     onToggle={() => toggleExercise(exercise)}
+                    spanText={
+                      exercise.muscleGroups.join(" | ") ||
+                      "Sin grupo muscular asignado"
+                    }
                   />
                 );
               })}
