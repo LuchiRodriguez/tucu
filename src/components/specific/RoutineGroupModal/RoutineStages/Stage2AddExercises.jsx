@@ -2,15 +2,14 @@
 import { useMemo, useCallback } from "react";
 import PropTypes from "prop-types";
 
-import RemoveExerciseButton from "../../../common/Buttons/RemoveExerciseButton/RemoveExerciseButton";
 import SubSectionTitle from "../../../common/Messages/SubSectionTitle/SubSectionTitle";
 import Subtitle from "../../../common/Messages/Subtitle/Subtitle";
-import ExercisesList from "../../ExerciseList/ExercisesList";
 import useExercises from "../../../../hooks/useExercises";
+import ExerciseListItem from "../../Exercise/ExerciseListItem";
+import ExercisesList from "../../ExerciseList/ExercisesList";
 
 import {
   StyledModalBody,
-  StyledExerciseItem,
   StyledExerciseSelectionList,
 } from "../StyledRoutineGroupModal";
 
@@ -18,9 +17,6 @@ import {
 const reorderWithOrder = (exercises) =>
   exercises.map((ex, idx) => ({ ...ex, order: idx }));
 
-/**
- * Componente de la segunda etapa para seleccionar ejercicios en una rutina.
- */
 const Stage2AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
   const { exercises } = useExercises();
   const routine = useMemo(() => currentRoutine || {}, [currentRoutine]);
@@ -32,7 +28,6 @@ const Stage2AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
   const toggleExercise = useCallback(
     (exercise) => {
       const isSelected = exercisesInRoutine.some((ex) => ex.id === exercise.id);
-
       let updatedExercises;
       if (isSelected) {
         updatedExercises = exercisesInRoutine.filter(
@@ -58,10 +53,47 @@ const Stage2AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
     [exercisesInRoutine, setCurrentRoutine]
   );
 
+  const handleDragStart = (e, exercise) => {
+    e.dataTransfer.setData("exerciseId", exercise.id);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  // Función para reordenar al soltar un ejercicio sobre otro
+  const handleDropReorder = (e, targetExerciseId) => {
+    e.preventDefault();
+
+    const draggedId = e.dataTransfer.getData("exerciseId");
+    if (!draggedId) return;
+
+    const updatedExercises = [...exercisesInRoutine];
+
+    const draggedIndex = updatedExercises.findIndex(
+      (ex) => ex.id === draggedId
+    );
+    const targetIndex = updatedExercises.findIndex(
+      (ex) => ex.id === targetExerciseId
+    );
+
+    if (
+      draggedIndex === -1 ||
+      targetIndex === -1 ||
+      draggedIndex === targetIndex
+    )
+      return;
+
+    const [draggedExercise] = updatedExercises.splice(draggedIndex, 1);
+    updatedExercises.splice(targetIndex, 0, draggedExercise);
+
+    setCurrentRoutine((prev) => ({
+      ...prev,
+      exercises: reorderWithOrder(updatedExercises),
+    }));
+  };
+
   return (
     <StyledModalBody>
       <SubSectionTitle style={{ margin: "10px 0 0" }}>
-        Descanso: <span>{routine.restTime || 0}s</span> | RIR:
+        Descanso: <span>{routine.restTime || 0}s</span> | RIR:{" "}
         <span>{routine.rir || 0}</span>
       </SubSectionTitle>
       <SubSectionTitle style={{ margin: "10px 0" }}>
@@ -89,34 +121,23 @@ const Stage2AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
               .slice()
               .sort((a, b) => a.order - b.order)
               .map((exercise, index) => (
-                <StyledExerciseItem key={exercise.id}>
+                <ExerciseListItem
+                  key={exercise.id}
+                  exercise={exercise}
+                  index={index}
+                  onDragStart={handleDragStart}
+                  onToggleExercise={toggleExercise}
+                  onRemoveExercise={() => toggleExercise(exercise)}
+                  onDropReorder={handleDropReorder} // <-- NUEVO
+                >
                   <span>
                     {index + 1}. {exercise.name}
                   </span>
-
-                  <RemoveExerciseButton
-                    onClick={() => toggleExercise(exercise)}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </RemoveExerciseButton>
-                </StyledExerciseItem>
+                </ExerciseListItem>
               ))}
           </ul>
         )}
-      </StyledExerciseSelectionList>{" "}
+      </StyledExerciseSelectionList>
     </StyledModalBody>
   );
 };

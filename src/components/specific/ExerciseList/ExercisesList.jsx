@@ -14,6 +14,9 @@ const ExercisesList = ({
   toggleExercise,
   showCheckbox,
   exercises,
+  onDragStart, // nueva prop
+  onDropToList, // nueva prop
+  onDropReorder, // nueva prop
 }) => {
   const [exerciseSearchText, setExerciseSearchText] = useState("");
 
@@ -64,16 +67,15 @@ const ExercisesList = ({
               defaultOpen={false}
             >
               {exercises.map((exercise) => {
-                // Aquí generamos el valor booleano para isSelected
                 const isSelected =
                   exercisesInRoutine &&
                   exercisesInRoutine.some((ex) => ex.id === exercise.id);
 
                 return (
                   <ExerciseListItem
+                    key={exercise.id}
                     exercise={exercise}
                     onClick={() => onClick && onClick(exercise)}
-                    key={exercise.id}
                     showCheckbox={showCheckbox}
                     isSelected={isSelected}
                     onToggle={() => toggleExercise(exercise)}
@@ -81,6 +83,9 @@ const ExercisesList = ({
                       exercise.muscleGroups.join(" | ") ||
                       "Sin grupo muscular asignado"
                     }
+                    onDragStart={onDragStart} // pasada al hijo
+                    onDropToList={onDropToList} // pasada al hijo
+                    onDropReorder={onDropReorder} // pasada al hijo
                   />
                 );
               })}
@@ -98,6 +103,9 @@ ExercisesList.propTypes = {
   toggleExercise: PropTypes.func,
   showCheckbox: PropTypes.bool,
   exercises: PropTypes.array.isRequired,
+  onDragStart: PropTypes.func,
+  onDropToList: PropTypes.func,
+  onDropReorder: PropTypes.func,
 };
 
 export default ExercisesList;

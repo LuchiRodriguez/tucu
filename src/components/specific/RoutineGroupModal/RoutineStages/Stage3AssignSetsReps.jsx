@@ -37,28 +37,30 @@ const Stage3AssignSetsReps = ({ currentRoutine, setCurrentRoutine }) => {
   // Handler genérico para cambios en los ejercicios
   const handleExerciseDetailChange = useCallback(
     (exerciseId, field, value) => {
-      // La función 'updater' que espera el hook
       const updater = (prevRoutine) => {
         const updatedExercises = prevRoutine.exercises.map((ex) => {
           if (ex.id === exerciseId) {
-            // ... lógica para parsear el valor
             const parsedValue =
               (field === "sets" || field === "reps" || field === "time") &&
               value !== ""
                 ? Number(value)
                 : value;
-            return { ...ex, [field]: parsedValue };
+            const updatedEx = {
+              ...ex,
+              [field]: parsedValue,
+            };
+            if (!updatedEx.blockName) {
+              updatedEx.blockName = "Ejercicios sueltos";
+            }
+            return updatedEx;
           }
           return ex;
         });
-
         return {
           ...prevRoutine,
           exercises: updatedExercises,
         };
       };
-
-      // Llamamos a setCurrentRoutine con la función 'updater'
       setCurrentRoutine(updater);
     },
     [setCurrentRoutine]
@@ -88,7 +90,7 @@ const Stage3AssignSetsReps = ({ currentRoutine, setCurrentRoutine }) => {
               <CollapsibleCard
                 key={exercise.id}
                 title={`${index + 1}. ${exercise.name}`}
-                defaultOpen={false}
+                defaultOpen={true}
               >
                 <div style={{ padding: "10px 0" }}>
                   <StyledExerciseInputGroup>

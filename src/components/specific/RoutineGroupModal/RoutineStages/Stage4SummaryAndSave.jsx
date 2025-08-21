@@ -1,46 +1,44 @@
 // src/components/specific/RoutineGroupModal/Stages/Stage4SummaryAndSave.jsx
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useState } from "react";
 import PropTypes from "prop-types";
 
 import SubSectionTitle from "../../../common/Messages/SubSectionTitle/SubSectionTitle";
-import Subtitle from "../../../common/Messages/Subtitle/Subtitle";
-import RemoveExerciseButton from "../../../common/Buttons/RemoveExerciseButton/RemoveExerciseButton";
-import {
-  StyledModalBody,
-  StyledExerciseItem,
-  StyledExerciseSelectionList,
-} from "../StyledRoutineGroupModal";
+import { StyledModalBody } from "../StyledRoutineGroupModal";
+import Button from "../../../common/Buttons/Button/Button";
+import BlockModal from "../../../common/Block/BlockModal/BlockModal";
+import BlockContainer from "../../../common/Block/BlockContainer/BlockContainer";
 
 // Función auxiliar para reordenar y asignar el campo 'order'
 const reorderWithOrder = (exercises) =>
   exercises.map((ex, idx) => ({ ...ex, order: idx }));
 
-/**
- * Componente de la cuarta y última etapa para mostrar un resumen de la rutina.
- */
 const Stage4SummaryAndSave = ({ currentRoutine, setCurrentRoutine }) => {
   const routine = useMemo(() => currentRoutine || {}, [currentRoutine]);
+
+  const [newBlock, setNewBlock] = useState(false);
+  const [blockNames, setBlockNames] = useState([]); // 👈 ahora trackea los nombres creados
   const exercisesInRoutine = useMemo(
     () => routine.exercises || [],
     [routine.exercises]
   );
 
-  const handleDragStart = useCallback((e, index) => {
-    e.dataTransfer.setData("exerciseIndex", index);
+  const handleDragStart = useCallback((e, exerciseId) => {
+    e.dataTransfer.setData("exerciseId", exerciseId);
   }, []);
 
-  const handleDragOver = useCallback((e) => {
-    e.preventDefault();
-  }, []);
-
-  const handleDrop = useCallback(
-    (e, dropIndex) => {
-      const dragIndex = e.dataTransfer.getData("exerciseIndex");
-      if (dragIndex === "") return;
+  const handleDropToBlock = useCallback(
+    (e, blockName) => {
+      e.preventDefault();
+      const draggedId = e.dataTransfer.getData("exerciseId");
+      if (!draggedId) return;
 
       const newExercises = [...exercisesInRoutine];
+      const dragIndex = newExercises.findIndex((ex) => ex.id === draggedId);
+      if (dragIndex === -1) return;
+
       const [dragged] = newExercises.splice(dragIndex, 1);
-      newExercises.splice(dropIndex, 0, dragged);
+      dragged.block = blockName;
+      newExercises.push(dragged);
 
       setCurrentRoutine({
         ...routine,
@@ -50,7 +48,53 @@ const Stage4SummaryAndSave = ({ currentRoutine, setCurrentRoutine }) => {
     [exercisesInRoutine, routine, setCurrentRoutine]
   );
 
-  // También se puede usar la lógica de Stage2 para remover
+  const handleDropToList = useCallback(
+    (e) => {
+      e.preventDefault();
+      const draggedId = e.dataTransfer.getData("exerciseId");
+      if (!draggedId) return;
+
+      const newExercises = [...exercisesInRoutine];
+      const dragIndex = newExercises.findIndex((ex) => ex.id === draggedId);
+      if (dragIndex === -1) return;
+
+      const [dragged] = newExercises.splice(dragIndex, 1);
+      delete dragged.block;
+      newExercises.push(dragged);
+
+      setCurrentRoutine({
+        ...routine,
+        exercises: reorderWithOrder(newExercises),
+      });
+    },
+    [exercisesInRoutine, routine, setCurrentRoutine]
+  );
+
+  const handleDropReorder = useCallback(
+    (e, targetId, blockName) => {
+      e.preventDefault();
+      const draggedId = e.dataTransfer.getData("exerciseId");
+      if (!draggedId || draggedId === targetId) return;
+
+      const newExercises = [...exercisesInRoutine];
+      const dragIndex = newExercises.findIndex((ex) => ex.id === draggedId);
+      const targetIndex = newExercises.findIndex((ex) => ex.id === targetId);
+      if (dragIndex === -1 || targetIndex === -1) return;
+
+      const [dragged] = newExercises.splice(dragIndex, 1);
+      dragged.block = blockName;
+
+      const insertIndex = newExercises.findIndex((ex) => ex.id === targetId);
+      newExercises.splice(insertIndex, 0, dragged);
+
+      setCurrentRoutine({
+        ...routine,
+        exercises: reorderWithOrder(newExercises),
+      });
+    },
+    [exercisesInRoutine, routine, setCurrentRoutine]
+  );
+
   const toggleExercise = useCallback(
     (exercise) => {
       const updatedExercises = exercisesInRoutine.filter(
@@ -78,54 +122,26 @@ const Stage4SummaryAndSave = ({ currentRoutine, setCurrentRoutine }) => {
         </span>
       </SubSectionTitle>
 
-      <StyledExerciseSelectionList style={{ flexGrow: "1" }}>
-        {exercisesInRoutine.length === 0 ? (
-          <Subtitle
-            style={{ textAlign: "center", margin: "20px 0", color: "#7f8c8d" }}
-          >
-            No hay ejercicios seleccionados.
-          </Subtitle>
-        ) : (
-          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            {exercisesInRoutine.map((exercise, index) => (
-              <StyledExerciseItem
-                key={exercise.id}
-                draggable
-                onDragStart={(e) => handleDragStart(e, index)}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, index)}
-              >
-                <span>
-                  {index + 1}. {exercise.name}
-                </span>
-                <span style={{ fontSize: "0.9em", color: "#666" }}>
-                  ({exercise.sets || 0} series,{" "}
-                  {exercise.type === "timed"
-                    ? `${exercise.time || 0}s de trabajo`
-                    : `${exercise.reps || 0} reps`}
-                  )
-                </span>
-                <RemoveExerciseButton onClick={() => toggleExercise(exercise)}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
-                </RemoveExerciseButton>
-              </StyledExerciseItem>
-            ))}
-          </ul>
-        )}
-      </StyledExerciseSelectionList>
+      <BlockContainer
+        exercises={exercisesInRoutine}
+        blockNames={blockNames}
+        onDragStart={handleDragStart}
+        onDropToBlock={handleDropToBlock}
+        onDropToList={handleDropToList}
+        onDropReorder={handleDropReorder}
+        onToggleExercise={toggleExercise}
+      />
+      <Button onClick={() => setNewBlock(true)} style={{ margin: "10px 0" }}>
+        Crear un bloque
+      </Button>
+      {newBlock && (
+        <BlockModal
+          isOpen={newBlock}
+          onClose={() => setNewBlock(false)}
+          setNewBlock={setNewBlock}
+          setNewBlockName={setBlockNames} // 👈 asegura que el modal actualice blockNames
+        />
+      )}
     </StyledModalBody>
   );
 };
@@ -133,8 +149,6 @@ const Stage4SummaryAndSave = ({ currentRoutine, setCurrentRoutine }) => {
 Stage4SummaryAndSave.propTypes = {
   currentRoutine: PropTypes.object.isRequired,
   setCurrentRoutine: PropTypes.func.isRequired,
-  onSaveRoutine: PropTypes.func.isRequired,
-  onGoBack: PropTypes.func.isRequired,
 };
 
 export default Stage4SummaryAndSave;

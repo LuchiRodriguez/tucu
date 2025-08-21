@@ -40,6 +40,27 @@ export const StyledModalContent = styled.div`
   }
 `;
 
+export const StyledBlockModalContent = styled.div`
+  background-color: #ffffff; /* Blanco Puro de la paleta */
+  margin: 10px;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  height: 200px;
+  max-width: 550px;
+  max-height: 200px; /* Limitar altura para scroll */
+  overflow-y: auto; /* Habilitar scroll si el contenido excede la altura */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative; /* Para posicionar elementos internos como spinners */
+
+  @media (min-width: 768px) {
+    width: 60%;
+  }
+`;
+
 export const StyledModalHeader = styled.div`
   display: flex;
   justify-content: space-between;
