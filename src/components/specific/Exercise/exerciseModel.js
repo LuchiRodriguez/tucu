@@ -9,4 +9,5 @@ export const exerciseShape = PropTypes.shape({
     series: PropTypes.number,
     reps: PropTypes.number,
     time: PropTypes.number,
+    block: PropTypes.string,
 });

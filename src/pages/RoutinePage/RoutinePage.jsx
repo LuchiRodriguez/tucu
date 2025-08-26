@@ -12,7 +12,8 @@ import { useParams } from "react-router-dom";
 function RoutinePage() {
   const { routineId } = useParams();
   const { loading: authLoading } = useAuth();
-  const { getRoutineById, loading } = useRoutines(routineId);
+  const { getRoutineById, loading, updateRoutineExercises } =
+    useRoutines(routineId);
 
   return (
     <PageContainer>
@@ -24,7 +25,11 @@ function RoutinePage() {
       <ContentSection
         style={{ display: "flex", flexDirection: "column", gap: "20px" }}
       >
-        <RoutineDetails getRoutineById={getRoutineById} routineId={routineId} />
+        <RoutineDetails
+          getRoutineById={getRoutineById}
+          routineId={routineId}
+          updateRoutineExercises={updateRoutineExercises}
+        />
       </ContentSection>
     </PageContainer>
   );

@@ -53,20 +53,9 @@ const RoutinesList = ({ searchText = "", onOpenModal }) => {
             title={stageName}
             defaultOpen={false}
           >
-            {routines.map((routine, routineIndex) =>
-              // Si la rutina tiene ejercicios, los filtramos
-              routine.exercises
-                // Filtrar solo los ejercicios que no sean placeholders
-                .filter((ex) => ex.type !== "placeholder")
-                .map((exercise, index) => (
-                  // RoutineListItem recibe un solo ejercicio, no la rutina completa.
-                  // Le pasamos solo el 'exercise'
-                  <RoutineListItem
-                    key={`${routineIndex}-${index}`}
-                    routine={routine}
-                  />
-                ))
-            )}
+            {routines.map((routine) => (
+              <RoutineListItem key={routine.id} routine={routine} />
+            ))}
           </CollapsibleCard>
         ))
       )}

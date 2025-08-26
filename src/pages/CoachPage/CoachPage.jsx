@@ -73,7 +73,6 @@ function CoachPage() {
           />
         </CollapsibleCard>
         <CollapsibleCard title="Rutinas">
-          {/* 3. Pasamos la función al componente RoutinesList */}
           <RoutinesList onOpenModal={() => handleOpenModal("routine")} />
         </CollapsibleCard>
         <CollapsibleCard title="Ejercicios">
