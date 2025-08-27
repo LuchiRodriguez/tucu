@@ -3,13 +3,13 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../config/firebase";
 import { useAuth } from "../../context/authContextBase";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 const DEBUG = false; // Cambia a true si quieres ver logs en consola
 
 // Helper para logs de depuración
 const logDebug = (...args) => {
-  if (DEBUG) console.log('[useEditRoutine]', ...args);
+  if (DEBUG) console.log("[useEditRoutine]", ...args);
 };
 
 // --- Helpers ---
@@ -23,14 +23,20 @@ const cleanObjectForFirestore = (obj) => {
         continue; // Ignorar undefined
       } else if (val === null) {
         newObj[key] = null;
-      } else if (typeof val === 'object' && !Array.isArray(val) && val !== null) {
+      } else if (
+        typeof val === "object" &&
+        !Array.isArray(val) &&
+        val !== null
+      ) {
         const cleanedSubObj = cleanObjectForFirestore(val);
         if (Object.keys(cleanedSubObj).length > 0) {
           newObj[key] = cleanedSubObj;
         }
       } else if (Array.isArray(val)) {
-        newObj[key] = val.map(item =>
-          typeof item === 'object' && item !== null ? cleanObjectForFirestore(item) : item
+        newObj[key] = val.map((item) =>
+          typeof item === "object" && item !== null
+            ? cleanObjectForFirestore(item)
+            : item
         );
       } else {
         newObj[key] = val;
@@ -44,8 +50,12 @@ const cleanObjectForFirestore = (obj) => {
 const areObjectsEqual = (obj1, obj2) => {
   if (obj1 === obj2) return true; // Misma referencia o valores primitivos iguales
 
-  if (typeof obj1 !== 'object' || obj1 === null ||
-      typeof obj2 !== 'object' || obj2 === null) {
+  if (
+    typeof obj1 !== "object" ||
+    obj1 === null ||
+    typeof obj2 !== "object" ||
+    obj2 === null
+  ) {
     return false; // Uno no es objeto o es null, y no son iguales
   }
 
@@ -81,27 +91,38 @@ const areObjectsEqual = (obj1, obj2) => {
 // Función de validación para una rutina individual
 const validateRoutineData = (routine) => {
   if (!routine.name?.trim()) return "El nombre de la rutina es obligatorio.";
-  if (routine.restTime === undefined || routine.restTime < 0 || isNaN(routine.restTime)) return "El tiempo de descanso debe ser un número válido (>= 0).";
-  if (routine.rir === undefined || routine.rir < 0 || isNaN(routine.rir)) return "El RIR debe ser un número válido (>= 0).";
+  if (
+    routine.restTime === undefined ||
+    routine.restTime < 0 ||
+    isNaN(routine.restTime)
+  )
+    return "El tiempo de descanso debe ser un número válido (>= 0).";
+  if (routine.rir === undefined || routine.rir < 0 || isNaN(routine.rir))
+    return "El RIR debe ser un número válido (>= 0).";
   if (!routine.warmUp?.trim()) return "El calentamiento es obligatorio.";
-  
-  if (!routine.exercises || routine.exercises.length === 0) return "La rutina debe tener al menos un ejercicio.";
+
+  if (!routine.blocks || routine.blocks.length === 0)
+    return "La rutina debe tener al menos un ejercicio.";
 
   // Validar cada ejercicio
-  for (const ex of routine.exercises) {
+  for (const ex of routine.blocks) {
     if (!ex.name?.trim()) return "Todos los ejercicios deben tener un nombre.";
-    if (ex.sets === undefined || ex.sets <= 0 || isNaN(ex.sets)) return `El ejercicio "${ex.name}" debe tener al menos 1 serie.`;
-    
-    if (ex.type === 'timed') {
-      if (ex.time === undefined || ex.time <= 0 || isNaN(ex.time)) return `El ejercicio cronometrado "${ex.name}" debe tener un tiempo de trabajo válido (> 0).`;
-    } else { // reps_sets
-      if (ex.reps === undefined || ex.reps < 0 || isNaN(ex.reps)) return `El ejercicio "${ex.name}" debe tener un número de repeticiones válido (>= 0).`;
-      if (ex.kilos === undefined || ex.kilos < 0 || isNaN(ex.kilos)) return `El ejercicio "${ex.name}" debe tener un valor de kilos válido (>= 0).`;
+    if (ex.sets === undefined || ex.sets <= 0 || isNaN(ex.sets))
+      return `El ejercicio "${ex.name}" debe tener al menos 1 serie.`;
+
+    if (ex.type === "timed") {
+      if (ex.time === undefined || ex.time <= 0 || isNaN(ex.time))
+        return `El ejercicio cronometrado "${ex.name}" debe tener un tiempo de trabajo válido (> 0).`;
+    } else {
+      // reps_sets
+      if (ex.reps === undefined || ex.reps < 0 || isNaN(ex.reps))
+        return `El ejercicio "${ex.name}" debe tener un número de repeticiones válido (>= 0).`;
+      if (ex.kilos === undefined || ex.kilos < 0 || isNaN(ex.kilos))
+        return `El ejercicio "${ex.name}" debe tener un valor de kilos válido (>= 0).`;
     }
   }
   return null; // Retorna null si no hay errores
 };
-
 
 /**
  * Hook para gestionar la edición de una rutina individual dentro de un grupo de rutinas existente.
@@ -118,21 +139,23 @@ export function useEditRoutine({ studentId, groupId, initialRoutine }) {
   const coachId = user?.uid;
 
   // Acceso seguro a __app_id
-  const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+  const appId = typeof __app_id !== "undefined" ? __app_id : "default-app-id";
 
   const [routine, setRoutine] = useState(initialRoutine || null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
 
   // Ref para el último estado guardado (para el autoguardado)
-  const lastSavedRoutineRef = useRef(initialRoutine ? cleanObjectForFirestore(initialRoutine) : null);
+  const lastSavedRoutineRef = useRef(
+    initialRoutine ? cleanObjectForFirestore(initialRoutine) : null
+  );
 
   // Efecto para inicializar el estado de la rutina cuando initialRoutine cambia
   useEffect(() => {
     if (initialRoutine) {
       setRoutine(initialRoutine);
       // Al inicializar, también limpiamos y guardamos la referencia para futuras comparaciones
-      lastSavedRoutineRef.current = cleanObjectForFirestore(initialRoutine); 
+      lastSavedRoutineRef.current = cleanObjectForFirestore(initialRoutine);
       logDebug("Hook useEditRoutine inicializado con rutina:", initialRoutine);
     }
   }, [initialRoutine]);
@@ -145,7 +168,7 @@ export function useEditRoutine({ studentId, groupId, initialRoutine }) {
       return updated;
     });
     // Limpiar el error de guardado directamente, sin dependencia del closure
-    setSaveError(null); 
+    setSaveError(null);
   }, []); // Dependencias vacías, ya que setSaveError es una función estable
 
   // Añadir nuevo ejercicio vacío
@@ -160,7 +183,7 @@ export function useEditRoutine({ studentId, groupId, initialRoutine }) {
         time: 0,
         kilos: 0,
         completed: false,
-        order: (r?.exercises?.length || 0), // Asigna un orden basado en la longitud actual
+        order: r?.exercises?.length || 0, // Asigna un orden basado en la longitud actual
       };
       const updatedExercises = [...(r?.exercises || []), newExercise];
       logDebug("Adding new exercise:", newExercise);
@@ -172,7 +195,7 @@ export function useEditRoutine({ studentId, groupId, initialRoutine }) {
   // Actualizar ejercicio por id
   const updateExercise = useCallback((exerciseId, updatedFields) => {
     setRoutine((r) => {
-      const updatedExercises = (r?.exercises || []).map(ex =>
+      const updatedExercises = (r?.exercises || []).map((ex) =>
         ex.id === exerciseId ? { ...ex, ...updatedFields } : ex
       );
       logDebug(`Updating exercise ${exerciseId}:`, updatedFields);
@@ -184,8 +207,13 @@ export function useEditRoutine({ studentId, groupId, initialRoutine }) {
   // Eliminar ejercicio por id
   const removeExercise = useCallback((exerciseId) => {
     setRoutine((r) => {
-      const filteredExercises = (r?.exercises || []).filter(ex => ex.id !== exerciseId);
-      logDebug(`Removing exercise ${exerciseId}. Remaining:`, filteredExercises);
+      const filteredExercises = (r?.exercises || []).filter(
+        (ex) => ex.id !== exerciseId
+      );
+      logDebug(
+        `Removing exercise ${exerciseId}. Remaining:`,
+        filteredExercises
+      );
       return { ...r, exercises: filteredExercises };
     });
     setSaveError(null); // Limpiar error al eliminar ejercicio
@@ -194,8 +222,12 @@ export function useEditRoutine({ studentId, groupId, initialRoutine }) {
   // Guardar rutina individual en Firestore
   const saveRoutineDraft = useCallback(async () => {
     if (!coachId || !studentId || !groupId || !routine?.id) {
-      logDebug("Missing critical data (coachId, studentId, groupId, or routine.id), skipping saveRoutineDraft.");
-      setSaveError("Faltan datos para guardar la rutina. Asegúrate de que todos los campos obligatorios estén completos.");
+      logDebug(
+        "Missing critical data (coachId, studentId, groupId, or routine.id), skipping saveRoutineDraft."
+      );
+      setSaveError(
+        "Faltan datos para guardar la rutina. Asegúrate de que todos los campos obligatorios estén completos."
+      );
       return;
     }
 
@@ -206,10 +238,15 @@ export function useEditRoutine({ studentId, groupId, initialRoutine }) {
       studentId,
       // No agregar serverTimestamp aquí, ya que no queremos que afecte la comparación
     };
-    const cleanedRoutineToSave = cleanObjectForFirestore(routineToCompareAndSave);
+    const cleanedRoutineToSave = cleanObjectForFirestore(
+      routineToCompareAndSave
+    );
 
     // Usar la función de comparación profunda para evitar guardados innecesarios
-    if (lastSavedRoutineRef.current && areObjectsEqual(lastSavedRoutineRef.current, cleanedRoutineToSave)) {
+    if (
+      lastSavedRoutineRef.current &&
+      areObjectsEqual(lastSavedRoutineRef.current, cleanedRoutineToSave)
+    ) {
       logDebug("No changes detected in routine, skipping saveRoutineDraft.");
       return;
     }
@@ -227,7 +264,11 @@ export function useEditRoutine({ studentId, groupId, initialRoutine }) {
 
     try {
       // 1. Obtener el documento del grupo padre
-      const groupDocRef = doc(db, `artifacts/${appId}/users/${studentId}/routineGroups`, groupId);
+      const groupDocRef = doc(
+        db,
+        `artifacts/${appId}/users/${studentId}/routineGroups`,
+        groupId
+      );
       const groupDocSnap = await getDoc(groupDocRef);
 
       if (!groupDocSnap.exists()) {
@@ -239,28 +280,46 @@ export function useEditRoutine({ studentId, groupId, initialRoutine }) {
 
       // 2. Encontrar y actualizar la rutina en el array de rutinas del grupo
       let updatedRoutinesArray;
-      const routineExistsInGroup = currentRoutines.some(r => r.id === routine.id);
+      const routineExistsInGroup = currentRoutines.some(
+        (r) => r.id === routine.id
+      );
 
       if (routineExistsInGroup) {
-        updatedRoutinesArray = currentRoutines.map(r =>
-          r.id === routine.id ? { ...cleanedRoutineToSave, updatedAt: serverTimestamp() } : r
+        updatedRoutinesArray = currentRoutines.map((r) =>
+          r.id === routine.id
+            ? { ...cleanedRoutineToSave, updatedAt: serverTimestamp() }
+            : r
         );
         logDebug("Existing routine updated in group:", routine.id);
       } else {
         // Si la rutina no existía (ej. se añadió una nueva en el modal de edición)
-        updatedRoutinesArray = [...currentRoutines, { ...cleanedRoutineToSave, updatedAt: serverTimestamp() }];
+        updatedRoutinesArray = [
+          ...currentRoutines,
+          { ...cleanedRoutineToSave, updatedAt: serverTimestamp() },
+        ];
         logDebug("New routine added to group during edit:", routine);
       }
 
       // 3. Actualizar el documento del grupo padre con el array de rutinas modificado
-      await setDoc(groupDocRef, { routines: updatedRoutinesArray, updatedAt: serverTimestamp() }, { merge: true });
+      await setDoc(
+        groupDocRef,
+        { routines: updatedRoutinesArray, updatedAt: serverTimestamp() },
+        { merge: true }
+      );
 
       // Actualizar la referencia del último guardado con la versión limpia que se envió a Firestore
-      lastSavedRoutineRef.current = cleanedRoutineToSave; 
-      logDebug("Rutina individual guardada con éxito en el grupo:", routine.id, "Group ID:", groupId);
-
+      lastSavedRoutineRef.current = cleanedRoutineToSave;
+      logDebug(
+        "Rutina individual guardada con éxito en el grupo:",
+        routine.id,
+        "Group ID:",
+        groupId
+      );
     } catch (error) {
-      console.error("[useEditRoutine] Error al guardar rutina individual:", error);
+      console.error(
+        "[useEditRoutine] Error al guardar rutina individual:",
+        error
+      );
       setSaveError("Error al guardar rutina: " + error.message);
     } finally {
       setIsSaving(false);

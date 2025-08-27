@@ -1,4 +1,4 @@
-// src/components/specific/Exercise/exerciseModel.js
+// src/models/exerciseModel.js
 import PropTypes from 'prop-types';
 
 export const exerciseShape = PropTypes.shape({
@@ -9,5 +9,4 @@ export const exerciseShape = PropTypes.shape({
     series: PropTypes.number,
     reps: PropTypes.number,
     time: PropTypes.number,
-    block: PropTypes.string,
 });

@@ -96,11 +96,9 @@ const RoutineList = ({
       <StyledRoutinesWrapper>
         {routines.map((routine) => {
           // ¡NUEVA LÓGICA! Calcular el porcentaje de completado de la rutina
-          const totalExercises = routine.exercises
-            ? routine.exercises.length
-            : 0;
-          const completedExercises = routine.exercises
-            ? routine.exercises.filter((ex) => ex.completed).length
+          const totalExercises = routine.blocks ? routine.blocks.length : 0;
+          const completedExercises = routine.blocks
+            ? routine.blocks.filter((ex) => ex.completed).length
             : 0;
           const completionPercentage =
             totalExercises > 0
@@ -138,7 +136,7 @@ const RoutineList = ({
 
                 <SubSectionTitle>Ejercicios de la rutina:</SubSectionTitle>
                 <StyledExercisesContainer>
-                  {routine.exercises.map((ex) => (
+                  {routine.blocks.map((ex) => (
                     <Card key={ex.id}>
                       {" "}
                       {/* Card para cada ejercicio */}

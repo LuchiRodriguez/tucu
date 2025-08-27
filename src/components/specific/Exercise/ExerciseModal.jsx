@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import Modal from "../../common/Utilities/Modal/Modal";
-import { exerciseShape } from "./exerciseModel";
 import Input from "../../common/Forms/Input/Input";
 import Label from "../../common/Forms/Label/Label";
 import { useEffect, useState } from "react";
@@ -9,6 +8,7 @@ import Select from "../../common/Forms/Select/Select";
 import { StyledModalFooter } from "../RoutineGroupModal/StyledRoutineGroupModal";
 import Button from "../../common/Buttons/Button/Button";
 import Card from "../../common/Utilities/Card/Card";
+import { exerciseShape } from "../../../models/exerciseModel";
 
 const ExerciseModal = ({
   isOpen,

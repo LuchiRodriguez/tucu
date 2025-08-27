@@ -1,6 +1,6 @@
-// src/components/specific/Routine/routineModel.js
+// src/models/routineModel.js
 import PropTypes from 'prop-types';
-import { exerciseShape } from '../Exercise/exerciseModel';
+import { blockShape } from './blockModel';
 
 export const routineShape = PropTypes.shape({
     id: PropTypes.string.isRequired,
@@ -9,5 +9,5 @@ export const routineShape = PropTypes.shape({
     restTime: PropTypes.number.isRequired,
     rir: PropTypes.number.isRequired,
     stages: PropTypes.arrayOf(PropTypes.string),
-    exercises: PropTypes.arrayOf(exerciseShape),
+    blocks: PropTypes.arrayOf(blockShape),
 });

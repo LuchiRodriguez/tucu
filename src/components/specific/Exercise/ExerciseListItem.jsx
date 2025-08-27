@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import Card from "../../common/Utilities/Card/Card";
 import { StyledCardTitle } from "../../common/Utilities/Card/StyledCard";
 import CheckBox from "../../common/Utilities/CheckBox/CheckBox";
-import { exerciseShape } from "./exerciseModel";
+import { exerciseShape } from "../../../models/exerciseModel";
 
 const ExerciseListItem = ({
   exercise,

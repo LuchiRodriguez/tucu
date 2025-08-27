@@ -209,7 +209,7 @@ function StudentPage() {
                         routine.rir || 0
                     }
                   >
-                    {routine.exercises.length === 0 ? (
+                    {routine.blocks.length === 0 ? (
                       <p>Aún no hay ejercicios en esta rutina</p>
                     ) : (
                       <ul
@@ -232,7 +232,7 @@ function StudentPage() {
                               ` - ${routine.warmUpTime} min`}
                           </li>
                         )}
-                        {routine.exercises.map((exercise) => (
+                        {routine.blocks.map((exercise) => (
                           <li key={exercise.id} style={{ marginBottom: "5px" }}>
                             <strong>{exercise.name}</strong>
                             {exercise.type === "reps_sets"

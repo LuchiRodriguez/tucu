@@ -62,6 +62,8 @@ function Stage1RoutineDetails({ currentRoutine, setCurrentRoutine }) {
     return <p>Cargando detalles de rutina...</p>; // O un mensaje de error/placeholder
   }
 
+  console.log("RUTINA: ", currentRoutine);
+
   return (
     <StyledModalBody>
       {/* Nombre rutina */}

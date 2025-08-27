@@ -47,7 +47,7 @@ const RoutineDetails = ({
   if (!routine) return null;
 
   // Agrupar ejercicios por bloque y mantener orden
-  const { exercisesByBlock, orderedBlocks } = routine.exercises?.reduce(
+  const { exercisesByBlock, orderedBlocks } = routine.blocks?.reduce(
     (acc, exercise) => {
       const blockName = exercise.block || "Ejercicios sueltos";
       if (!acc.exercisesByBlock[blockName]) {

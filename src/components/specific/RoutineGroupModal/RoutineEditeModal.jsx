@@ -10,7 +10,7 @@ import { useEditRoutineGroup } from "../../../hooks/useRoutines/useEditRoutineGr
 import Modal from "../../common/Utilities/Modal/Modal";
 import Stage1RoutineDetails from "./RoutineStages/Stage1RoutineDetails";
 import Stage2AddExercises from "./RoutineStages/Stage2AddExercises";
-import Stage3AssignSetsReps from "./RoutineStages/Stage3AssignSetsReps";
+import Stage4AssignSetsReps from "./RoutineStages/Stage4AssignSetsReps";
 
 const RoutineEditModal = ({ isOpen, onClose, groupId, studentId }) => {
   const [localError, setLocalError] = useState(null);
@@ -95,7 +95,7 @@ const RoutineEditModal = ({ isOpen, onClose, groupId, studentId }) => {
         );
       case 4:
         return (
-          <Stage3AssignSetsReps
+          <Stage4AssignSetsReps
             currentRoutine={selectedRoutine}
             setCurrentRoutine={updateSelectedRoutine}
           />

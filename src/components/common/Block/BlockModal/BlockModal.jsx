@@ -20,9 +20,8 @@ function BlockModal({ isOpen, onClose, setNewBlock, setNewBlockName }) {
   const createBlock = () => {
     if (!block.trim()) return;
 
-    // resetear modal e input
+    setNewBlockName(block);
     setBlock("");
-    setNewBlockName((prevBlockNames) => [block, ...prevBlockNames]);
     setNewBlock(false);
   };
 
