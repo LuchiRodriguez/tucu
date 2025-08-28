@@ -17,7 +17,7 @@ const useRoutines = () => {
   const [allRoutines, setAllRoutines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const studentId = useMemo(() => user?.uid, [user]); // ✅ Nuevo: obtener una sola rutina por ID
+  const studentId = useMemo(() => user?.uid, [user]);
 
   const getRoutineById = async (routineId) => {
     try {
