@@ -1,86 +1,34 @@
-// src/components/specific/RoutineGroupModal/Stages/Stage2AddExercises.jsx
-import { useMemo, useCallback } from "react";
+import { useMemo } from "react";
 import PropTypes from "prop-types";
 
 import SubSectionTitle from "../../../common/Messages/SubSectionTitle/SubSectionTitle";
 import Subtitle from "../../../common/Messages/Subtitle/Subtitle";
-import useExercises from "../../../../hooks/useExercises";
 import ExerciseListItem from "../../Exercise/ExerciseListItem";
-import ExercisesList from "../../ExerciseList/ExercisesList";
+import ItemsList from "../../ExerciseList/ItemsList";
 
 import {
   StyledModalBody,
   StyledExerciseSelectionList,
 } from "../StyledRoutineGroupModal";
 
+import useFetchExercises from "../../../../hooks/useExercises/useFetchExercises";
+
 const Stage2AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
-  const { exercises } = useExercises();
+  const { exercises, loading, error } = useFetchExercises();
 
-  const exercisesInRoutine = useMemo(() => {
-    const firstBlock = currentRoutine.blocks?.[0];
-    return firstBlock?.exercises || [];
-  }, [currentRoutine.blocks]);
-
-  const addExercise = useCallback(
-    (exercise) => {
-      const newExercise = {
-        ...exercise,
-        sets: 0,
-        reps: 0,
-        time: 0,
-        kilos: 0,
-        completed: false,
-        timeUnit: "seconds", // Prop para definir más adelante
-      };
-
-      setCurrentRoutine((prev) => {
-        let blocks = prev.blocks || [];
-
-        // Si no existe el bloque "Ejercicios sueltos", lo creamos
-        if (blocks.length === 0) {
-          blocks = [
-            {
-              id: Date.now().toString(),
-              name: "Ejercicios sueltos",
-              exercises: [],
-            },
-          ];
-        }
-
-        // Agregamos el nuevo ejercicio al final del primer bloque
-        const updatedFirstBlock = {
-          ...blocks[0],
-          exercises: [...blocks[0].exercises, newExercise],
-        };
-
-        return {
-          ...prev,
-          blocks: [updatedFirstBlock, ...blocks.slice(1)],
-        };
-      });
-    },
-    [setCurrentRoutine]
+  const itemsInRoutine = useMemo(
+    () => currentRoutine.items || [],
+    [currentRoutine.items]
   );
 
-  const removeExercise = useCallback(
-    (exerciseId) => {
-      setCurrentRoutine((prev) => {
-        if (!prev.blocks || prev.blocks.length === 0) return prev;
-
-        const firstBlock = prev.blocks[0];
-        const updatedFirstBlock = {
-          ...firstBlock,
-          exercises: firstBlock.exercises.filter((ex) => ex.id !== exerciseId),
-        };
-
-        return {
-          ...prev,
-          blocks: [updatedFirstBlock, ...prev.blocks.slice(1)],
-        };
-      });
-    },
-    [setCurrentRoutine]
+  // Aquí definimos la lista de IDs de ejercicios que ya están en la rutina
+  const itemsInRoutineIds = useMemo(
+    () => new Set(itemsInRoutine.map((item) => item.originalId)),
+    [itemsInRoutine]
   );
+
+  if (loading) return <p>Cargando ejercicios...</p>;
+  if (error) return <p>Error al cargar ejercicios: {error.message}</p>;
 
   return (
     <StyledModalBody>
@@ -93,18 +41,45 @@ const Stage2AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
         Seleccionar ejercicios:
       </SubSectionTitle>
 
-      <ExercisesList
-        exercises={exercises}
-        exercisesInRoutine={exercisesInRoutine}
-        toggleExercise={addExercise}
-        showCheckbox={true}
+      <ItemsList
+        items={exercises}
+        itemsInRoutineIds={itemsInRoutineIds}
+        onClick={(exercise) => {
+          // Verificamos si el ejercicio ya está en la rutina
+          const isAlreadyInRoutine = itemsInRoutineIds.has(exercise.id);
+
+          if (isAlreadyInRoutine) {
+            // Si ya está, lo eliminamos de la rutina
+            setCurrentRoutine((prev) => ({
+              ...prev,
+              items: prev.items.filter((i) => i.originalId !== exercise.id),
+            }));
+          } else {
+            // Si no está, lo agregamos
+            const newExercise = {
+              id: Date.now().toString() + Math.random(),
+              originalId: exercise.id,
+              name: exercise.name,
+              type: exercise.type,
+              muscleGroups: exercise.muscleGroups || [],
+              reps: 0,
+              sets: 0,
+              time: 0,
+              timeUnit: "seconds",
+            };
+            setCurrentRoutine((prev) => ({
+              ...prev,
+              items: [...(prev.items || []), newExercise],
+            }));
+          }
+        }}
       />
 
       <SubSectionTitle>Ejercicios en la rutina:</SubSectionTitle>
       <StyledExerciseSelectionList
         style={{ minHeight: "60px", maxHeight: "200px" }}
       >
-        {exercisesInRoutine.length === 0 ? (
+        {itemsInRoutine.length === 0 ? (
           <Subtitle
             style={{ textAlign: "center", margin: "20px 0", color: "#7f8c8d" }}
           >
@@ -112,7 +87,7 @@ const Stage2AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
           </Subtitle>
         ) : (
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            {exercisesInRoutine.map((exercise, index) => (
+            {itemsInRoutine.map((exercise, index) => (
               <li
                 key={exercise.id}
                 style={{
@@ -124,9 +99,8 @@ const Stage2AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
               >
                 <ExerciseListItem
                   exercise={exercise}
-                  index={index}
-                  onToggleExercise={() => {}}
-                  onDragStart={() => {}}
+                  showCheckbox={false}
+                  isSelected={false}
                 >
                   <span>
                     {index + 1}. {exercise.name}
@@ -134,7 +108,12 @@ const Stage2AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
                 </ExerciseListItem>
                 <button
                   style={{ marginLeft: "10px" }}
-                  onClick={() => removeExercise(exercise.id)}
+                  onClick={() =>
+                    setCurrentRoutine((prev) => ({
+                      ...prev,
+                      items: prev.items.filter((i) => i.id !== exercise.id),
+                    }))
+                  }
                 >
                   Eliminar
                 </button>

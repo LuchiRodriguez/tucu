@@ -1,6 +1,6 @@
 // src/models/routineModel.js
 import PropTypes from 'prop-types';
-import { blockShape } from './blockModel';
+import { itemShape } from './itemModel';
 
 export const routineShape = PropTypes.shape({
     id: PropTypes.string.isRequired,
@@ -9,5 +9,5 @@ export const routineShape = PropTypes.shape({
     restTime: PropTypes.number.isRequired,
     rir: PropTypes.number.isRequired,
     stages: PropTypes.arrayOf(PropTypes.string),
-    blocks: PropTypes.arrayOf(blockShape),
+    items: PropTypes.arrayOf(itemShape),
 });

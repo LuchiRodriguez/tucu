@@ -12,17 +12,17 @@ import {
   StyledModalTitle,
 } from "../../Utilities/Modal/StyledModal";
 
-function BlockModal({ isOpen, onClose, setNewBlock, setNewBlockName }) {
+function BlockModal({ isOpen, onClose, onCreateBlock }) {
   const modalRef = useRef(null);
-  const inputRef = useRef(null); // ref para el input
-  const [block, setBlock] = useState("");
+  const inputRef = useRef(null);
+  const [blockName, setBlockName] = useState(""); // Un estado para el nombre del bloque
 
-  const createBlock = () => {
-    if (!block.trim()) return;
+  const handleCreateBlock = () => {
+    if (!blockName.trim()) return;
 
-    setNewBlockName(block);
-    setBlock("");
-    setNewBlock(false);
+    onCreateBlock(blockName); // Llamás a la prop que recibís y le pasás el nombre
+    setBlockName(""); // Reseteás el estado local
+    onClose(); // Cerrás el modal
   };
 
   // Manejar foco y bloqueo scroll
@@ -52,7 +52,6 @@ function BlockModal({ isOpen, onClose, setNewBlock, setNewBlockName }) {
 
   if (!isOpen) return null;
 
-  // Cerrar al clickear fuera del contenido (overlay)
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -74,15 +73,15 @@ function BlockModal({ isOpen, onClose, setNewBlock, setNewBlockName }) {
           <CloseModalButton onClose={onClose} />
         </StyledModalHeader>
         <Input
-          ref={inputRef} // asignamos ref
+          ref={inputRef}
           autoFocus
           type="text"
           placeholder="Nombre del bloque"
-          value={block}
-          onChange={(e) => setBlock(e.target.value)}
+          value={blockName}
+          onChange={(e) => setBlockName(e.target.value)}
         />
         <StyledModalFooter style={{ justifyContent: "center" }}>
-          <Button onClick={createBlock}>Guardar</Button>
+          <Button onClick={handleCreateBlock}>Guardar</Button>
         </StyledModalFooter>
       </StyledBlockModalContent>
     </StyledModalOverlay>
@@ -92,8 +91,7 @@ function BlockModal({ isOpen, onClose, setNewBlock, setNewBlockName }) {
 BlockModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  setNewBlock: PropTypes.func.isRequired,
-  setNewBlockName: PropTypes.func.isRequired,
+  onCreateBlock: PropTypes.func.isRequired,
 };
 
 export default BlockModal;

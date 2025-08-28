@@ -5,7 +5,7 @@ import Input from "../../../common/Forms/Input/Input";
 import Label from "../../../common/Forms/Label/Label";
 import { StyledModalBody } from "../StyledRoutineGroupModal";
 import CheckBox from "../../../common/Utilities/CheckBox/CheckBox";
-import Card from "../../../common/Utilities/Card/Card";
+import Card from "../../../common/Cards/Card/Card";
 
 /**
  * Componente de la primera etapa para ingresar los detalles de una rutina individual.
@@ -56,13 +56,6 @@ function Stage1RoutineDetails({ currentRoutine, setCurrentRoutine }) {
       };
     });
   };
-
-  // Asegurarse de que currentRoutine no sea null antes de acceder a sus propiedades
-  if (!currentRoutine) {
-    return <p>Cargando detalles de rutina...</p>; // O un mensaje de error/placeholder
-  }
-
-  console.log("RUTINA: ", currentRoutine);
 
   return (
     <StyledModalBody>

@@ -3,7 +3,7 @@ import ErrorMessage from "../../common/Messages/ErrorMessage/ErrorMessage";
 import { StyledRoutineListUL } from "./StyledRoutinesList";
 import useRoutines from "../../../hooks/useRoutines/useRoutines";
 import Subtitle from "../../common/Messages/Subtitle/Subtitle";
-import CollapsibleCard from "../../common/Utilities/CollapsibleCard/CollapsibleCard";
+import CollapsibleCard from "../../common/Cards/CollapsibleCard/CollapsibleCard";
 import RoutineListItem from "../Routine/RoutineListItem";
 import Button from "../../common/Buttons/Button/Button";
 

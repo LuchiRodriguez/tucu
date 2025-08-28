@@ -1,18 +1,17 @@
-// src/pages/RoutineDetailsPage.jsx
+// src/pages/RoutineDetails.jsx
 import { useEffect, useState } from "react";
-import { StyledCardTitle } from "../../common/Utilities/Card/StyledCard";
-import Card from "../../common/Utilities/Card/Card";
+import Card from "../../common/Cards/Card/Card";
 import SubSectionTitle from "../../common/Messages/SubSectionTitle/SubSectionTitle";
-import Divider from "../../common/Utilities/Divider/Divider"; // Divider como título de bloque
 import PropTypes from "prop-types";
 import ContentSection from "../../layout/ContentSection/ContentSection";
+import BlockListItem from "./BlockListItem";
 import {
   arrayMove,
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { closestCenter, DndContext } from "@dnd-kit/core";
-import SortableExerciseItem from "../../layout/SortableExerciseItem/SortableExerciseItem";
+import { StyledCardTitle } from "../../common/Cards/Card/StyledCard";
 
 const RoutineDetails = ({
   routineId,
@@ -46,45 +45,34 @@ const RoutineDetails = ({
   if (error) return <p>{error}</p>;
   if (!routine) return null;
 
-  // Agrupar ejercicios por bloque y mantener orden
-  const { exercisesByBlock, orderedBlocks } = routine.blocks?.reduce(
-    (acc, exercise) => {
-      const blockName = exercise.block || "Ejercicios sueltos";
-      if (!acc.exercisesByBlock[blockName]) {
-        acc.exercisesByBlock[blockName] = [];
-        acc.orderedBlocks.push(blockName);
-      }
-      acc.exercisesByBlock[blockName].push(exercise);
-      return acc;
-    },
-    { exercisesByBlock: {}, orderedBlocks: [] }
-  ) || { exercisesByBlock: {}, orderedBlocks: [] };
-
-  const handleDragEnd = (event, blockName) => {
+  // Reordenar bloques (items principales)
+  const handleDragEnd = (event) => {
     const { active, over } = event;
-    if (active.id !== over?.id) {
-      setRoutine((prev) => {
-        const newExercises = [...prev.exercises];
-        const blockExercises = exercisesByBlock[blockName];
-        const oldIndex = blockExercises.findIndex((ex) => ex.id === active.id);
-        const newIndex = blockExercises.findIndex((ex) => ex.id === over.id);
+    if (!over || active.id === over.id) return;
 
-        const updatedBlock = arrayMove(blockExercises, oldIndex, newIndex);
+    setRoutine((prev) => {
+      const oldIndex = prev.items.findIndex((item) => item.id === active.id);
+      const newIndex = prev.items.findIndex((item) => item.id === over.id);
 
-        // Reemplazar en el array original de ejercicios
-        let idx = 0;
-        newExercises.forEach((ex, i) => {
-          if ((ex.block || "Ejercicios sueltos") === blockName) {
-            newExercises[i] = updatedBlock[idx++];
-          }
-        });
+      const updatedItems = arrayMove(prev.items, oldIndex, newIndex);
 
-        // Persistir cambios en la base de datos
-        updateRoutineExercises(routineId, newExercises);
+      updateRoutineExercises(routineId, updatedItems);
 
-        return { ...prev, exercises: newExercises };
-      });
-    }
+      return { ...prev, items: updatedItems };
+    });
+  };
+
+  // Actualizar un bloque concreto (ej. reordenamiento interno de ejercicios)
+  const handleUpdateItem = (updateditem) => {
+    setRoutine((prev) => {
+      const updatedItems = prev.items.map((item) =>
+        item.id === updateditem.id ? updateditem : item
+      );
+
+      updateRoutineExercises(routineId, updatedItems);
+
+      return { ...prev, items: updatedItems };
+    });
   };
 
   return (
@@ -100,25 +88,46 @@ const RoutineDetails = ({
       </SubSectionTitle>
 
       <ContentSection>
-        {orderedBlocks.map((blockName) => (
-          <div key={blockName} style={{ marginBottom: "20px" }}>
-            <Divider title={blockName} />
-
-            <DndContext
-              collisionDetection={closestCenter}
-              onDragEnd={(e) => handleDragEnd(e, blockName)}
-            >
-              <SortableContext
-                items={exercisesByBlock[blockName]}
-                strategy={verticalListSortingStrategy}
-              >
-                {exercisesByBlock[blockName].map((exercise) => (
-                  <SortableExerciseItem key={exercise.id} exercise={exercise} />
-                ))}
-              </SortableContext>
-            </DndContext>
-          </div>
-        ))}
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={routine.items.map((item) =>
+              item.type === "block" ? `block-${item.id}` : `exercise-${item.id}`
+            )}
+            strategy={verticalListSortingStrategy}
+          >
+            {routine.items.map((item) => (
+              <BlockListItem
+                key={
+                  item.type === "block"
+                    ? `block-${item.id}`
+                    : `exercise-${item.id}`
+                }
+                item={
+                  item.type === "exercise"
+                    ? {
+                        ...item,
+                        type: "block", // lo tratamos como bloque unificado
+                        series: item.series || 1,
+                        exercises: [
+                          {
+                            id: item.id,
+                            name: item.name,
+                            reps: item.reps,
+                            time: item.time,
+                            timeUnit: item.timeUnit,
+                          },
+                        ],
+                      }
+                    : item
+                }
+                onUpdateItem={handleUpdateItem}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
       </ContentSection>
     </Card>
   );

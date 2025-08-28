@@ -1,7 +1,7 @@
 // src/components/specific/RoutineItem/RoutineListItem.jsx
 import { useNavigate } from "react-router-dom";
-import Card from "../../common/Utilities/Card/Card";
-import { StyledCardTitle } from "../../common/Utilities/Card/StyledCard";
+import Card from "../../common/Cards/Card/Card";
+import { StyledCardTitle } from "../../common/Cards/Card/StyledCard";
 import { routineShape } from "../../../models/routineModel";
 
 const RoutineListItem = ({ routine }) => {

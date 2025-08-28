@@ -24,7 +24,7 @@ import {
   StyledAddRoutineGroupButtonWrapper,
 } from "./StyledStudentPage";
 import GroupsList from "../../components/specific/GroupsList/GroupsList";
-import CollapsibleCard from "../../components/common/Utilities/CollapsibleCard/CollapsibleCard";
+import CollapsibleCard from "../../components/common/Cards/CollapsibleCard/CollapsibleCard";
 
 function StudentPage() {
   const { studentId } = useParams();
@@ -37,18 +37,11 @@ function StudentPage() {
 
   const [isRoutineGroupModalOpen, setIsRoutineGroupModalOpen] = useState(false);
   const [editingDraftId, setEditingDraftId] = useState(null);
-  const [editingRoutineData, setEditingRoutineData] = useState(null);
 
   const [selectedGroup, setSelectedGroup] = useState(null);
 
-  const {
-    allSortedStages,
-    loading: loadingRoutineGroups,
-    error: routineGroupsError,
-    errorMessage: routineGroupsErrorMessage,
-  } = useRoutines(studentId);
-
-  console.log("All Sorted Stages:", allSortedStages);
+  const { allSortedStages, loading: loadingRoutineGroups } =
+    useRoutines(studentId);
 
   useEffect(() => {
     const fetchStudent = async () => {
@@ -85,19 +78,24 @@ function StudentPage() {
 
   const handleOpenCreateRoutineGroupModal = useCallback(() => {
     setEditingDraftId(null);
-    setEditingRoutineData(null);
     setIsRoutineGroupModalOpen(true);
   }, []);
 
   const handleCloseRoutineGroupModal = useCallback(() => {
     setIsRoutineGroupModalOpen(false);
     setEditingDraftId(null);
-    setEditingRoutineData(null);
+  }, []);
+
+  const handleEditRoutine = useCallback((routineId) => {
+    setEditingDraftId(routineId);
+    setIsRoutineGroupModalOpen(true);
   }, []);
 
   const navbarType = "studentRoutinesPage";
   const navbarStudentName =
     student?.name || student?.email?.split("@")[0] || "Este Alumno";
+
+  const showNoRoutinesMessage = allSortedStages.length === 0;
 
   if (loadingStudent || loadingRoutineGroups) return null;
 
@@ -125,42 +123,6 @@ function StudentPage() {
     );
   }
 
-  if (routineGroupsError && allSortedStages.length === 0) {
-    return (
-      <PageContainer>
-        <Navbar
-          loading={false}
-          type={navbarType}
-          studentName={navbarStudentName}
-          isCoachDashboard={false}
-          userName={coachName}
-        />
-        <ContentSection
-          style={{
-            textAlign: "center",
-            marginTop: "20px",
-            paddingBottom: "20px",
-          }}
-        >
-          <ErrorMessage isVisible style={{ fontSize: "0.9rem" }}>
-            {routineGroupsErrorMessage || "Error al cargar las rutinas."}
-          </ErrorMessage>
-          <Button
-            onClick={handleOpenCreateRoutineGroupModal}
-            primary
-            style={{ marginTop: "20px" }}
-          >
-            Crear grupo de rutinas
-          </Button>
-        </ContentSection>
-      </PageContainer>
-    );
-  }
-
-  const showNoRoutinesMessage =
-    allSortedStages.length === 0 ||
-    (allSortedStages.groups && allSortedStages.groups.length === 0);
-
   return (
     <PageContainer>
       <Navbar
@@ -179,6 +141,7 @@ function StudentPage() {
             Objetivo: <span>{student?.objective || "No definido"}</span>
           </Subtitle>
         </div>
+
         <StyledRoutineGroupsWrapper
           style={{ justifyContent: "center", overflowY: "auto" }}
         >
@@ -192,6 +155,7 @@ function StudentPage() {
             <GroupsList
               allSortedStages={allSortedStages}
               onSelectGroup={setSelectedGroup}
+              onEditRoutine={handleEditRoutine} // pasar handler para editar
             />
           ) : (
             <StyledRoutineGroupsWrapper>
@@ -202,14 +166,11 @@ function StudentPage() {
                     key={routine.id}
                     flexDirection={"row"}
                     title={routine.name}
-                    subtitle={
-                      "Descanso: " +
-                        routine.restTime +
-                        "s - RIR: " +
-                        routine.rir || 0
-                    }
+                    subtitle={`Descanso: ${routine.restTime || 0}s - RIR: ${
+                      routine.rir || 0
+                    }`}
                   >
-                    {routine.blocks.length === 0 ? (
+                    {!routine.items || routine.items.length === 0 ? (
                       <p>Aún no hay ejercicios en esta rutina</p>
                     ) : (
                       <ul
@@ -232,17 +193,51 @@ function StudentPage() {
                               ` - ${routine.warmUpTime} min`}
                           </li>
                         )}
-                        {routine.blocks.map((exercise) => (
-                          <li key={exercise.id} style={{ marginBottom: "5px" }}>
-                            <strong>{exercise.name}</strong>
-                            {exercise.type === "reps_sets"
-                              ? ` (${exercise.sets} Series, ${exercise.reps} Reps)`
-                              : ` (${exercise.sets} Series, ${exercise.time} min de trabajo)`}
+                        {routine.items.map((item) => (
+                          <li key={item.id} style={{ marginBottom: "5px" }}>
+                            {item.type === "exercise" ? (
+                              <>
+                                <strong>{item.name}</strong>
+                                {item.reps !== undefined &&
+                                item.sets !== undefined
+                                  ? ` (${item.sets} Series, ${item.reps} Reps)`
+                                  : item.time !== undefined &&
+                                    item.sets !== undefined
+                                  ? ` (${item.sets} Series, ${item.time} ${
+                                      item.timeUnit || "min"
+                                    } de trabajo)`
+                                  : null}
+                              </>
+                            ) : (
+                              <>
+                                <strong>{item.name} (Bloque)</strong>
+                                <ul
+                                  style={{
+                                    paddingLeft: "15px",
+                                    marginTop: "5px",
+                                  }}
+                                >
+                                  {item.exercises?.map((ex) => (
+                                    <li key={ex.id}>
+                                      {ex.name}
+                                      {ex.reps !== undefined &&
+                                      ex.sets !== undefined
+                                        ? ` (${ex.sets} Series, ${ex.reps} Reps)`
+                                        : ex.time !== undefined &&
+                                          ex.sets !== undefined
+                                        ? ` (${ex.sets} Series, ${ex.time} ${
+                                            ex.timeUnit || "min"
+                                          } de trabajo)`
+                                        : null}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </>
+                            )}
                           </li>
                         ))}
                       </ul>
                     )}
-                    {console.log("Routine: ", routine)}
                   </CollapsibleCard>
                 ))}
               </StyledRoutineGroupsWrapper>
@@ -262,7 +257,7 @@ function StudentPage() {
       </StyledStudentPageContent>
 
       {isRoutineGroupModalOpen &&
-        (editingDraftId !== null || editingRoutineData !== null ? (
+        (editingDraftId !== null ? (
           <RoutineEditModal
             isOpen={isRoutineGroupModalOpen}
             onClose={handleCloseRoutineGroupModal}

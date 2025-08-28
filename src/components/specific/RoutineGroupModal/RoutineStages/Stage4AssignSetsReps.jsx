@@ -1,8 +1,7 @@
-// src/components/specific/RoutineGroupModal/Stages/Stage4AssignSetsReps.jsx
 import { useMemo, useCallback } from "react";
 import PropTypes from "prop-types";
 
-import CollapsibleCard from "../../../common/Utilities/CollapsibleCard/CollapsibleCard";
+import CollapsibleCard from "../../../common/Cards/CollapsibleCard/CollapsibleCard";
 import Label from "../../../common/Forms/Label/Label";
 import Input from "../../../common/Forms/Input/Input";
 import Select from "../../../common/Forms/Select/Select";
@@ -22,44 +21,87 @@ const timeUnits = [
 ];
 
 const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine }) => {
-  const safeRoutine = useMemo(
-    () => currentRoutine || { blocks: [] },
-    [currentRoutine]
-  );
+  // Normalizamos los datos para blindar IDs
+  const safeRoutine = useMemo(() => {
+    if (!currentRoutine) return { id: "routine-0", items: [] };
 
-  const handleExerciseChange = useCallback(
-    (exerciseId, field, value, blockId) => {
-      setCurrentRoutine((prev) => ({
-        ...prev,
-        blocks: (prev.blocks || []).map((block) => {
-          if (block.id !== blockId) return block;
-          const updatedExercises = (block.exercises || []).map((ex) => {
-            if (ex.id !== exerciseId) return ex;
-            return {
+    return {
+      ...currentRoutine,
+      id: currentRoutine.id.startsWith("routine-")
+        ? currentRoutine.id
+        : `routine-${currentRoutine.id}`,
+      items: (currentRoutine.items || []).map((item) => {
+        if (item.type === "block") {
+          return {
+            ...item,
+            id: item.id.startsWith("block-") ? item.id : `block-${item.id}`,
+            exercises: (item.exercises || []).map((ex) => ({
               ...ex,
+              id: ex.id.startsWith("exercise-") ? ex.id : `exercise-${ex.id}`,
+            })),
+          };
+        }
+
+        return {
+          ...item,
+          id: item.id.startsWith("exercise-") ? item.id : `exercise-${item.id}`,
+        };
+      }),
+    };
+  }, [currentRoutine]);
+
+  // Handler robusto jerárquico
+  const handleExerciseChange = useCallback(
+    ({ itemId, exerciseId, field, value }) => {
+      setCurrentRoutine((prev) => {
+        const updatedItems = prev.items.map((item) => {
+          if (item.id !== itemId) return item;
+
+          if (item.type === "block") {
+            // actualizar dentro del bloque
+            const updatedExercises = item.exercises.map((ex) =>
+              ex.id === exerciseId
+                ? {
+                    ...ex,
+                    [field]: ["sets", "reps", "time"].includes(field)
+                      ? Number(value)
+                      : value,
+                  }
+                : ex
+            );
+            return { ...item, exercises: updatedExercises };
+          } else {
+            // actualizar un ejercicio suelto
+            return {
+              ...item,
               [field]: ["sets", "reps", "time"].includes(field)
                 ? Number(value)
                 : value,
             };
-          });
-          return { ...block, exercises: updatedExercises };
-        }),
-      }));
+          }
+        });
+
+        return {
+          ...prev,
+          items: updatedItems,
+        };
+      });
     },
     [setCurrentRoutine]
   );
 
   const handleBlockSeriesChange = useCallback(
-    (blockId, value) => {
+    ({ itemId, value }) => {
       setCurrentRoutine((prev) => ({
         ...prev,
-        blocks: (prev.blocks || []).map((block) => {
-          if (block.id !== blockId) return block;
+        items: (prev.items || []).map((item) => {
+          if (item.id !== itemId || item.type !== "block") return item;
+
           const series = Number(value);
           return {
-            ...block,
+            ...item,
             series,
-            exercises: (block.exercises || []).map((ex) => ({
+            exercises: (item.exercises || []).map((ex) => ({
               ...ex,
               sets: series,
             })),
@@ -68,6 +110,109 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine }) => {
       }));
     },
     [setCurrentRoutine]
+  );
+
+  // ✅ Nueva función para renderizar el card de ejercicio
+  const renderExerciseCard = (exercise, itemId, index) => (
+    <CollapsibleCard
+      key={exercise.id}
+      title={`${index + 1}. ${exercise.name}`}
+      defaultOpen
+    >
+      <div style={{ padding: "10px 0" }}>
+        <StyledExerciseInputGroup>
+          <Label htmlFor={`sets-${safeRoutine.id}-${itemId}-${exercise.id}`}>
+            Series:
+          </Label>
+          <Input
+            type="number"
+            id={`sets-${safeRoutine.id}-${itemId}-${exercise.id}`}
+            value={exercise.sets ?? ""}
+            min="0"
+            onChange={(e) =>
+              handleExerciseChange({
+                itemId: itemId,
+                exerciseId: exercise.id,
+                field: "sets",
+                value: e.target.value,
+              })
+            }
+          />
+        </StyledExerciseInputGroup>
+
+        {exercise.type === "timed" ? (
+          <>
+            <StyledExerciseInputGroup>
+              <Label
+                htmlFor={`time-${safeRoutine.id}-${itemId}-${exercise.id}`}
+              >
+                Tiempo:
+              </Label>
+              <Input
+                type="number"
+                id={`time-${safeRoutine.id}-${itemId}-${exercise.id}`}
+                value={exercise.time ?? ""}
+                min="0"
+                onChange={(e) =>
+                  handleExerciseChange({
+                    itemId: itemId,
+                    exerciseId: exercise.id,
+                    field: "time",
+                    value: e.target.value,
+                  })
+                }
+              />
+            </StyledExerciseInputGroup>
+
+            <StyledExerciseInputGroup>
+              <Label
+                htmlFor={`time-unit-${safeRoutine.id}-${itemId}-${exercise.id}`}
+              >
+                Unidad de tiempo:
+              </Label>
+              <Select
+                id={`time-unit-${safeRoutine.id}-${itemId}-${exercise.id}`}
+                value={exercise.timeUnit || "seconds"}
+                onChange={(option) =>
+                  handleExerciseChange({
+                    itemId: itemId,
+                    exerciseId: exercise.id,
+                    field: "timeUnit",
+                    value: option.value,
+                  })
+                }
+              >
+                {timeUnits.map((unit) => (
+                  <option key={unit.value} value={unit.value}>
+                    {unit.label}
+                  </option>
+                ))}
+              </Select>
+            </StyledExerciseInputGroup>
+          </>
+        ) : (
+          <StyledExerciseInputGroup>
+            <Label htmlFor={`reps-${safeRoutine.id}-${itemId}-${exercise.id}`}>
+              Repeticiones:
+            </Label>
+            <Input
+              type="number"
+              id={`reps-${safeRoutine.id}-${itemId}-${exercise.id}`}
+              value={exercise.reps ?? ""}
+              min="0"
+              onChange={(e) =>
+                handleExerciseChange({
+                  itemId: itemId,
+                  exerciseId: exercise.id,
+                  field: "reps",
+                  value: e.target.value,
+                })
+              }
+            />
+          </StyledExerciseInputGroup>
+        )}
+      </div>
+    </CollapsibleCard>
   );
 
   return (
@@ -82,7 +227,7 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine }) => {
       </SubSectionTitle>
 
       <StyledExerciseSelectionList>
-        {(!safeRoutine.blocks || safeRoutine.blocks.length === 0) && (
+        {(!safeRoutine.items || safeRoutine.items.length === 0) && (
           <Subtitle
             style={{ textAlign: "center", margin: "20px 0", color: "#7f8c8d" }}
           >
@@ -90,123 +235,41 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine }) => {
           </Subtitle>
         )}
 
-        {(safeRoutine.blocks || []).map((block, blockIndex) => (
-          <div key={block.id}>
-            <StyledBlockDivider>
-              <Label>Bloque: {block.name}</Label>
-              {blockIndex > 0 && (
+        {/* ✅ Mapeamos sobre los ítems de la rutina */}
+        {(safeRoutine.items || []).map((item, index) => (
+          <div key={item.id}>
+            {/* Si es un bloque, renderizamos su encabezado */}
+            {item.type === "block" && (
+              <StyledBlockDivider>
+                <Label>Bloque: {item.name}</Label>
                 <StyledExerciseInputGroup style={{ marginLeft: "10px" }}>
-                  <Label htmlFor={`block-series-${block.id}`}>
+                  <Label htmlFor={`block-series-${safeRoutine.id}-${item.id}`}>
                     Series del bloque:
                   </Label>
                   <Input
                     type="number"
-                    id={`block-series-${block.id}`}
-                    value={block.series ?? 0}
+                    id={`block-series-${safeRoutine.id}-${item.id}`}
+                    value={item.series ?? ""}
                     onChange={(e) =>
-                      handleBlockSeriesChange(block.id, e.target.value)
+                      handleBlockSeriesChange({
+                        itemId: item.id,
+                        value: e.target.value,
+                      })
                     }
                     min="0"
                   />
                 </StyledExerciseInputGroup>
-              )}
-            </StyledBlockDivider>
+              </StyledBlockDivider>
+            )}
 
-            {(block.exercises || []).map((exercise, exIndex) => (
-              <CollapsibleCard
-                key={exercise.id}
-                title={`${exIndex + 1}. ${exercise.name}`}
-                defaultOpen={true}
-              >
-                <div style={{ padding: "10px 0" }}>
-                  {blockIndex === 0 && (
-                    <StyledExerciseInputGroup>
-                      <Label htmlFor={`sets-${exercise.id}`}>Series:</Label>
-                      <Input
-                        type="number"
-                        id={`sets-${exercise.id}`}
-                        value={exercise.sets ?? 0}
-                        min="0"
-                        onChange={(e) =>
-                          handleExerciseChange(
-                            exercise.id,
-                            "sets",
-                            e.target.value,
-                            block.id
-                          )
-                        }
-                      />
-                    </StyledExerciseInputGroup>
-                  )}
-
-                  {exercise.type === "timed" ? (
-                    <>
-                      <StyledExerciseInputGroup>
-                        <Label htmlFor={`time-${exercise.id}`}>Tiempo:</Label>
-                        <Input
-                          type="number"
-                          id={`time-${exercise.id}`}
-                          value={exercise.time ?? 0}
-                          min="0"
-                          onChange={(e) =>
-                            handleExerciseChange(
-                              exercise.id,
-                              "time",
-                              e.target.value,
-                              block.id
-                            )
-                          }
-                        />
-                      </StyledExerciseInputGroup>
-
-                      <StyledExerciseInputGroup>
-                        <Label htmlFor={`time-unit-${exercise.id}`}>
-                          Unidad de tiempo:
-                        </Label>
-                        <Select
-                          id={`time-unit-${exercise.id}`}
-                          value={exercise.timeUnit || "seconds"}
-                          onChange={(option) =>
-                            handleExerciseChange(
-                              exercise.id,
-                              "timeUnit",
-                              option.value,
-                              block.id
-                            )
-                          }
-                        >
-                          {timeUnits.map((unit) => (
-                            <option key={unit.value} value={unit.value}>
-                              {unit.label}
-                            </option>
-                          ))}
-                        </Select>
-                      </StyledExerciseInputGroup>
-                    </>
-                  ) : (
-                    <StyledExerciseInputGroup>
-                      <Label htmlFor={`reps-${exercise.id}`}>
-                        Repeticiones:
-                      </Label>
-                      <Input
-                        type="number"
-                        id={`reps-${exercise.id}`}
-                        value={exercise.reps ?? 0}
-                        min="0"
-                        onChange={(e) =>
-                          handleExerciseChange(
-                            exercise.id,
-                            "reps",
-                            e.target.value,
-                            block.id
-                          )
-                        }
-                      />
-                    </StyledExerciseInputGroup>
-                  )}
-                </div>
-              </CollapsibleCard>
-            ))}
+            {/* Ahora, renderizamos los ejercicios del item (uno o varios) */}
+            {item.type === "block"
+              ? // Si es un bloque, mapeamos sobre sus ejercicios
+                (item.exercises || []).map((ex, exIndex) =>
+                  renderExerciseCard(ex, item.id, exIndex)
+                )
+              : // Si es un ejercicio suelto, lo renderizamos directamente
+                renderExerciseCard(item, item.id, index)}
           </div>
         ))}
       </StyledExerciseSelectionList>

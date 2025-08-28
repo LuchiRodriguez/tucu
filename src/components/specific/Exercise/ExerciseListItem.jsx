@@ -1,9 +1,8 @@
-// src/components/specific/Exercise/ExerciseListItem.jsx
 import PropTypes from "prop-types";
-import Card from "../../common/Utilities/Card/Card";
-import { StyledCardTitle } from "../../common/Utilities/Card/StyledCard";
+import Card from "../../common/Cards/Card/Card";
+import { StyledCardTitle } from "../../common/Cards/Card/StyledCard";
 import CheckBox from "../../common/Utilities/CheckBox/CheckBox";
-import { exerciseShape } from "../../../models/exerciseModel";
+import { itemShape } from "../../../models/itemModel";
 
 const ExerciseListItem = ({
   exercise,
@@ -13,25 +12,15 @@ const ExerciseListItem = ({
   onToggle,
   spanText,
   onDragStart,
-  onDropToList,
-  onDropReorder,
 }) => {
-  const handleDrop = (e) => {
-    e.preventDefault();
-    if (exercise.block && onDropReorder) {
-      onDropReorder(e, exercise.id, exercise.block);
-    } else if (onDropToList) {
-      onDropToList(e);
-    }
-  };
-
   return (
     <Card
       id={exercise.id}
-      draggable={!!onDragStart} // draggable solo si hay onDragStart
-      onDragStart={(e) => onDragStart && onDragStart(e, exercise.id)}
+      draggable={!!onDragStart}
+      onDragStart={(e) =>
+        onDragStart && onDragStart(e, { type: "exercise", id: exercise.id })
+      }
       onDragOver={(e) => e.preventDefault()}
-      onDrop={handleDrop}
       onClick={onClick}
       flexDirection="row"
       style={{ marginBottom: "10px" }}
@@ -52,15 +41,13 @@ const ExerciseListItem = ({
 };
 
 ExerciseListItem.propTypes = {
-  exercise: exerciseShape.isRequired,
+  exercise: itemShape.isRequired,
   onClick: PropTypes.func,
   showCheckbox: PropTypes.bool,
   isSelected: PropTypes.bool,
   onToggle: PropTypes.func,
   spanText: PropTypes.string,
-  onDragStart: PropTypes.func, // opcional
-  onDropToList: PropTypes.func, // opcional
-  onDropReorder: PropTypes.func, // opcional
+  onDragStart: PropTypes.func,
 };
 
 export default ExerciseListItem;

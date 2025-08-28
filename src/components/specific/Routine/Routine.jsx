@@ -1,15 +1,22 @@
 // src/components/specific/Routine/Routine.jsx
-import PropTypes from 'prop-types';
-import Card from '../../common/Utilities/Card/Card'; // Asegurate de que la ruta sea correcta hacia tu componente Card
+import PropTypes from "prop-types";
+import Card from "../../common/Cards/Card/Card"; // Asegurate de que la ruta sea correcta hacia tu componente Card
 import {
   StyledRoutineItem,
   StyledRoutineDetails,
   StyledRoutineDetailText,
-} from './StyledRoutine'; // Importamos los estilos específicos de la rutina
+} from "./StyledRoutine"; // Importamos los estilos específicos de la rutina
 
-const Routine = ({ routine, isExpanded, onToggleDetails, onToggleCompletion }) => {
+const Routine = ({
+  routine,
+  isExpanded,
+  onToggleDetails,
+  onToggleCompletion,
+}) => {
   return (
-    <StyledRoutineItem> {/* Usamos el componente estilizado para el li */}
+    <StyledRoutineItem>
+      {" "}
+      {/* Usamos el componente estilizado para el li */}
       <Card
         id={routine.id}
         name={routine.name}

@@ -7,8 +7,8 @@ import CheckBox from "../../common/Utilities/CheckBox/CheckBox"; // Asegúrate d
 import Select from "../../common/Forms/Select/Select";
 import { StyledModalFooter } from "../RoutineGroupModal/StyledRoutineGroupModal";
 import Button from "../../common/Buttons/Button/Button";
-import Card from "../../common/Utilities/Card/Card";
-import { exerciseShape } from "../../../models/exerciseModel";
+import Card from "../../common/Cards/Card/Card";
+import { itemShape } from "../../../models/itemModel";
 
 const ExerciseModal = ({
   isOpen,
@@ -112,9 +112,9 @@ const ExerciseModal = ({
 ExerciseModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  exercise: exerciseShape,
+  exercise: itemShape,
   isEditing: PropTypes.bool.isRequired,
-  exercises: PropTypes.arrayOf(exerciseShape).isRequired,
+  exercises: PropTypes.arrayOf(itemShape).isRequired,
   onSave: PropTypes.func.isRequired,
 };
 

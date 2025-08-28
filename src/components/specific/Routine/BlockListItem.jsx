@@ -1,75 +1,66 @@
 // src/components/specific/Routine/BlockListItem.jsx
 import PropTypes from "prop-types";
 import SubSectionTitle from "../../common/Messages/SubSectionTitle/SubSectionTitle";
-import RemoveExerciseButton from "../../common/Buttons/RemoveExerciseButton/RemoveExerciseButton";
-import { StyledExerciseItem } from "../RoutineGroupModal/StyledRoutineGroupModal";
+import SortableExerciseItem from "../../layout/SortableExerciseItem/SortableExerciseItem";
+import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { itemShape } from "../../../models/itemModel";
 
-const BlockListItem = ({
-  blockName,
-  exercises,
-  handleDragOver,
-  handleDragStart,
-  handleDropReorder,
-  handleDropToBlock,
-  toggleExercise,
-}) => {
+const BlockListItem = ({ item, onUpdateItem }) => {
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = item.exercises.findIndex((ex) => ex.id === active.id);
+    const newIndex = item.exercises.findIndex((ex) => ex.id === over.id);
+
+    const updatedExercises = arrayMove(item.exercises, oldIndex, newIndex);
+
+    onUpdateItem({
+      ...item,
+      exercises: updatedExercises,
+    });
+  };
+
   return (
-    <div
-      className="block-group-card"
-      onDragOver={handleDragOver}
-      onDrop={(e) => handleDropToBlock(e, blockName)}
-    >
-      <SubSectionTitle>{blockName}</SubSectionTitle>
-      <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-        {exercises.map((exercise, index) => (
-          <StyledExerciseItem
-            key={exercise.id}
-            draggable
-            onDragStart={(e) => handleDragStart(e, exercise.id)}
-            onDragOver={handleDragOver}
-            onDrop={(e) => handleDropReorder(e, exercise.id, blockName)}
+    <div className="item-group-card">
+      {/* info principal del bloque o del ejercicio */}
+      <SubSectionTitle item={item} />
+
+      {/* solo renderizamos drag&drop interno si es un bloque */}
+      {item.type === "block" &&
+        Array.isArray(item.exercises) &&
+        item.exercises.length > 0 && (
+          <DndContext
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
           >
-            <span>
-              {index + 1}. {exercise.name}
-            </span>
-            <span style={{ fontSize: "0.9em", color: "#666" }}>
-              ({exercise.sets || 0} series,{" "}
-              {exercise.type === "timed"
-                ? `${exercise.time || 0}s de trabajo`
-                : `${exercise.reps || 0} reps`}
-              )
-            </span>
-            <RemoveExerciseButton onClick={() => toggleExercise(exercise)}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
-            </RemoveExerciseButton>
-          </StyledExerciseItem>
-        ))}
-      </ul>
+            <SortableContext
+              items={item.exercises.map((ex) => `exercise-${ex.id}`)} // prefijamos IDs
+              strategy={verticalListSortingStrategy}
+            >
+              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                {item.exercises.map((exercise, index) => (
+                  <SortableExerciseItem
+                    key={`exercise-${exercise.id}`}
+                    exercise={{ ...exercise, order: index + 1 }}
+                  />
+                ))}
+              </ul>
+            </SortableContext>
+          </DndContext>
+        )}
     </div>
   );
 };
 
 BlockListItem.propTypes = {
-  blockName: PropTypes.string.isRequired,
-  exercises: PropTypes.array.isRequired,
-  handleDragOver: PropTypes.func.isRequired,
-  handleDragStart: PropTypes.func.isRequired,
-  handleDropReorder: PropTypes.func.isRequired,
-  handleDropToBlock: PropTypes.func.isRequired,
-  toggleExercise: PropTypes.func.isRequired,
+  item: itemShape.isRequired,
+  onUpdateItem: PropTypes.func.isRequired,
 };
 
 export default BlockListItem;

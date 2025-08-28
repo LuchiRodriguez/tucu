@@ -1,66 +1,33 @@
 // src/components/specific/RoutineList/RoutineList.jsx
-import { useState } from "react"; // Solo necesitamos useState
+import { useState } from "react";
 import PropTypes from "prop-types";
 
-// Importamos componentes common atomizados
-import CollapsibleCard from "../../common/Utilities/CollapsibleCard/CollapsibleCard";
-import Card from "../../common/Utilities/Card/Card";
-import Input from "../../common/Forms/Input/Input"; // Componente Input común
-import Label from "../../common/Forms/Label/Label"; // Componente Label común
-import SectionTitle from "../../common/Messages/SectionTitle/SectionTitle"; // Componente SectionTitle común
-import SubSectionTitle from "../../common/Messages/SubSectionTitle/SubSectionTitle"; // Componente SubSectionTitle común
-import Subtitle from "../../common/Messages/Subtitle/Subtitle"; // Para mensajes y texto general
-import ErrorMessage from "../../common/Messages/ErrorMessage/ErrorMessage"; // Para mensajes de error
+import CollapsibleCard from "../../common/Cards/CollapsibleCard/CollapsibleCard";
+import ExerciseCard from "../../common/Cards/ExerciseCard/ExerciseCard";
+import SectionTitle from "../../common/Messages/SectionTitle/SectionTitle";
+import SubSectionTitle from "../../common/Messages/SubSectionTitle/SubSectionTitle";
+import Subtitle from "../../common/Messages/Subtitle/Subtitle";
+import ErrorMessage from "../../common/Messages/ErrorMessage/ErrorMessage";
 
-// Importamos los estilos específicos para RoutineList
 import {
   StyledRoutineListContainer,
   StyledRoutinesWrapper,
   StyledRoutineDetailText,
-  StyledExercisesContainer,
-  StyledExerciseCardContent,
-  StyledExerciseHeader,
-  StyledExerciseName,
-  StyledExerciseDetailsWrapper,
-  StyledExerciseDetailLine,
-  StyledKilosInputGroup,
 } from "./StyledRoutineList";
-import CheckBox from "../../common/Utilities/CheckBox/CheckBox";
 
-// Función auxiliar para formatear segundos a minutos y segundos (MM:SS)
-const formatTime = (totalSeconds) => {
-  if (totalSeconds === undefined || totalSeconds === null) return "N/A";
-  const seconds = Number(totalSeconds);
-  if (isNaN(seconds)) return "N/A";
-
-  if (seconds < 60) {
-    return `${seconds} Segundos`;
-  } else {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    const formattedSeconds =
-      remainingSeconds < 10 ? `0${remainingSeconds}` : remainingSeconds;
-    return `${minutes}:${formattedSeconds} Minutos`;
-  }
-};
-
-// El componente RoutineList ahora recibe las props directamente desde HomePage
 const RoutineList = ({
-  routines, // Rutinas a mostrar
-  loading, // Estado de carga
-  error, // Estado de error
-  toggleExerciseCompleted, // Función para el checkbox de ejercicio individual
-  updateExerciseKilos, // Función para el input de kilos del ejercicio individual
+  routines,
+  loading,
+  error,
+  toggleExerciseCompleted,
+  updateExerciseKilos,
 }) => {
-  // Estado local para manejar qué rutina está expandida
   const [expandedRoutineId, setExpandedRoutineId] = useState(null);
 
-  // Función para manejar el clic en el título de una rutina para expandir/colapsar
   const handleToggleRoutineDetails = (routineId) => {
     setExpandedRoutineId((prevId) => (prevId === routineId ? null : routineId));
   };
 
-  // Renderizado condicional basado en los estados de carga y error
   if (loading) {
     return (
       <Subtitle
@@ -73,13 +40,12 @@ const RoutineList = ({
 
   if (error) {
     return (
-      <ErrorMessage isVisible={true} style={{ margin: "20px auto" }}>
+      <ErrorMessage isVisible style={{ margin: "20px auto" }}>
         ¡Uups! Hubo un error al cargar tus rutinas. Por favor, intentá de nuevo.
       </ErrorMessage>
     );
   }
 
-  // Si no hay rutinas después de cargar y sin errores
   if (!loading && routines.length === 0) {
     return (
       <Subtitle
@@ -90,36 +56,45 @@ const RoutineList = ({
     );
   }
 
+  // Función para calcular porcentaje de completado
+  const calculateCompletion = (items) => {
+    const flatExercises =
+      items?.flatMap((item) =>
+        item.type === "exercise" ? [item] : item.exercises || []
+      ) || [];
+    if (!flatExercises.length) return 0;
+    const completed = flatExercises.filter((ex) => ex.completed).length;
+    return Math.round((completed / flatExercises.length) * 100);
+  };
+
   return (
     <StyledRoutineListContainer>
       <SectionTitle>Tus Rutinas Asignadas:</SectionTitle>
       <StyledRoutinesWrapper>
         {routines.map((routine) => {
-          // ¡NUEVA LÓGICA! Calcular el porcentaje de completado de la rutina
-          const totalExercises = routine.blocks ? routine.blocks.length : 0;
-          const completedExercises = routine.blocks
-            ? routine.blocks.filter((ex) => ex.completed).length
-            : 0;
-          const completionPercentage =
-            totalExercises > 0
-              ? Math.round((completedExercises / totalExercises) * 100)
-              : 0;
+          const completionPercentage = calculateCompletion(routine.items);
 
           return (
             <CollapsibleCard
-              key={routine.id}
+              key={`routine-${routine.id}`}
               title={routine.name}
               defaultOpen={routine.id === expandedRoutineId}
               onClickTitle={() => handleToggleRoutineDetails(routine.id)}
+              aria-expanded={routine.id === expandedRoutineId}
+              aria-controls={`routine-items-${routine.id}`}
             >
-              <div style={{ padding: "5px 0" }}>
+              <div
+                id={`routine-items-${routine.id}`}
+                style={{ padding: "5px 0" }}
+              >
                 <StyledRoutineDetailText>
                   Creada el:{" "}
                   <span>
-                    {routine.createdAt &&
-                      new Date(routine.createdAt.toDate()).toLocaleDateString(
-                        "es-AR"
-                      )}
+                    {routine.createdAt?.toDate
+                      ? new Date(routine.createdAt.toDate()).toLocaleDateString(
+                          "es-AR"
+                        )
+                      : "N/A"}
                   </span>
                 </StyledRoutineDetailText>
                 <StyledRoutineDetailText>
@@ -129,69 +104,42 @@ const RoutineList = ({
                 <StyledRoutineDetailText>
                   RIR General: <span>{routine.rir || 0}</span>
                 </StyledRoutineDetailText>
-                {/* ¡NUEVA LÍNEA! Mostrar el porcentaje de completado */}
                 <StyledRoutineDetailText className="progress-text">
                   Progreso: <span>{completionPercentage}% Completado</span>
                 </StyledRoutineDetailText>
 
                 <SubSectionTitle>Ejercicios de la rutina:</SubSectionTitle>
-                <StyledExercisesContainer>
-                  {routine.blocks.map((ex) => (
-                    <Card key={ex.id}>
-                      {" "}
-                      {/* Card para cada ejercicio */}
-                      <StyledExerciseCardContent>
-                        <StyledExerciseHeader>
-                          <StyledExerciseName>{ex.name}</StyledExerciseName>
-                          <CheckBox
-                            id={`exercise-completed-${routine.id}-${ex.id}`}
-                            label="" // Dejamos el label vacío si el texto está al lado del checkbox
-                            checked={ex.completed || false}
-                            onChange={() =>
-                              toggleExerciseCompleted(routine.id, ex.id)
-                            }
-                            style={{ transform: "scale(1.2)" }} // Ajuste visual si es necesario
+                {routine.items?.map((item) => {
+                  if (item.type === "exercise") {
+                    return (
+                      <ExerciseCard
+                        key={`exercise-${item.id}`}
+                        routineId={routine.id}
+                        exercise={item}
+                        toggleExerciseCompleted={toggleExerciseCompleted}
+                        updateExerciseKilos={updateExerciseKilos}
+                      />
+                    );
+                  } else if (item.type === "block") {
+                    return (
+                      <div key={`block-${item.id}`}>
+                        <SubSectionTitle>Bloque: {item.name}</SubSectionTitle>
+                        {item.exercises?.map((ex) => (
+                          <ExerciseCard
+                            key={`exercise-${ex.id}`}
+                            routineId={routine.id}
+                            blockId={item.id}
+                            exercise={ex}
+                            seriesOverride={item.series}
+                            toggleExerciseCompleted={toggleExerciseCompleted}
+                            updateExerciseKilos={updateExerciseKilos}
                           />
-                        </StyledExerciseHeader>
-                        <StyledExerciseDetailsWrapper>
-                          <StyledExerciseDetailLine>
-                            Series: <span>{ex.sets || 0}</span>
-                          </StyledExerciseDetailLine>
-                          {ex.type === "timed" ? (
-                            <StyledExerciseDetailLine>
-                              Tiempo: <span>{formatTime(ex.time || 0)}</span>
-                            </StyledExerciseDetailLine>
-                          ) : (
-                            <>
-                              <StyledExerciseDetailLine>
-                                Repeticiones: <span>{ex.reps || 0}</span>
-                              </StyledExerciseDetailLine>
-                              <StyledKilosInputGroup>
-                                <Label htmlFor={`kilos-${routine.id}-${ex.id}`}>
-                                  Kilos:
-                                </Label>
-                                <Input
-                                  type="number"
-                                  id={`kilos-${routine.id}-${ex.id}`}
-                                  min="0"
-                                  placeholder="Kilos"
-                                  value={ex.kilos === 0 ? "" : ex.kilos} // Mostrar vacío si es 0
-                                  onChange={(e) =>
-                                    updateExerciseKilos(
-                                      routine.id,
-                                      ex.id,
-                                      e.target.value
-                                    )
-                                  }
-                                />
-                              </StyledKilosInputGroup>
-                            </>
-                          )}
-                        </StyledExerciseDetailsWrapper>
-                      </StyledExerciseCardContent>
-                    </Card>
-                  ))}
-                </StyledExercisesContainer>
+                        ))}
+                      </div>
+                    );
+                  }
+                  return null;
+                })}
               </div>
             </CollapsibleCard>
           );
@@ -201,28 +149,15 @@ const RoutineList = ({
   );
 };
 
-// Validaciones de PropTypes para las props recibidas
 RoutineList.propTypes = {
   routines: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
-      createdAt: PropTypes.any, // Firebase Timestamp puede ser un objeto, o Date
+      createdAt: PropTypes.any,
       restTime: PropTypes.number,
       rir: PropTypes.number,
-      exercises: PropTypes.arrayOf(
-        PropTypes.shape({
-          id: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-            .isRequired, // Puede ser string o number
-          name: PropTypes.string.isRequired,
-          type: PropTypes.string,
-          sets: PropTypes.number,
-          reps: PropTypes.number,
-          time: PropTypes.number,
-          kilos: PropTypes.number,
-          completed: PropTypes.bool,
-        })
-      ).isRequired,
+      items: PropTypes.array.isRequired, // items: array de ejercicios y bloques
     })
   ).isRequired,
   loading: PropTypes.bool.isRequired,

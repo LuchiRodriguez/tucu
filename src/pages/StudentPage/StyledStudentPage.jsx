@@ -2,7 +2,7 @@
 import styled from "styled-components";
 import { StyledSubtitleBase } from "../../components/common/Messages/Subtitle/StyledSubtitle"; // Para anidar estilos de Subtitle
 import { StyledTitleBase } from "../../components/common/Messages/Title/StyledTitle"; // Para anidar estilos de Title
-import CollapsibleCard from "../../components/common/Utilities/CollapsibleCard/CollapsibleCard";
+import CollapsibleCard from "../../components/common/Cards/CollapsibleCard/CollapsibleCard";
 
 export const StyledStudentPageContent = styled.div`
   display: flex;
