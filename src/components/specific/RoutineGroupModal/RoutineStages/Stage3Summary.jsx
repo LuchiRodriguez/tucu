@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
 import PropTypes from "prop-types";
-
 import {
   DndContext,
   closestCenter,
@@ -9,7 +8,6 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import {
-  arrayMove,
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
@@ -22,6 +20,8 @@ import SortableItem from "../../../common/Items/SortableItem/SortableItem";
 import ExerciseListItem from "../../Exercise/ExerciseListItem";
 import Button from "../../../common/Buttons/Button/Button";
 
+import { useRoutineDnd } from "../../../../hooks/useRoutines/useRoutineDnD";
+
 const Stage3Summary = ({ currentRoutine, setCurrentRoutine }) => {
   const [newBlock, setNewBlock] = useState(false);
 
@@ -29,45 +29,8 @@ const Stage3Summary = ({ currentRoutine, setCurrentRoutine }) => {
 
   const sensors = useSensors(useSensor(PointerSensor));
 
-  const handleDragEnd = (event) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    // Buscamos si el "over" es un bloque
-    const targetBlock = routineItems.find(
-      (item) => item.type === "block" && item.id === over.id
-    );
-
-    // Buscamos el índice del elemento arrastrado en la lista principal
-    const activeIndex = routineItems.findIndex((item) => item.id === active.id);
-
-    if (targetBlock) {
-      // Si se soltó sobre un bloque
-      const draggedItem = routineItems[activeIndex];
-
-      // Eliminamos el ejercicio de la lista principal
-      const newRoutineItems = routineItems.filter(
-        (_, idx) => idx !== activeIndex
-      );
-
-      // Agregamos el ejercicio al bloque correspondiente
-      const updatedItems = newRoutineItems.map((item) =>
-        item.id === targetBlock.id
-          ? {
-              ...item,
-              exercises: [...(item.exercises || []), draggedItem],
-            }
-          : item
-      );
-
-      setCurrentRoutine((prev) => ({ ...prev, items: updatedItems }));
-    } else {
-      // Si se soltó sobre otro elemento de la lista principal, reordenamos
-      const overIndex = routineItems.findIndex((item) => item.id === over.id);
-      const newItems = arrayMove(routineItems, activeIndex, overIndex);
-      setCurrentRoutine((prev) => ({ ...prev, items: newItems }));
-    }
-  };
+  // 👇 Usamos el hook
+  const { handleDragEnd } = useRoutineDnd(currentRoutine, setCurrentRoutine);
 
   const createBlock = useCallback(
     (name) => {
@@ -95,15 +58,20 @@ const Stage3Summary = ({ currentRoutine, setCurrentRoutine }) => {
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
+        onDragEnd={handleDragEnd} // 👈 hook en acción
       >
         <SortableContext
           items={routineItems.map((item) => item.id)}
           strategy={verticalListSortingStrategy}
         >
-          <div>
+          <div style={{ overflowY: "auto", marginTop: "10px" }}>
             {routineItems.map((item) => (
-              <SortableItem key={item.id} id={item.id}>
+              <SortableItem
+                key={item.id}
+                id={item.id}
+                type={item.type === "block" ? "block" : "exercise"}
+                contextType="mainList"
+              >
                 {item.type === "block" ? (
                   <BlockContainer block={item} />
                 ) : (

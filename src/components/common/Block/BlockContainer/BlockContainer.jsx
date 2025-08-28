@@ -31,7 +31,13 @@ const BlockContainer = ({ block }) => {
       >
         <div style={{ paddingLeft: 12 }}>
           {(block.exercises || []).map((exercise) => (
-            <SortableItem key={exercise.id} id={exercise.id}>
+            <SortableItem
+              key={exercise.id}
+              id={exercise.id}
+              type={"exercise"}
+              contextType="block" // 🔑 marca que viene de un bloque
+              parentId={block.id} // 🔑 referencia al bloque padre
+            >
               <ExerciseListItem exercise={exercise} />
             </SortableItem>
           ))}
