@@ -1,7 +1,7 @@
 import { addDoc, collection, doc, setDoc } from "firebase/firestore";
 import { db } from "../../config/firebase";
 
-const useManageExercise = (exercises = []) => {
+const useManageExercise = (exercises = [], refetch) => {
   const onSave = async (newExercise) => {
     const isDuplicated = exercises.filter(
       (ex) => ex.id !== newExercise.id && ex.name === newExercise.name
@@ -24,6 +24,10 @@ const useManageExercise = (exercises = []) => {
           muscleGroups: newExercise.muscleGroups,
         });
       }
+
+      // 🔄 Refrescar lista
+      if (refetch) await refetch();
+
       return { success: true, error: null };
     } catch (err) {
       console.error(err);

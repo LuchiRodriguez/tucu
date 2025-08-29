@@ -34,8 +34,9 @@ function CoachPage() {
     exercises,
     loading: exercisesLoading,
     error: exercisesError,
+    refetch,
   } = useFetchExercises();
-  const { onSave } = useManageExercise(exercises);
+  const { onSave } = useManageExercise(exercises, refetch);
   const [selectedExercise, setSelectedExercise] = useState(null);
 
   // 1️⃣ Estado para controlar el modal
@@ -92,6 +93,7 @@ function CoachPage() {
               }
               showCheckbox={false}
               items={exercises}
+              itemsInRoutineIds={new Set()}
             />
           )}
           <Button

@@ -85,12 +85,14 @@ const Stage4AssignSetsReps = ({ currentRoutine, setCurrentRoutine }) => {
               <Select
                 id={`time-unit-${currentRoutine.id}-${itemId}-${exercise.id}`}
                 value={exercise.timeUnit || "seconds"}
-                onChange={(option) =>
+                onChange={(
+                  e // 👈 Cambiá 'option' por 'e' o 'event'
+                ) =>
                   handleExerciseChange({
                     itemId: itemId,
                     exerciseId: exercise.id,
                     field: "timeUnit",
-                    value: option.value,
+                    value: e.target.value, // 👈 Cambiá 'option.value' por 'e.target.value'
                   })
                 }
               >

@@ -44,6 +44,7 @@ const Stage2AddExercises = ({ currentRoutine, setCurrentRoutine }) => {
       <ItemsList
         items={exercises}
         itemsInRoutineIds={itemsInRoutineIds}
+        showCheckbox={true}
         onClick={(exercise) => {
           // Verificamos si el ejercicio ya está en la rutina
           const isAlreadyInRoutine = itemsInRoutineIds.has(exercise.id);

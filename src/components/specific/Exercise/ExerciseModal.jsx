@@ -55,6 +55,11 @@ const ExerciseModal = ({
   const allMuscleGroups = exercises.flatMap((ex) => ex.muscleGroups);
   const uniqueMuscleGroups = [...new Set(allMuscleGroups)];
 
+  const handleSaveAndClose = async () => {
+    await onSave(editableExercise);
+    onClose();
+  };
+
   return (
     <Modal
       isOpen={isOpen}
@@ -92,7 +97,7 @@ const ExerciseModal = ({
       <Select
         id="type"
         value={editableExercise?.type || ""}
-        onChange={handleInputChange}
+        onChange={(e) => handleInputChange(e)}
         required
         style={{ marginBottom: "15px" }}
       >
@@ -101,7 +106,7 @@ const ExerciseModal = ({
         <option value="reps_sets">Repeticiones</option>
       </Select>
       <StyledModalFooter style={{ alignSelf: "center", margin: "10px" }}>
-        <Button onClick={() => onSave(editableExercise)} primary>
+        <Button onClick={handleSaveAndClose} primary>
           Guardar ejercicio
         </Button>
       </StyledModalFooter>

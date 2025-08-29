@@ -9,7 +9,13 @@ import BlockListItem from "../Routine/BlockListItem";
 import { StyledExerciseSelectionList } from "../RoutineGroupModal/StyledRoutineGroupModal";
 import ContentSection from "../../layout/ContentSection/ContentSection";
 
-const ItemsList = ({ items, itemsInRoutineIds, onClick, onUpdateBlock }) => {
+const ItemsList = ({
+  items,
+  itemsInRoutineIds,
+  showCheckbox,
+  onClick,
+  onUpdateBlock,
+}) => {
   const [searchText, setSearchText] = useState("");
 
   // Filtrado por búsqueda solo para ejercicios sueltos
@@ -79,8 +85,8 @@ const ItemsList = ({ items, itemsInRoutineIds, onClick, onUpdateBlock }) => {
                   <ExerciseListItem
                     key={exercise.id}
                     exercise={exercise}
-                    onToggle={onClick}
-                    showCheckbox={true}
+                    onClick={() => onClick(exercise)}
+                    showCheckbox={showCheckbox}
                     isSelected={itemsInRoutineIds.has(exercise.id)}
                     spanText={
                       exercise.muscleGroups?.join(" | ") ||
@@ -100,6 +106,7 @@ const ItemsList = ({ items, itemsInRoutineIds, onClick, onUpdateBlock }) => {
 ItemsList.propTypes = {
   items: PropTypes.array.isRequired,
   itemsInRoutineIds: PropTypes.instanceOf(Set),
+  showCheckbox: PropTypes.bool,
   onClick: PropTypes.func,
   onUpdateBlock: PropTypes.func,
 };

@@ -21,7 +21,7 @@ const ExerciseListItem = ({
         onDragStart && onDragStart(e, { type: "exercise", id: exercise.id })
       }
       onDragOver={(e) => e.preventDefault()}
-      onClick={onClick}
+      onClick={() => onClick(exercise)}
       flexDirection="row"
       style={{ marginBottom: "10px" }}
     >
