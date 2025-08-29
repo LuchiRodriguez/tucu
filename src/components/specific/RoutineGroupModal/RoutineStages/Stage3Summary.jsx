@@ -13,7 +13,7 @@ import {
 } from "@dnd-kit/sortable";
 
 import SubSectionTitle from "../../../common/Messages/SubSectionTitle/SubSectionTitle";
-import { StyledModalBody } from "../StyledRoutineGroupModal";
+import { StyledModalBody } from "../StyledRoutineModal";
 import BlockModal from "../../../common/Block/BlockModal/BlockModal";
 import BlockContainer from "../../../common/Block/BlockContainer/BlockContainer";
 import SortableItem from "../../../common/Items/SortableItem/SortableItem";

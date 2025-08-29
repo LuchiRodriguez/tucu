@@ -1,6 +1,4 @@
-// src/pages/RoutineDetails.jsx
 import { useEffect, useState } from "react";
-import Card from "../../common/Cards/Card/Card";
 import SubSectionTitle from "../../common/Messages/SubSectionTitle/SubSectionTitle";
 import PropTypes from "prop-types";
 import ContentSection from "../../layout/ContentSection/ContentSection";
@@ -12,15 +10,25 @@ import {
 } from "@dnd-kit/sortable";
 import { closestCenter, DndContext } from "@dnd-kit/core";
 import { StyledCardTitle } from "../../common/Cards/Card/StyledCard";
+import PageContainer from "../../layout/PageContainer/PageContainer";
+import Button from "../../common/Buttons/Button/Button";
+import { useNavigate } from "react-router-dom";
+import RoutineEditModal from "../RoutineGroupModal/RoutineEditModal";
 
 const RoutineDetails = ({
   routineId,
   getRoutineById,
   updateRoutineExercises,
+  deleteRoutine,
 }) => {
   const [routine, setRoutine] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // 🔹 Estado para controlar apertura del modal
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchRoutine = async () => {
@@ -45,7 +53,6 @@ const RoutineDetails = ({
   if (error) return <p>{error}</p>;
   if (!routine) return null;
 
-  // Reordenar bloques (items principales)
   const handleDragEnd = (event) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -62,7 +69,6 @@ const RoutineDetails = ({
     });
   };
 
-  // Actualizar un bloque concreto (ej. reordenamiento interno de ejercicios)
   const handleUpdateItem = (updateditem) => {
     setRoutine((prev) => {
       const updatedItems = prev.items.map((item) =>
@@ -75,9 +81,24 @@ const RoutineDetails = ({
     });
   };
 
+  const handleDeleteRoutine = async () => {
+    const confirmDelete = window.confirm(
+      "¿Seguro que querés eliminar esta rutina?"
+    );
+    if (!confirmDelete) return;
+
+    try {
+      await deleteRoutine(routineId);
+      alert("Rutina eliminada correctamente.");
+      navigate("/coach");
+    } catch (err) {
+      alert("Hubo un error al eliminar la rutina: " + err.message);
+    }
+  };
+
   return (
-    <Card>
-      <StyledCardTitle style={{ textAlign: "center" }}>
+    <PageContainer style={{ paddingTop: 0 }}>
+      <StyledCardTitle style={{ textAlign: "center", fontSize: "1.5rem" }}>
         {routine.name}
         <span>{routine.stages?.join(" | ")}</span>
       </StyledCardTitle>
@@ -105,31 +126,40 @@ const RoutineDetails = ({
                     ? `block-${item.id}`
                     : `exercise-${item.id}`
                 }
-                item={
-                  item.type === "exercise"
-                    ? {
-                        ...item,
-                        type: "block", // lo tratamos como bloque unificado
-                        series: item.series || 1,
-                        exercises: [
-                          {
-                            id: item.id,
-                            name: item.name,
-                            reps: item.reps,
-                            time: item.time,
-                            timeUnit: item.timeUnit,
-                          },
-                        ],
-                      }
-                    : item
-                }
+                item={item}
                 onUpdateItem={handleUpdateItem}
               />
             ))}
           </SortableContext>
         </DndContext>
+
+        <div style={{ display: "flex", justifyContent: "space-around" }}>
+          <Button
+            primary
+            style={{ width: "130px" }}
+            onClick={() => setIsEditModalOpen(true)} // 🔹 Abrimos el modal
+          >
+            Editar
+          </Button>
+          <Button
+            secondary
+            style={{ width: "130px" }}
+            onClick={handleDeleteRoutine}
+          >
+            Eliminar
+          </Button>
+        </div>
       </ContentSection>
-    </Card>
+
+      {/* 🔹 Modal de edición */}
+      {isEditModalOpen && (
+        <RoutineEditModal
+          routineId={routineId}
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+        />
+      )}
+    </PageContainer>
   );
 };
 
@@ -137,6 +167,7 @@ RoutineDetails.propTypes = {
   getRoutineById: PropTypes.func.isRequired,
   routineId: PropTypes.string.isRequired,
   updateRoutineExercises: PropTypes.func,
+  deleteRoutine: PropTypes.func,
 };
 
 export default RoutineDetails;

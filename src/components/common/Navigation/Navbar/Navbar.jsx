@@ -10,7 +10,6 @@ import ProfileButton from "./ProfileButton/ProfileButton";
 import HeaderGreeting from "./HeaderGreeting/HeaderGreeting";
 import RoutineCounter from "./RoutineCounter/RoutineCounter";
 import NavbarTitle from "./NavbarTitle/NavbarTitle";
-import NavbarSearch from "./NavbarSearch/NavbarSearch";
 
 import logoImage from "../../../../assets/logo.jpg";
 import userIconImage from "../../../../assets/user.png";
@@ -20,8 +19,6 @@ function Navbar({
   loading,
   totalActivedRoutines = 0,
   completedActivedRoutines = 0,
-  searchValue = "",
-  setSearchValue = () => {},
   studentName = "",
   isCoachDashboard = false,
 }) {
@@ -48,11 +45,6 @@ function Navbar({
     navbarCenterContent = (
       <>
         <NavbarTitle>Panel del Profe</NavbarTitle>
-        <NavbarSearch
-          placeholder="Buscar alumnos..."
-          value={searchValue}
-          onChange={(event) => setSearchValue(event.target.value)}
-        />
       </>
     );
   } else if (type === "coach") {

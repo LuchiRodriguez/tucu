@@ -8,6 +8,7 @@ import {
   doc,
   updateDoc,
   getDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "../../config/firebase";
 import { useAuth } from "../../context/authContextBase";
@@ -74,6 +75,20 @@ const useRoutines = () => {
     }
   };
 
+  // Función para eliminar una rutina
+  const deleteRoutine = async (id) => {
+    try {
+      const routineRef = doc(db, "routines", id);
+      await deleteDoc(routineRef);
+      console.log("Rutina eliminada correctamente");
+    } catch (err) {
+      console.error("Error al eliminar la rutina:", err);
+      throw new Error(
+        "No se pudo eliminar la rutina. Intentá de nuevo más tarde."
+      );
+    }
+  };
+
   useEffect(() => {
     if (authLoading || !user) return;
     setLoading(true);
@@ -135,6 +150,7 @@ const useRoutines = () => {
     toggleExerciseCompleted,
     updateExerciseKilos,
     updateRoutineExercises,
+    deleteRoutine,
   };
 };
 

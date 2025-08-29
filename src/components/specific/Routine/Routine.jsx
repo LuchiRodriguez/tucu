@@ -62,7 +62,7 @@ Routine.propTypes = {
     name: PropTypes.string.isRequired,
     isActive: PropTypes.bool.isRequired,
     description: PropTypes.string,
-    restTime: PropTypes.number,
+    restTime: PropTypes.string,
     rir: PropTypes.number,
     warmUp: PropTypes.string,
     // Agrega más props de rutina si son relevantes

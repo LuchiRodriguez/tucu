@@ -9,7 +9,7 @@ import ItemsList from "../../ExerciseList/ItemsList";
 import {
   StyledModalBody,
   StyledExerciseSelectionList,
-} from "../StyledRoutineGroupModal";
+} from "../StyledRoutineModal";
 
 import useFetchExercises from "../../../../hooks/useExercises/useFetchExercises";
 

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 
 import CloseModalButton from "../../Buttons/CloseModalButton/CloseModalButton";
-import { StyledModalFooter } from "../../../specific/RoutineGroupModal/StyledRoutineGroupModal";
+import { StyledModalFooter } from "../../../specific/RoutineGroupModal/StyledRoutineModal";
 import Button from "../../Buttons/Button/Button";
 import Input from "../../Forms/Input/Input";
 import {

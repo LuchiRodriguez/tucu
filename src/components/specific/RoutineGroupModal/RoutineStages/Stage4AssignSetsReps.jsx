@@ -12,7 +12,7 @@ import {
   StyledExerciseInputGroup,
   StyledExerciseSelectionList,
   StyledBlockDivider,
-} from "../StyledRoutineGroupModal";
+} from "../StyledRoutineModal";
 import { useExerciseAssignment } from "../../../../hooks/useExercises/useExerciseAssignment";
 
 const timeUnits = [

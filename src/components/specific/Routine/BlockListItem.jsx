@@ -1,6 +1,5 @@
 // src/components/specific/Routine/BlockListItem.jsx
 import PropTypes from "prop-types";
-import SubSectionTitle from "../../common/Messages/SubSectionTitle/SubSectionTitle";
 import SortableExerciseItem from "../../layout/SortableExerciseItem/SortableExerciseItem";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import {
@@ -9,6 +8,7 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { itemShape } from "../../../models/itemModel";
+import CollapsibleCard from "../../common/Cards/CollapsibleCard/CollapsibleCard";
 
 const BlockListItem = ({ item, onUpdateItem }) => {
   const handleDragEnd = (event) => {
@@ -27,33 +27,41 @@ const BlockListItem = ({ item, onUpdateItem }) => {
   };
 
   return (
-    <div className="item-group-card">
-      {/* info principal del bloque o del ejercicio */}
-      <SubSectionTitle item={item} />
-
-      {/* solo renderizamos drag&drop interno si es un bloque */}
+    <div className="item-group-card" style={{ marginBottom: "20px" }}>
+      {/* Caso 1: Bloque con múltiples ejercicios */}
       {item.type === "block" &&
         Array.isArray(item.exercises) &&
         item.exercises.length > 0 && (
-          <DndContext
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
+          <CollapsibleCard
+            title={item.name}
+            subtitle={`${item.series} serie${item.series > 1 ? "s" : ""}`}
+            defaultOpen={true}
           >
-            <SortableContext
-              items={item.exercises.map((ex) => `exercise-${ex.id}`)} // prefijamos IDs
-              strategy={verticalListSortingStrategy}
+            <DndContext
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
             >
-              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                {item.exercises.map((exercise, index) => (
-                  <SortableExerciseItem
-                    key={`exercise-${exercise.id}`}
-                    exercise={{ ...exercise, order: index + 1 }}
-                  />
-                ))}
-              </ul>
-            </SortableContext>
-          </DndContext>
+              <SortableContext
+                items={item.exercises.map((ex) => `exercise-${ex.id}`)}
+                strategy={verticalListSortingStrategy}
+              >
+                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                  {item.exercises.map((exercise, index) => (
+                    <SortableExerciseItem
+                      key={`exercise-${exercise.id}`}
+                      exercise={{ ...exercise, order: index + 1 }}
+                      isInBlock={true}
+                    />
+                  ))}
+                </ul>
+              </SortableContext>
+            </DndContext>
+          </CollapsibleCard>
         )}
+      {/* Caso 2: Ejercicio individual */}
+      {item.type !== "block" && (
+        <SortableExerciseItem exercise={item} isInBlock={false} />
+      )}
     </div>
   );
 };

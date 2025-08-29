@@ -27,7 +27,7 @@ function CoachPage() {
 
   const { loading, error, searchedStudents, searchValue, selectedStudentId } =
     states;
-  const { setSearchValue, selectStudent, sincronizeStudents } = statesUpdaters;
+  const { selectStudent, sincronizeStudents } = statesUpdaters;
 
   // 🔹 Hooks de ejercicios
   const {
@@ -75,8 +75,6 @@ function CoachPage() {
       <Navbar
         type="coach"
         loading={loading || authLoading || exercisesLoading}
-        searchValue={searchValue}
-        setSearchValue={setSearchValue}
         isCoachDashboard={true}
       />
       <ContentSection

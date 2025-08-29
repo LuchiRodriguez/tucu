@@ -12,7 +12,7 @@ import { useParams } from "react-router-dom";
 function RoutinePage() {
   const { routineId } = useParams();
   const { loading: authLoading } = useAuth();
-  const { getRoutineById, loading, updateRoutineExercises } =
+  const { getRoutineById, loading, updateRoutineExercises, deleteRoutine } =
     useRoutines(routineId);
 
   return (
@@ -29,6 +29,7 @@ function RoutinePage() {
           getRoutineById={getRoutineById}
           routineId={routineId}
           updateRoutineExercises={updateRoutineExercises}
+          deleteRoutine={deleteRoutine}
         />
       </ContentSection>
     </PageContainer>

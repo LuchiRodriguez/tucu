@@ -1,7 +1,8 @@
+// src/components/specific/Routine/RoutineEditModal.jsx
 import { useState, useCallback } from "react";
 import PropTypes from "prop-types";
 
-import { useCreateRoutine } from "../../../hooks/useRoutines/useCreateRoutine";
+import { useEditRoutine } from "../../../hooks/useRoutines/useEditRoutine";
 
 import Modal from "../../common/Utilities/Modal/Modal";
 import ErrorMessage from "../../common/Messages/ErrorMessage/ErrorMessage";
@@ -13,7 +14,7 @@ import Stage2AddExercises from "./RoutineStages/Stage2AddExercises";
 import Stage3Summary from "./RoutineStages/Stage3Summary";
 import Stage4AssignSetsReps from "./RoutineStages/Stage4AssignSetsReps";
 
-const RoutineCreationModal = ({ isOpen, onClose }) => {
+const RoutineEditModal = ({ routineId, isOpen, onClose }) => {
   const [localError, setLocalError] = useState(null);
 
   const {
@@ -23,31 +24,29 @@ const RoutineCreationModal = ({ isOpen, onClose }) => {
     goToNextStage,
     goToPreviousStage,
     saveError,
-    validateBeforePublish,
     isActionDisabled,
-    publishRoutine,
-    resetForm,
-  } = useCreateRoutine();
+    saveChanges,
+  } = useEditRoutine(routineId);
 
   const handleCloseModal = useCallback(() => {
-    resetForm();
     onClose();
-  }, [onClose, resetForm]);
+  }, [onClose]);
 
-  const handlePublishRoutine = useCallback(async () => {
+  const handleSaveRoutine = useCallback(async () => {
     setLocalError(null);
-    const validationError = validateBeforePublish();
-    if (validationError) {
-      setLocalError(validationError);
+
+    if (!routine) {
+      setLocalError("No se pudo cargar la rutina");
       return;
     }
+
     try {
-      await publishRoutine();
+      await saveChanges();
       onClose();
     } catch (err) {
-      setLocalError(err.message || "Error al publicar la rutina");
+      setLocalError(err.message || "Error al guardar la rutina");
     }
-  }, [onClose, validateBeforePublish, publishRoutine]);
+  }, [routine, saveChanges, onClose]);
 
   const renderStageComponent = () => {
     switch (stage) {
@@ -90,16 +89,18 @@ const RoutineCreationModal = ({ isOpen, onClose }) => {
     <Modal
       isOpen={isOpen}
       onClose={handleCloseModal}
-      title={routine?.name || "Nueva rutina"}
+      title={routine?.name || "Editar rutina"}
     >
       {(saveError || localError) && (
         <ErrorMessage isVisible>{saveError || localError}</ErrorMessage>
       )}
+
       {!routine || stage === null ? (
         <p>Cargando rutina...</p>
       ) : (
         renderStageComponent()
       )}
+
       <StyledModalFooter stage={stage}>
         {stage > 1 && (
           <button
@@ -113,7 +114,7 @@ const RoutineCreationModal = ({ isOpen, onClose }) => {
         )}
         {stage === 4 ? (
           <button
-            onClick={handlePublishRoutine}
+            onClick={handleSaveRoutine}
             disabled={isActionDisabled}
             type="button"
           >
@@ -134,9 +135,10 @@ const RoutineCreationModal = ({ isOpen, onClose }) => {
   );
 };
 
-RoutineCreationModal.propTypes = {
+RoutineEditModal.propTypes = {
+  routineId: PropTypes.string.isRequired,
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
 };
 
-export default RoutineCreationModal;
+export default RoutineEditModal;

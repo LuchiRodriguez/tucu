@@ -6,7 +6,7 @@ import CollapsibleCard from "../../common/Cards/CollapsibleCard/CollapsibleCard"
 import Subtitle from "../../common/Messages/Subtitle/Subtitle";
 import ExerciseListItem from "../Exercise/ExerciseListItem";
 import BlockListItem from "../Routine/BlockListItem";
-import { StyledExerciseSelectionList } from "../RoutineGroupModal/StyledRoutineGroupModal";
+import { StyledExerciseSelectionList } from "../RoutineGroupModal/StyledRoutineModal";
 import ContentSection from "../../layout/ContentSection/ContentSection";
 
 const ItemsList = ({

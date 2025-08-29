@@ -54,7 +54,14 @@ const RoutinesList = ({ searchText = "", onOpenModal }) => {
             defaultOpen={false}
           >
             {routines.map((routine) => (
-              <RoutineListItem key={routine.id} routine={routine} />
+              <RoutineListItem
+                key={routine.id}
+                routine={{
+                  ...routine,
+                  restTime: Number(routine.restTime),
+                  rir: Number(routine.restTime),
+                }}
+              />
             ))}
           </CollapsibleCard>
         ))

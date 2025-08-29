@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 
 import Input from "../../../common/Forms/Input/Input";
 import Label from "../../../common/Forms/Label/Label";
-import { StyledModalBody } from "../StyledRoutineGroupModal";
+import { StyledModalBody } from "../StyledRoutineModal";
 import CheckBox from "../../../common/Utilities/CheckBox/CheckBox";
 import Card from "../../../common/Cards/Card/Card";
 
