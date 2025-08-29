@@ -4,6 +4,7 @@ import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../config/firebase";
 import { useAuth } from "../../context/authContextBase";
 import { v4 as uuidv4 } from "uuid";
+import { removeUndefinedFields } from "../../utils/firestoreUtils";
 
 // --- Hook principal ---
 export const useCreateRoutine = () => {
@@ -83,11 +84,14 @@ export const useCreateRoutine = () => {
         };
       }
 
-      const routineToSave = normalizeRoutine({ ...routine });
+      let routineToSave = normalizeRoutine({ ...routine });
 
       if (!routineToSave.stages || routineToSave.stages.length === 0) {
         routineToSave.stages = ["Sin Etapa"];
       }
+
+      // Limpiamos cualquier campo undefined antes de enviar a Firestore
+      routineToSave = removeUndefinedFields(routineToSave);
 
       try {
         const routineRef = doc(db, "routines", routineToSave.id);
