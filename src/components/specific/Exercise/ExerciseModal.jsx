@@ -5,7 +5,7 @@ import Label from "../../common/Forms/Label/Label";
 import { useEffect, useState } from "react";
 import CheckBox from "../../common/Utilities/CheckBox/CheckBox"; // Asegúrate de importar CheckBox
 import Select from "../../common/Forms/Select/Select";
-import { StyledModalFooter } from "../RoutineGroupModal/StyledRoutineGroupModal";
+import { StyledModalFooter } from "../RoutineGroupModal/StyledRoutineModal";
 import Button from "../../common/Buttons/Button/Button";
 import Card from "../../common/Cards/Card/Card";
 import { itemShape } from "../../../models/itemModel";

@@ -29,7 +29,7 @@ export const StyledModalContent = styled.div`
   width: 90%;
   height: 80vh;
   max-width: 550px;
-  max-height: 90vh; /* Limitar altura para scroll */
+  max-height: ${({ $contentHeight }) => $contentHeight || "90vh"};
   overflow-y: auto; /* Habilitar scroll si el contenido excede la altura */
   display: flex;
   flex-direction: column;

@@ -8,7 +8,7 @@ import {
 } from "../Modal/StyledModal";
 import CloseModalButton from "../../Buttons/CloseModalButton/CloseModalButton";
 
-function Modal({ isOpen, onClose, title, children }) {
+function Modal({ isOpen, onClose, title, children, contentHeight }) {
   const modalRef = useRef(null);
 
   // Manejar foco y bloqueo scroll
@@ -54,7 +54,7 @@ function Modal({ isOpen, onClose, title, children }) {
       role="dialog"
       aria-labelledby="modal-title"
     >
-      <StyledModalContent>
+      <StyledModalContent $contentHeight={contentHeight}>
         <StyledModalHeader>
           <StyledModalTitle id="modal-title">{title}</StyledModalTitle>
           <CloseModalButton onClose={onClose} />
@@ -71,6 +71,7 @@ Modal.propTypes = {
   title: PropTypes.string.isRequired,
   children: PropTypes.node,
   updateSelectedRoutine: PropTypes.func,
+  contentHeight: PropTypes.string,
 };
 
 export default Modal;
