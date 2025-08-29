@@ -15,6 +15,8 @@ const ItemsList = ({
   showCheckbox,
   onClick,
   onUpdateBlock,
+  showRemoveButton,
+  onRemove,
 }) => {
   const [searchText, setSearchText] = useState("");
 
@@ -92,6 +94,8 @@ const ItemsList = ({
                       exercise.muscleGroups?.join(" | ") ||
                       "Sin grupo muscular asignado"
                     }
+                    showRemoveButton={showRemoveButton}
+                    onRemove={onRemove}
                   />
                 );
               })}
@@ -109,6 +113,8 @@ ItemsList.propTypes = {
   showCheckbox: PropTypes.bool,
   onClick: PropTypes.func,
   onUpdateBlock: PropTypes.func,
+  showRemoveButton: PropTypes.bool,
+  onRemove: PropTypes.func,
 };
 
 export default ItemsList;

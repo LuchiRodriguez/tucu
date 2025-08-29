@@ -1,4 +1,4 @@
-import { addDoc, collection, doc, setDoc } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, setDoc } from "firebase/firestore";
 import { db } from "../../config/firebase";
 
 const useManageExercise = (exercises = [], refetch) => {
@@ -35,7 +35,19 @@ const useManageExercise = (exercises = [], refetch) => {
     }
   };
 
-  return { onSave };
+  const onRemove = async (exerciseId) => {
+    try {
+      const exerciseRef = doc(db, "exercises", exerciseId);
+      await deleteDoc(exerciseRef);
+      refetch(); // 👈 refresca lista tras borrar
+      return { success: true, error: null };
+    } catch (err) {
+      console.error("Error eliminando ejercicio:", err);
+      return { success: false, error: err };
+    }
+  };
+
+  return { onSave, onRemove };
 };
 
 export default useManageExercise;

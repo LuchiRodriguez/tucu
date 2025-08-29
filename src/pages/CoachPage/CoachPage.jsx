@@ -36,7 +36,7 @@ function CoachPage() {
     error: exercisesError,
     refetch,
   } = useFetchExercises();
-  const { onSave } = useManageExercise(exercises, refetch);
+  const { onSave, onRemove } = useManageExercise(exercises, refetch);
   const [selectedExercise, setSelectedExercise] = useState(null);
 
   // 1️⃣ Estado para controlar el modal
@@ -51,6 +51,19 @@ function CoachPage() {
     setSelectedExercise(exercise);
   };
   const handleCloseModal = () => setIsModalOpen(false);
+
+  // Handler para eliminar
+  const handleRemoveExercise = async (exerciseId) => {
+    const confirmDelete = window.confirm(
+      "¿Seguro que querés eliminar este ejercicio?"
+    );
+    if (!confirmDelete) return;
+
+    const { success, error } = await onRemove(exerciseId);
+    if (!success) {
+      alert("Hubo un error eliminando el ejercicio: " + error.message);
+    }
+  };
 
   const handleSelectStudent = (studentId) => {
     selectStudent(studentId);
@@ -94,6 +107,8 @@ function CoachPage() {
               showCheckbox={false}
               items={exercises}
               itemsInRoutineIds={new Set()}
+              showRemoveButton={true} // 👈 ¡Acá decidís si se muestra!
+              onRemove={handleRemoveExercise}
             />
           )}
           <Button

@@ -1,6 +1,7 @@
 // src/components/common/RemoveExerciseButton/RemoveExerciseButton.jsx
-import PropTypes from 'prop-types';
-import { StyledRemoveExerciseButtonBase } from './StyledRemoveExerciseButton';
+import PropTypes from "prop-types";
+import { StyledRemoveExerciseButtonBase } from "./StyledRemoveExerciseButton";
+import deleteIcon from "../../../../assets/delete.png";
 
 /**
  * Componente RemoveExerciseButton genérico para eliminar ejercicios.
@@ -13,7 +14,13 @@ import { StyledRemoveExerciseButtonBase } from './StyledRemoveExerciseButton';
  * @param {object} [props.style] - Estilos en línea adicionales.
  * @param {string} [props.className] - Clases CSS adicionales.
  */
-const RemoveExerciseButton = ({ children, onClick, disabled = false, style, className, ...rest }) => {
+const RemoveExerciseButton = ({
+  onClick,
+  disabled = false,
+  style,
+  className,
+  ...rest
+}) => {
   return (
     <StyledRemoveExerciseButtonBase
       type="button"
@@ -23,13 +30,12 @@ const RemoveExerciseButton = ({ children, onClick, disabled = false, style, clas
       className={className}
       {...rest}
     >
-      {children}
+      <img src={deleteIcon} alt="" />
     </StyledRemoveExerciseButtonBase>
   );
 };
 
 RemoveExerciseButton.propTypes = {
-  children: PropTypes.node.isRequired,
   onClick: PropTypes.func,
   disabled: PropTypes.bool,
   style: PropTypes.object,
