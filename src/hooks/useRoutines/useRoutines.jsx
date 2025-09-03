@@ -4,7 +4,6 @@ import {
   collection,
   onSnapshot,
   query,
-  where,
   doc,
   updateDoc,
   getDoc,
@@ -14,11 +13,10 @@ import { db } from "../../config/firebase";
 import { useAuth } from "../../context/authContextBase";
 
 const useRoutines = () => {
-  const { user, role, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [allRoutines, setAllRoutines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const studentId = useMemo(() => user?.uid, [user]);
 
   const getRoutineById = async (routineId) => {
     try {
@@ -94,18 +92,7 @@ const useRoutines = () => {
     setLoading(true);
     setError(null);
     let q;
-    if (role === "student") {
-      q = query(
-        collection(db, "routineGroups"),
-        where("studentId", "==", studentId)
-      );
-    } else if (role === "coach") {
-      q = query(collection(db, "routines"), where("createdBy", "==", user.uid));
-    } else {
-      setLoading(false);
-      setAllRoutines([]);
-      return;
-    }
+    q = query(collection(db, "routines"));
 
     const unsubscribe = onSnapshot(
       q,
@@ -124,7 +111,7 @@ const useRoutines = () => {
       }
     );
     return () => unsubscribe();
-  }, [user, role, authLoading, studentId]); // Agrupar rutinas por etapas
+  }, [user, authLoading]); // Agrupar rutinas por etapas
 
   const allSortedStages = useMemo(() => {
     if (!allRoutines || allRoutines.length === 0) return [];
@@ -143,6 +130,7 @@ const useRoutines = () => {
   }, [allRoutines]);
 
   return {
+    allRoutines,
     allSortedStages,
     loading,
     error,

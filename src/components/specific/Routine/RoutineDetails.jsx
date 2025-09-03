@@ -11,24 +11,15 @@ import {
 import { closestCenter, DndContext } from "@dnd-kit/core";
 import { StyledCardTitle } from "../../common/Cards/Card/StyledCard";
 import PageContainer from "../../layout/PageContainer/PageContainer";
-import Button from "../../common/Buttons/Button/Button";
-import { useNavigate } from "react-router-dom";
-import RoutineEditModal from "../RoutineGroupModal/RoutineEditModal";
 
 const RoutineDetails = ({
   routineId,
   getRoutineById,
   updateRoutineExercises,
-  deleteRoutine,
 }) => {
   const [routine, setRoutine] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // 🔹 Estado para controlar apertura del modal
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchRoutine = async () => {
@@ -81,23 +72,8 @@ const RoutineDetails = ({
     });
   };
 
-  const handleDeleteRoutine = async () => {
-    const confirmDelete = window.confirm(
-      "¿Seguro que querés eliminar esta rutina?"
-    );
-    if (!confirmDelete) return;
-
-    try {
-      await deleteRoutine(routineId);
-      alert("Rutina eliminada correctamente.");
-      navigate("/coach");
-    } catch (err) {
-      alert("Hubo un error al eliminar la rutina: " + err.message);
-    }
-  };
-
   return (
-    <PageContainer style={{ paddingTop: 0 }}>
+    <PageContainer style={{ paddingTop: 0, overflowY: "auto" }}>
       <StyledCardTitle style={{ textAlign: "center", fontSize: "1.5rem" }}>
         {routine.name}
         <span>{routine.stages?.join(" | ")}</span>
@@ -132,33 +108,7 @@ const RoutineDetails = ({
             ))}
           </SortableContext>
         </DndContext>
-
-        <div style={{ display: "flex", justifyContent: "space-around" }}>
-          <Button
-            primary
-            style={{ width: "130px" }}
-            onClick={() => setIsEditModalOpen(true)} // 🔹 Abrimos el modal
-          >
-            Editar
-          </Button>
-          <Button
-            secondary
-            style={{ width: "130px" }}
-            onClick={handleDeleteRoutine}
-          >
-            Eliminar
-          </Button>
-        </div>
       </ContentSection>
-
-      {/* 🔹 Modal de edición */}
-      {isEditModalOpen && (
-        <RoutineEditModal
-          routineId={routineId}
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-        />
-      )}
     </PageContainer>
   );
 };

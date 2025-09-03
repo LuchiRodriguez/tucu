@@ -22,6 +22,9 @@ import {
 
 // 🔥 Importamos el modal de creación de grupos
 import GroupCreationModal from "../../components/specific/Group/GroupCreationModal";
+import useRoutines from "../../hooks/useRoutines/useRoutines";
+import useGroups from "../../hooks/useGroups/useGroups";
+import GroupListItem from "../../components/specific/Group/GroupListItem";
 
 function StudentPage() {
   const { studentId } = useParams();
@@ -31,6 +34,9 @@ function StudentPage() {
   const [student, setStudent] = useState(null);
   const [loadingStudent, setLoadingStudent] = useState(true);
   const [studentError, setStudentError] = useState(null);
+
+  const { allRoutines } = useRoutines();
+  const { groups } = useGroups(studentId);
 
   // 👇 Estado para manejar el modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -117,12 +123,21 @@ function StudentPage() {
 
         <StyledRoutineGroupsWrapper
           style={{
-            justifyContent: "center",
             overflowY: "auto",
             maxHeight: "100%",
           }}
         >
-          {/* Aquí después listaremos los grupos existentes */}
+          {groups.length === 0 ? (
+            <p>Este alumno aún no tiene grupos de rutinas asignados</p>
+          ) : (
+            groups.map((group) => (
+              <GroupListItem
+                key={group.id}
+                group={group}
+                routines={allRoutines}
+              />
+            ))
+          )}
         </StyledRoutineGroupsWrapper>
 
         <StyledAddRoutineGroupButtonWrapper>

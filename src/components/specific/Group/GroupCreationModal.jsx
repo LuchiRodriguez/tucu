@@ -18,7 +18,6 @@ import { db } from "../../../config/firebase";
 import { useAuth } from "../../../context/authContextBase";
 
 const GroupCreationModal = ({ isOpen, onClose, studentId }) => {
-  console.log("El studentId que llega al modal es:", studentId);
   const { user } = useAuth();
   const coachId = user?.uid;
   const [localError, setLocalError] = useState(null);
