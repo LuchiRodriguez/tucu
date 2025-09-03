@@ -126,7 +126,7 @@ const GroupCreationModal = ({ isOpen, onClose, studentId }) => {
       isOpen={isOpen}
       onClose={handleCloseModal}
       title={group?.name || "Nuevo grupo de rutinas"}
-      contentHeight="400px"
+      contentHeight="450px"
     >
       {(saveError || localError) && (
         <ErrorMessage isVisible>{saveError || localError}</ErrorMessage>

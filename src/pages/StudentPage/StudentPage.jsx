@@ -123,12 +123,16 @@ function StudentPage() {
 
         <StyledRoutineGroupsWrapper
           style={{
+            marginTop: "20px",
+            justifyContent: groups.length === 0 ? "center" : "flex-start",
             overflowY: "auto",
             maxHeight: "100%",
           }}
         >
           {groups.length === 0 ? (
-            <p>Este alumno aún no tiene grupos de rutinas asignados</p>
+            <p style={{ textAlign: "center", color: "#7f8c8d" }}>
+              Este alumno aún no tiene <br /> grupos de rutinas asignados
+            </p>
           ) : (
             groups.map((group) => (
               <GroupListItem

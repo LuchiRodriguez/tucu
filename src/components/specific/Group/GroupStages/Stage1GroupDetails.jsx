@@ -4,6 +4,7 @@ import Input from "../../../common/Forms/Input/Input";
 import Label from "../../../common/Forms/Label/Label";
 import Select from "../../../common/Forms/Select/Select";
 import { StyledModalBody } from "../../RoutineGroupModal/StyledRoutineModal";
+import { groupShape } from "../../../../models/groupModel";
 
 /**
  * Primera etapa para ingresar los detalles de un grupo de rutinas.
@@ -69,19 +70,22 @@ const Stage1GroupDetails = ({ currentGroup, setCurrentGroup }) => {
           </option>
         ))}
       </Select>
+
+      {/*Fecha de vencimiento*/}
+      <Label htmlFor="dueDate">Fecha de vencimiento</Label>
+      <Input
+        id="dueDate"
+        type="date"
+        value={currentGroup.dueDate || ""}
+        onChange={handleInputChange}
+        style={{ marginBottom: 15 }}
+      />
     </StyledModalBody>
   );
 };
 
 Stage1GroupDetails.propTypes = {
-  currentGroup: PropTypes.shape({
-    id: PropTypes.string,
-    name: PropTypes.string,
-    objective: PropTypes.string,
-    stage: PropTypes.string,
-    routines: PropTypes.arrayOf(PropTypes.string),
-    studentId: PropTypes.string,
-  }),
+  currentGroup: groupShape.isRequired,
   setCurrentGroup: PropTypes.func.isRequired,
 };
 

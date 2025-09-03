@@ -1,65 +1,20 @@
 // src/components/specific/Group/GroupStages/Stage2AddRoutines.jsx
-import { useEffect, useState, useMemo } from "react";
+import { useMemo } from "react";
 import PropTypes from "prop-types";
 
 import SubSectionTitle from "../../../common/Messages/SubSectionTitle/SubSectionTitle";
 import Subtitle from "../../../common/Messages/Subtitle/Subtitle";
 import CheckBox from "../../../common/Utilities/CheckBox/CheckBox";
 import CollapsibleCard from "../../../common/Cards/CollapsibleCard/CollapsibleCard";
-import Button from "../../../common/Buttons/Button/Button"; // 👈 Importar el botón
-import { db } from "../../../../config/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { useAuth } from "../../../../context/authContextBase";
+import Button from "../../../common/Buttons/Button/Button";
 import {
   StyledExerciseSelectionList,
   StyledModalBody,
 } from "../../RoutineGroupModal/StyledRoutineModal";
+import useRoutines from "../../../../hooks/useRoutines/useRoutines";
 
 const Stage2AddRoutines = ({ currentGroup, setCurrentGroup }) => {
-  const { user } = useAuth();
-  const coachId = user?.uid;
-
-  const [routines, setRoutines] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchRoutines = async () => {
-      if (!coachId) return;
-      setLoading(true);
-      try {
-        const routinesRef = collection(db, "routines");
-        const q = query(
-          routinesRef,
-          where("createdBy", "==", coachId),
-          where("isDraft", "==", false)
-        );
-        const snapshot = await getDocs(q);
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setRoutines(data);
-      } catch (err) {
-        console.error("Error al cargar rutinas:", err);
-        setError(err.message || "Error al cargar rutinas");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchRoutines();
-  }, [coachId]);
-
-  const groupedRoutines = useMemo(() => {
-    return routines.reduce((acc, routine) => {
-      const stage = routine.stage || "Sin etapa";
-      if (!acc[stage]) {
-        acc[stage] = [];
-      }
-      acc[stage].push(routine);
-      return acc;
-    }, {});
-  }, [routines]);
+  const { allRoutines, allSortedStages, loading, error } = useRoutines();
 
   const routinesInGroup = useMemo(
     () => new Set(currentGroup.routines || []),
@@ -67,8 +22,8 @@ const Stage2AddRoutines = ({ currentGroup, setCurrentGroup }) => {
   ); // 🔹 Nuevo useMemo para las rutinas seleccionadas
 
   const selectedRoutines = useMemo(() => {
-    return routines.filter((routine) => routinesInGroup.has(routine.id));
-  }, [routines, routinesInGroup]);
+    return allRoutines.filter((routine) => routinesInGroup.has(routine.id));
+  }, [allRoutines, routinesInGroup]);
 
   if (loading) return <p>Cargando rutinas...</p>;
   if (error) return <p>Error al cargar rutinas: {error}</p>;
@@ -88,14 +43,14 @@ const Stage2AddRoutines = ({ currentGroup, setCurrentGroup }) => {
         Seleccionar rutinas para el grupo:
       </SubSectionTitle>
       <StyledExerciseSelectionList style={{ flexGrow: 1 }}>
-        {Object.keys(groupedRoutines).length === 0 ? (
+        {Object.keys(allSortedStages).length === 0 ? (
           <Subtitle
             style={{ textAlign: "center", margin: "20px 0", color: "#7f8c8d" }}
           >
             No hay rutinas disponibles.
           </Subtitle>
         ) : (
-          Object.entries(groupedRoutines).map(
+          Object.entries(allSortedStages).map(
             ([stageName, routinesInStage]) => (
               <CollapsibleCard
                 key={stageName}
